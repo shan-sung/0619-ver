@@ -1,0 +1,32 @@
+package com.example.myapplication.util
+
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.tasks.await
+
+suspend fun getCurrentOrFallbackLocation(context: Context): String {
+    val fallbackTaiwan = listOf(
+        "25.033964,121.564468",
+        "25.042232,121.508083",
+        "22.627278,120.301435",
+        "24.136829,120.686936",
+        "23.480075,120.448874"
+    ).random()
+
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    val location = try {
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            fusedLocationClient.lastLocation.await()
+        } else null
+    } catch (e: Exception) {
+        null
+    }
+
+    return location?.let { "${it.latitude},${it.longitude}" } ?: fallbackTaiwan
+}
