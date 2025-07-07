@@ -1,14 +1,17 @@
 package com.example.myapplication.data
 
-data class Travel(
-    val id: String,
-    val title: String,
-    val subtitle: String? = null,
-    val members: Int? = null,
-    val days: Int? = null,
-    val budget: Int? = null,
-    val description: String? = null,
-    val images: List<String>? = null
+import java.time.LocalDate
+
+data class TripCreationInfo(
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val peopleCount: Int = 1,
+    val averageAgeRange: String = "",         // 例如 "21-25"
+    val preferences: List<String> = emptyList(),     // ex: ["美食", "文化"]
+    val transportOptions: List<String> = emptyList(), // ex: ["步行", "大眾運輸"]
+    val cities: List<String> = emptyList(),   // ex: ["台北", "台中"]
+    val budget: Int = 0,
+    val title: String = ""
 )
 
 data class Attraction(
@@ -19,6 +22,41 @@ data class Attraction(
     val rating: Double?,
     val imageUrl: String? = null
 )
+
+data class TripRequestResponse(
+    val _id: String,
+    val title: String,
+    val startDate: String?,         // 建議用 String 接收後端回傳的日期
+    val endDate: String?,
+    val peopleCount: Int,
+    val averageAgeRange: String,
+    val preferences: List<String>,
+    val transportOptions: List<String>,
+    val cities: List<String>,
+    val budget: Int,
+    val createdAt: String
+)
+
+data class Travel(
+    val _id: String,
+    val created: Boolean = false,
+    val title: String,
+    val days: Int? = null,
+    val members: Int? = null,
+    val budget: Int? = null,
+    val description: String? = null,
+    val imageUrl: String? = null,
+
+    // Optional: 如果你未來要顯示每日行程細節，可擴充：
+    val itinerary: List<ItineraryDay>? = null
+)
+
+data class ItineraryDay(
+    val day: Int,
+    val location: String,
+    val activities: List<String>
+)
+
 
 data class PlacesSearchResponse(
     val results: List<PlaceResult>,
@@ -37,14 +75,6 @@ data class PlaceResult(
 data class Photo(
     val photo_reference: String
 )
-
-enum class SearchType { TRAVEL, ATTRACTION }
-
-data class SearchItem(
-    val label: String,          // 要顯示的文字
-    val type: SearchType        // 類型：旅程 or 景點
-)
-
 
 data class GeocodingResponse(
     val results: List<GeocodingResult>,
@@ -72,4 +102,11 @@ data class Geometry(
 data class LatLng(
     val lat: Double,
     val lng: Double
+)
+
+data class ChatMessage(
+    val id: String,
+    val sender: String,
+    val message: String,
+    val timestamp: Long
 )

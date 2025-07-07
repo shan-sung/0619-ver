@@ -42,6 +42,14 @@ import com.example.myapplication.data.Attraction
 import com.example.myapplication.data.Travel
 import java.util.Locale
 
+data class InfoCardData(
+    val location: String,
+    val title: String,
+    val subtitle: String,
+    val imageUrl: String? = null,
+    val mapSearchQuery: String? = null
+)
+
 @Composable
 fun RowInfoCard(
     navController: NavController,
@@ -87,33 +95,54 @@ fun RowInfoCard(
     }
 }
 
+@Composable
+fun CardRowLib(navController: NavController, travels: List<Travel>) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(travels) { travel ->
+            RowInfoCard(
+                navController = navController,
+                travelId = travel._id,
+                title = travel.title,
+                subtitle = listOfNotNull(
+                    travel.members?.let { "$it member${if (it > 1) "s" else ""}" },
+                    travel.days?.let { "$it day${if (it > 1) "s" else ""}" },
+                    travel.budget?.let { "Budget: ${String.format(Locale.US, "$%,d", travel.budget)}"
+                    }
+                ).joinToString(" · ")
+            )
+        }
+    }
+}
+
 
 @Composable
 fun ColInfoCard(
     modifier: Modifier = Modifier,
     navController: NavController,
-    location: String,     // 縣市 + 區域（如：台北市信義區）
-    title: String,        // 景點名稱（如：W Taipei）
-    subtitle: String,     // 星等（如：五星級）
-    imageUrl: String? = null
+    data: InfoCardData,
+    onClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
 
     Card(
         onClick = {
-            val query = Uri.encode(title) // 例如 "Taipei 101"
-            val gmmIntentUri = "geo:0,0?q=$query".toUri()
-            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
-            mapIntent.setPackage("com.google.android.apps.maps")
+            onClick?.invoke() ?: run {
+                val query = Uri.encode(data.mapSearchQuery ?: data.title)
+                val gmmIntentUri = "geo:0,0?q=$query".toUri()
+                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                    setPackage("com.google.android.apps.maps")
+                }
 
-            if (mapIntent.resolveActivity(context.packageManager) != null) {
-                // 有安裝 Google Maps App
-                context.startActivity(mapIntent)
-            } else {
-                // 沒安裝 App，改用瀏覽器開啟 Google Maps 網頁
-                val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
-                val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-                context.startActivity(webIntent)
+                if (mapIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(mapIntent)
+                } else {
+                    val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
+                    val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+                    context.startActivity(webIntent)
+                }
             }
         },
         shape = RoundedCornerShape(16.dp),
@@ -131,38 +160,33 @@ fun ColInfoCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = location,
+                    text = data.location,
                     style = MaterialTheme.typography.labelMedium,
                     maxLines = 2,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-
                 Text(
-                    text = title,
+                    text = data.title,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Text(
-                    text = subtitle,
+                    text = data.subtitle,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            if (imageUrl != null) {
+            if (data.imageUrl != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(imageUrl),
+                    painter = rememberAsyncImagePainter(data.imageUrl),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -183,29 +207,6 @@ fun ColInfoCard(
 
 
 @Composable
-fun CardRowLib(navController: NavController, travels: List<Travel>) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(travels) { travel ->
-            RowInfoCard(
-                navController = navController,
-                travelId = travel.id,
-                title = travel.title,
-                subtitle = listOfNotNull(
-                    travel.members?.let { "$it member${if (it > 1) "s" else ""}" },
-                    travel.days?.let { "$it day${if (it > 1) "s" else ""}" },
-                    travel.budget?.let { "Budget: ${String.format(Locale.US, "$%,d", travel.budget)}"
-                    }
-                ).joinToString(" · ")
-            )
-        }
-    }
-}
-
-
-@Composable
 fun CardColLib(navController: NavController, attractions: List<Attraction>) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -213,12 +214,42 @@ fun CardColLib(navController: NavController, attractions: List<Attraction>) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(attractions) { attraction ->
-            ColInfoCard(
-                navController = navController,
+            val infoCardData = InfoCardData(
                 location = attraction.city,
                 title = attraction.name,
-                subtitle = "${attraction.rating}/5",
-                imageUrl = attraction.imageUrl
+                subtitle = "${attraction.rating ?: 0.0} 星",
+                imageUrl = attraction.imageUrl,
+                mapSearchQuery = attraction.name
+            )
+            ColInfoCard(
+                navController = navController,
+                data = infoCardData
+            )
+        }
+    }
+}
+
+@Composable
+fun CardColLibForTravels(navController: NavController, travels: List<Travel>) {
+    LazyColumn(
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxSize()
+    ) {
+        items(travels) { travel ->
+            val infoCardData = InfoCardData(
+                location = "旅遊行程",
+                title = travel.title,
+                subtitle = "${travel.days}天・${travel.members}人・預算 ${travel.budget} 元",
+                imageUrl = travel.imageUrl
+            )
+
+            ColInfoCard(
+                navController = navController,
+                data = infoCardData,
+                onClick = {
+                    navController.navigate("travel_detail/${travel._id}")
+                }
             )
         }
     }

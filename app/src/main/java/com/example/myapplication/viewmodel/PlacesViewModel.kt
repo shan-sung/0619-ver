@@ -6,22 +6,28 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.BuildConfig
 import com.example.myapplication.api.PlacesApiService
 import com.example.myapplication.data.Attraction
+import com.example.myapplication.util.buildPhotoUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AttractionsViewModel @Inject constructor(
-    private val apiService: PlacesApiService
+class AttractionsViewModel @Inject constructor( // @Inject constructor(...): 使用 Hilt 注入 PlacesApiService，負責與 Google Maps API 溝通。
+    private val apiService: PlacesApiService // 告訴Hilt此為我需要的東西，請幫我注入
 ) : ViewModel() {
 
-    private val _attractions = MutableStateFlow<List<Attraction>>(emptyList())
-    val attractions: StateFlow<List<Attraction>> = _attractions
+    private val _attractions = MutableStateFlow<List<Attraction>>(emptyList()) // 私有可變的 StateFlow，用來儲存目前取得的景點清單。
+    val attractions: StateFlow<List<Attraction>> = _attractions // 公開只讀的版本給 UI 使用。
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+    private val _errorMessage = MutableStateFlow<String?>(null)
 
+
+    // 取得附近景點
     fun fetchNearbyAttractions(location: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -35,75 +41,39 @@ class AttractionsViewModel @Inject constructor(
                 Log.d("API DEBUG", "status=${response.status}, size=${response.results.size}, location=$location")
 
                 val mapped = response.results.map { place ->
-                    val lat = place.geometry.location.lat
-                    val lng = place.geometry.location.lng
-                    val latlng = "$lat,$lng"
+                    async {
+                        val lat = place.geometry.location.lat
+                        val lng = place.geometry.location.lng
+                        val latlng = "$lat,$lng"
+                        val geo = apiService.getGeocodingInfo(latlng, BuildConfig.MAPS_API_KEY)
+                        val geoResult = geo.results.firstOrNull()
+                        val city = geoResult?.address_components?.firstOrNull {
+                            it.types.contains("administrative_area_level_1")
+                        }?.long_name ?: "未知縣市"
 
-                    // 額外呼叫 Geocoding API
-                    val geo = apiService.getGeocodingInfo(latlng, BuildConfig.MAPS_API_KEY)
-                    val geoResult = geo.results.firstOrNull()
+                        val district = geoResult?.address_components?.firstOrNull {
+                            it.types.contains("administrative_area_level_2")
+                        }?.long_name ?: "未知區"
 
-                    val city = geoResult?.address_components?.firstOrNull {
-                        it.types.contains("administrative_area_level_1")
-                    }?.long_name ?: "未知縣市"
-
-                    val district = geoResult?.address_components?.firstOrNull {
-                        it.types.contains("administrative_area_level_2")
-                    }?.long_name ?: "未知區"
-
-                    Attraction(
-                        id = place.place_id,
-                        name = place.name,
-                        city = "$city$district", // ✅ 這裡顯示「台北市信義區」
-                        country = "Taiwan",
-                        rating = place.rating ?: 0.0,
-                        imageUrl = place.photos?.firstOrNull()?.photo_reference?.let { ref ->
-                            buildPhotoUrl(ref)
-                        }
-                    )
-                }
-
+                        Attraction(
+                            id = place.place_id,
+                            name = place.name,
+                            city = "$city $district",
+                            country = "Taiwan",
+                            rating = place.rating ?: 0.0,
+                            imageUrl = place.photos?.firstOrNull()?.photo_reference?.let { ref ->
+                                buildPhotoUrl(ref)
+                            }
+                        )
+                    }
+                }.awaitAll()
                 _attractions.value = mapped
-
             } catch (e: Exception) {
                 Log.e("API", "錯誤：${e.message}", e)
+                _errorMessage.value = e.message
             } finally {
                 _isLoading.value = false
             }
         }
-    }
-
-    fun searchAttractionsByText(query: String) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val response = apiService.getTextSearchResults(query, BuildConfig.MAPS_API_KEY)
-                val mapped = response.results.map { place ->
-                    Attraction(
-                        id = place.place_id,
-                        name = place.name,
-                        city = place.vicinity ?: "未知地區",
-                        country = "Taiwan",
-                        rating = place.rating ?: 0.0,
-                        imageUrl = place.photos?.firstOrNull()?.photo_reference?.let {
-                            buildPhotoUrl(it)
-                        }
-                    )
-                }
-                _attractions.value = mapped
-
-            } catch (e: Exception) {
-                Log.e("TextSearch", "搜尋錯誤：${e.message}", e)
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
-
-    private fun buildPhotoUrl(photoRef: String): String {
-        return "https://maps.googleapis.com/maps/api/place/photo" +
-                "?maxwidth=400&photo_reference=$photoRef&key=${BuildConfig.MAPS_API_KEY}"
     }
 }
-
