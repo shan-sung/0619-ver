@@ -46,17 +46,20 @@ data class Travel(
     val budget: Int? = null,
     val description: String? = null,
     val imageUrl: String? = null,
-
-    // Optional: 如果你未來要顯示每日行程細節，可擴充：
     val itinerary: List<ItineraryDay>? = null
 )
 
 data class ItineraryDay(
     val day: Int,
-    val location: String,
-    val activities: List<String>
+    val date: String,
+    val schedule: List<ScheduleItem>
 )
 
+data class ScheduleItem(
+    val time: String,
+    val activity: String,
+    val transportation: String
+)
 
 data class PlacesSearchResponse(
     val results: List<PlaceResult>,

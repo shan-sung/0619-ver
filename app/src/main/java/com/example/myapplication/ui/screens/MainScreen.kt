@@ -18,10 +18,17 @@ fun MainScreen(navController: NavHostController) {
 
     val showTopBar = currentRoute in listOf("trips", "saved", "profile", "create", "trip_detail/{id}")
     val showBottomBar = currentRoute in listOf("explore", "trips", "saved", "profile")
-
+    val topBarTitle = when (currentRoute) {
+        "trip_detail/{id}" -> "My Trip"
+        "trips" -> "Trips"
+        "saved" -> "Saved"
+        "profile" -> "Profile"
+        "create" -> "Create"
+        else -> currentRoute?.replaceFirstChar { it.uppercase() } ?: ""
+    }
 
     Scaffold(
-        topBar = { if (showTopBar) TopBar(title = currentRoute?.replaceFirstChar { it.uppercase() } ?: "")},
+        topBar = { if (showTopBar) TopBar(title = topBarTitle)},
         bottomBar = { if (showBottomBar) BottomNavigationBar(navController = navController)
         }
     ) { innerPadding ->

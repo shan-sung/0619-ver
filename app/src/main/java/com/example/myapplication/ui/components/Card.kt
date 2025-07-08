@@ -48,11 +48,12 @@ sealed class InfoCardData {
     abstract val title: String
     abstract val subtitle: String
     abstract val imageUrl: String?
+    open val id: String? = null
     open val mapSearchQuery: String? = null
 }
 
 data class TravelInfoCardData(
-    val id: String,
+    override val id: String,
     override val location: String,
     override val title: String,
     override val subtitle: String,
@@ -67,20 +68,26 @@ data class AttractionInfoCardData(
     override val mapSearchQuery: String
 ) : InfoCardData()
 
+fun formatTravelSubtitle(travel: Travel): String {
+    return listOfNotNull(
+        travel.members?.let { "$it 人" },
+        travel.days?.let { "$it 天" },
+        travel.budget?.let { "預算 ${String.format(Locale.US,"%,d", it)} 元" }
+    ).joinToString("・")
+}
+
 
 @Composable
 fun RowInfoCard(
     navController: NavController,
-    travelId: String,
-    title: String,
-    subtitle: String,
+    data: InfoCardData,
     modifier: Modifier = Modifier
 ) {
     Card(
         onClick = {
-            Log.d("TravelNavigate", "Navigating to travel_detail/$travelId")
+            Log.d("TravelNavigate", "Navigating to trip_detail/${data.id}")
             try {
-                navController.navigate("trip_detail/$travelId")
+                navController.navigate("trip_detail/${data.id}")
             } catch (e: Exception) {
                 Log.e("TravelNavigate", "Navigation error", e)
             }
@@ -104,7 +111,7 @@ fun RowInfoCard(
         ) {
             Column {
                 Text(
-                    text = title,
+                    text = data.title,
                     style = MaterialTheme.typography.titleLarge.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
@@ -112,7 +119,7 @@ fun RowInfoCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = subtitle,
+                    text = data.subtitle,
                     style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
                 )
             }
@@ -127,21 +134,21 @@ fun CardRowLib(navController: NavController, travels: List<Travel>) {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(travels) { travel ->
+            val data = TravelInfoCardData(
+                id = travel._id,
+                location = "旅遊行程",
+                title = travel.title,
+                subtitle = formatTravelSubtitle(travel),
+                imageUrl = travel.imageUrl
+            )
+
             RowInfoCard(
                 navController = navController,
-                travelId = travel._id,
-                title = travel.title,
-                subtitle = listOfNotNull(
-                    travel.members?.let { "$it member${if (it > 1) "s" else ""}" },
-                    travel.days?.let { "$it day${if (it > 1) "s" else ""}" },
-                    travel.budget?.let { "Budget: ${String.format(Locale.US, "$%,d", travel.budget)}"
-                    }
-                ).joinToString(" · ")
+                data = data
             )
         }
     }
 }
-
 
 @Composable
 fun ColInfoCard(
@@ -161,7 +168,6 @@ fun ColInfoCard(
                     val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
                         setPackage("com.google.android.apps.maps")
                     }
-
                     if (mapIntent.resolveActivity(context.packageManager) != null) {
                         context.startActivity(mapIntent)
                     } else {
@@ -273,7 +279,7 @@ fun CardColLibForTravels(navController: NavController, travels: List<Travel>) {
                 id = travel._id,
                 location = "旅遊行程",
                 title = travel.title,
-                subtitle = "${travel.days}天・${travel.members}人・預算 ${travel.budget} 元",
+                subtitle = formatTravelSubtitle(travel),
                 imageUrl = travel.imageUrl
             )
 

@@ -60,7 +60,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.animation:animation")
-
+    implementation("androidx.compose.foundation:foundation:1.8.3")
     implementation("androidx.compose.material:material:1.8.3")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
@@ -78,7 +78,11 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.56")
     kapt("com.google.dagger:hilt-compiler:2.56")
 
-    implementation("com.google.accompanist:accompanist-placeholder-material:0.34.0")
+    implementation("com.google.accompanist:accompanist-placeholder-material:0.36.0")
+    implementation("com.google.accompanist:accompanist-pager:0.36.0")
+    implementation ("com.google.accompanist:accompanist-pager-indicators:0.36.0")
+
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
