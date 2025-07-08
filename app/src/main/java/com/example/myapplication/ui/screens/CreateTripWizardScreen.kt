@@ -48,30 +48,68 @@ fun CreateTripWizardScreen(
         save = { it.toString() },
         restore = { LocalDate.parse(it) }
     )
+
+    val stringListSaver = listSaver<List<String>, String>(
+        save = { it },
+        restore = { it.toList() }
+    )
+
     var title by rememberSaveable { mutableStateOf("") }
-    var startDate by rememberSaveable(stateSaver = localDateSaver) { mutableStateOf(LocalDate.now()) }
-    var endDate by rememberSaveable(stateSaver = localDateSaver) { mutableStateOf(LocalDate.now().plusDays(1)) }
-    var peopleCount by rememberSaveable { mutableIntStateOf(1) }
-    var ageRange by rememberSaveable { mutableStateOf("") }
+
+    var startDate by rememberSaveable(
+        inputs = arrayOf(title),
+        stateSaver = localDateSaver
+    ) {
+        mutableStateOf(LocalDate.now())
+    }
+
+    var endDate by rememberSaveable(
+        inputs = arrayOf(startDate),
+        stateSaver = localDateSaver
+    ) {
+        mutableStateOf(LocalDate.now().plusDays(1))
+    }
+
+    var peopleCount by rememberSaveable(
+        inputs = arrayOf(title)
+    ) {
+        mutableIntStateOf(1)
+    }
+
+    var ageRange by rememberSaveable(
+        inputs = arrayOf(peopleCount)
+    ) {
+        mutableStateOf("")
+    }
+
     var prefer by rememberSaveable(
-        stateSaver = listSaver(
-            save = { it },
-            restore = { it.toList() }
-        )
-    ) { mutableStateOf(listOf<String>()) }
+        inputs = arrayOf(ageRange),
+        stateSaver = stringListSaver
+    ) {
+        mutableStateOf(listOf())
+    }
+
     var transport by rememberSaveable(
-        stateSaver = listSaver(
-            save = { it },
-            restore = { it.toList() }
-        )
-    ) { mutableStateOf(listOf<String>()) }
+        inputs = arrayOf(prefer),
+        stateSaver = stringListSaver
+    ) {
+        mutableStateOf(listOf())
+    }
+
     var city by rememberSaveable(
-        stateSaver = listSaver(
-            save = { it },
-            restore = { it.toList() }
-        )
-    ) { mutableStateOf(listOf<String>()) }
-    var budget by rememberSaveable { mutableStateOf(10000) }
+        inputs = arrayOf(transport),
+        stateSaver = stringListSaver
+    ) {
+        mutableStateOf(listOf())
+    }
+
+    var budget by rememberSaveable(
+        inputs = arrayOf(city)
+    ) {
+        mutableIntStateOf(10000)
+    }
+
+
 
     Scaffold(
         modifier = modifier,

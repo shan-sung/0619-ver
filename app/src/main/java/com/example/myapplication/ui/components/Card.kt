@@ -2,6 +2,7 @@ package com.example.myapplication.ui.components
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,13 +43,30 @@ import com.example.myapplication.data.Attraction
 import com.example.myapplication.data.Travel
 import java.util.Locale
 
-data class InfoCardData(
-    val location: String,
-    val title: String,
-    val subtitle: String,
-    val imageUrl: String? = null,
-    val mapSearchQuery: String? = null
-)
+sealed class InfoCardData {
+    abstract val location: String
+    abstract val title: String
+    abstract val subtitle: String
+    abstract val imageUrl: String?
+    open val mapSearchQuery: String? = null
+}
+
+data class TravelInfoCardData(
+    val id: String,
+    override val location: String,
+    override val title: String,
+    override val subtitle: String,
+    override val imageUrl: String?
+) : InfoCardData()
+
+data class AttractionInfoCardData(
+    override val location: String,
+    override val title: String,
+    override val subtitle: String,
+    override val imageUrl: String?,
+    override val mapSearchQuery: String
+) : InfoCardData()
+
 
 @Composable
 fun RowInfoCard(
@@ -59,7 +77,14 @@ fun RowInfoCard(
     modifier: Modifier = Modifier
 ) {
     Card(
-        onClick = { navController.navigate("travel/$travelId") },
+        onClick = {
+            Log.d("TravelNavigate", "Navigating to travel_detail/$travelId")
+            try {
+                navController.navigate("trip_detail/$travelId")
+            } catch (e: Exception) {
+                Log.e("TravelNavigate", "Navigation error", e)
+            }
+        },
         shape = RoundedCornerShape(16.dp),
         modifier = modifier
             .width(280.dp)
@@ -129,19 +154,25 @@ fun ColInfoCard(
 
     Card(
         onClick = {
-            onClick?.invoke() ?: run {
-                val query = Uri.encode(data.mapSearchQuery ?: data.title)
-                val gmmIntentUri = "geo:0,0?q=$query".toUri()
-                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                    setPackage("com.google.android.apps.maps")
+            when (data) {
+                is AttractionInfoCardData -> {
+                    val query = Uri.encode(data.mapSearchQuery)
+                    val gmmIntentUri = "geo:0,0?q=$query".toUri()
+                    val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                        setPackage("com.google.android.apps.maps")
+                    }
+
+                    if (mapIntent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(mapIntent)
+                    } else {
+                        val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
+                        val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+                        context.startActivity(webIntent)
+                    }
                 }
 
-                if (mapIntent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(mapIntent)
-                } else {
-                    val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
-                    val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-                    context.startActivity(webIntent)
+                is TravelInfoCardData -> {
+                    navController.navigate("trip_detail/${data.id}")
                 }
             }
         },
@@ -214,16 +245,17 @@ fun CardColLib(navController: NavController, attractions: List<Attraction>) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(attractions) { attraction ->
-            val infoCardData = InfoCardData(
+            val attractionCardData = AttractionInfoCardData(
                 location = attraction.city,
                 title = attraction.name,
                 subtitle = "${attraction.rating ?: 0.0} 星",
                 imageUrl = attraction.imageUrl,
                 mapSearchQuery = attraction.name
             )
+
             ColInfoCard(
                 navController = navController,
-                data = infoCardData
+                data = attractionCardData
             )
         }
     }
@@ -237,7 +269,8 @@ fun CardColLibForTravels(navController: NavController, travels: List<Travel>) {
         modifier = Modifier.fillMaxSize()
     ) {
         items(travels) { travel ->
-            val infoCardData = InfoCardData(
+            val travelCardData = TravelInfoCardData(
+                id = travel._id,
                 location = "旅遊行程",
                 title = travel.title,
                 subtitle = "${travel.days}天・${travel.members}人・預算 ${travel.budget} 元",
@@ -246,9 +279,9 @@ fun CardColLibForTravels(navController: NavController, travels: List<Travel>) {
 
             ColInfoCard(
                 navController = navController,
-                data = infoCardData,
+                data = travelCardData,
                 onClick = {
-                    navController.navigate("travel_detail/${travel._id}")
+                    navController.navigate("trip_detail/${travel._id}")
                 }
             )
         }

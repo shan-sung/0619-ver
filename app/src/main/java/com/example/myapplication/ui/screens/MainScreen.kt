@@ -16,7 +16,7 @@ fun MainScreen(navController: NavHostController) {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 
-    val showTopBar = currentRoute in listOf("trips", "saved", "profile", "create")
+    val showTopBar = currentRoute in listOf("trips", "saved", "profile", "create", "trip_detail/{id}")
     val showBottomBar = currentRoute in listOf("explore", "trips", "saved", "profile")
 
 

@@ -13,7 +13,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.navigation.TripNavHost
 import com.example.myapplication.ui.components.AddFab
@@ -22,7 +22,7 @@ import com.example.myapplication.ui.screens.trips.TripTab
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripsScreen(
-    navController: NavController,
+    navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
     val startDestination = TripTab.CREATED
@@ -45,15 +45,23 @@ fun TripsScreen(
                         onClick = {
                             selectedTabIndex = index
                             tabNavController.navigate(tab.route) {
+                                popUpTo(tabNavController.graph.startDestinationId) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }
+
                         },
                         text = { Text(tab.label) }
                     )
                 }
             }
-            TripNavHost(navController = tabNavController, startDestination = startDestination)
+            TripNavHost(
+                navController = tabNavController,
+                startDestination = startDestination,
+                parentNavController = navController // ✅ 傳最外層
+            )
         }
     }
 }
