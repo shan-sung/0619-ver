@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,7 +25,7 @@ fun ScheduleList(schedule: List<ScheduleItem>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 8.dp, end = 16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         schedule.forEachIndexed { index, item ->
             ScheduleItemTimeline(
@@ -40,38 +39,38 @@ fun ScheduleList(schedule: List<ScheduleItem>) {
 @Composable
 fun ScheduleItemTimeline(item: ScheduleItem, isLastItem: Boolean) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
     ) {
-        // 左側：圓點與垂直虛線
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 8.dp)
+        // 左側：圓點與垂直線（寬度固定）
+        Box(
+            modifier = Modifier
+                .width(24.dp), // ✅ 固定寬度，讓右側對齊
+            contentAlignment = Alignment.TopCenter
         ) {
-            Canvas(modifier = Modifier.size(12.dp)) {
-                drawCircle(
-                    color = Color.Black,
-                    radius = size.minDimension / 2,
-                    style = Fill // 明確指定填滿
-                )
-            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Canvas(modifier = Modifier.size(12.dp)) {
+                    drawCircle(
+                        color = Color.Black,
+                        radius = size.minDimension / 2,
+                        style = Fill
+                    )
+                }
 
-            if (!isLastItem) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier
-                        .width(1.dp)
-                        .height(40.dp)
-                        .background(Color.LightGray)
-                )
+                if (!isLastItem) {
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(48.dp) // 可微調
+                            .background(Color.LightGray)
+                    )
+                }
             }
         }
 
-        // 右側：行程內容
-        Column(
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-        ) {
+        // 右側：文字區塊
+        Column {
             Text(
                 text = item.activity,
                 style = MaterialTheme.typography.titleMedium
@@ -79,7 +78,7 @@ fun ScheduleItemTimeline(item: ScheduleItem, isLastItem: Boolean) {
             Text(
                 text = item.time,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF607D8B) // 藍灰色
+                color = Color(0xFF607D8B)
             )
         }
     }
