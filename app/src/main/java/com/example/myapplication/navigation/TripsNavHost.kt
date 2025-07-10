@@ -24,13 +24,14 @@ fun NavGraphBuilder.tripTabNav(parentNavController: NavHostController) {
 fun TripNavHost(
     navController: NavHostController,
     startDestination: TripTab,
-    parentNavController: NavHostController // 外層 controller 用來跳 create/detail 頁面
+    parentNavController: NavHostController,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination.route,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier // 記得套用進來
     ) {
-        tripTabNav(parentNavController) // 將 tab 內容綁進來
+        tripTabNav(parentNavController)
     }
 }

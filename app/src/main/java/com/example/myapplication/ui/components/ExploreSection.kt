@@ -97,7 +97,7 @@ fun ExploreSection(
                         )
                     }
                     else -> {
-                        CardColLib(navController = navController, attractions = attractions)
+                        AttractionList(attractions = attractions)
                     }
                 }
             }

@@ -49,7 +49,7 @@ fun InfoCard(
             Column {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleLarge.copy(
+                    style = MaterialTheme.typography.headlineSmall.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )

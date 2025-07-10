@@ -1,12 +1,15 @@
 package com.example.myapplication.data
 
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 data class TripCreationInfo(
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val peopleCount: Int = 1,
-    val averageAgeRange: String = "",         // 例如 "21-25"
+    val averageAgeRange: String = "",
     val preferences: List<String> = emptyList(),     // ex: ["美食", "文化"]
     val transportOptions: List<String> = emptyList(), // ex: ["步行", "大眾運輸"]
     val cities: List<String> = emptyList(),   // ex: ["台北", "台中"]
@@ -40,26 +43,62 @@ data class TripRequestResponse(
 data class Travel(
     val _id: String,
     val created: Boolean = false,
-    val title: String,
-    val days: Int? = null,
+    val title: String?,
+    val startDate: String,
+    val endDate: String,
     val members: Int? = null,
     val budget: Int? = null,
     val description: String? = null,
     val imageUrl: String? = null,
     val itinerary: List<ItineraryDay>? = null
-)
+) {
+    val days: Int
+        get() {
+            return try {
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                val start = LocalDate.parse(startDate, formatter)
+                val end = LocalDate.parse(endDate, formatter)
+                ChronoUnit.DAYS.between(start, end).toInt() + 1
+            } catch (e: Exception) {
+                // ✅ 無效格式或 null 時預設為 0 天
+                0
+            }
+        }
+}
 
 data class ItineraryDay(
-    val day: Int,
-    val date: String,
+    val day: Int,               // 第幾天
     val schedule: List<ScheduleItem>
 )
 
 data class ScheduleItem(
-    val time: String,
+    val day: Int,
+    val time: ScheduleTime,
     val activity: String,
     val transportation: String
+) {
+    val startTime: LocalTime?
+        get() = time.start.toLocalTimeOrNull()
+
+    val endTime: LocalTime?
+        get() = time.end.toLocalTimeOrNull()
+}
+
+
+data class ScheduleTime(
+    val start: String,              // "08:00"
+    val end: String                 // "09:00"
 )
+
+// 擴充函式：讓 String 支援安全轉換為 LocalTime
+fun String.toLocalTimeOrNull(): LocalTime? {
+    return try {
+        LocalTime.parse(this, DateTimeFormatter.ofPattern("H:mm"))
+    } catch (e: Exception) {
+        println("Time parse failed: $this")
+        null
+    }
+}
 
 data class PlacesSearchResponse(
     val results: List<PlaceResult>,

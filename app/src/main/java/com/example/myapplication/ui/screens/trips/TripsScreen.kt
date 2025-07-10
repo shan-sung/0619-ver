@@ -1,6 +1,7 @@
-package com.example.myapplication.ui.screens
+package com.example.myapplication.ui.screens.trips
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
@@ -13,11 +14,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.navigation.TripNavHost
 import com.example.myapplication.ui.components.AddFab
-import com.example.myapplication.ui.screens.trips.TripTab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,39 +29,51 @@ fun TripsScreen(
     val startDestination = TripTab.CREATED
     var selectedTabIndex by rememberSaveable { mutableIntStateOf(startDestination.ordinal) }
 
-    // 新增：只給 Tab 用的內部 navController
+    // 給 Tab 專用的 NavController
     val tabNavController = rememberNavController()
 
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            AddFab(onClick = { navController.navigate("create") }) // 外層 navController
+            AddFab(onClick = { navController.navigate("create") }) // 使用外層 navController
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
-            PrimaryTabRow(selectedTabIndex = selectedTabIndex) {
-                TripTab.entries.forEachIndexed { index, tab ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = {
-                            selectedTabIndex = index
-                            tabNavController.navigate(tab.route) {
-                                popUpTo(tabNavController.graph.startDestinationId) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-
-                        },
-                        text = { Text(tab.label) }
-                    )
+            TripTabBar(selectedIndex = selectedTabIndex) { index ->
+                selectedTabIndex = index
+                val tab = TripTab.entries[index]
+                tabNavController.navigate(tab.route) {
+                    popUpTo(tabNavController.graph.findStartDestination().id) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
                 }
             }
+
             TripNavHost(
                 navController = tabNavController,
                 startDestination = startDestination,
-                parentNavController = navController // ✅ 傳最外層
+                parentNavController = navController,
+                modifier = Modifier.fillMaxSize()
+            )
+
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TripTabBar(
+    selectedIndex: Int,
+    onTabSelected: (Int) -> Unit
+) {
+    PrimaryTabRow(selectedTabIndex = selectedIndex) {
+        TripTab.entries.forEachIndexed { index, tab ->
+            Tab(
+                selected = selectedIndex == index,
+                onClick = { onTabSelected(index) },
+                text = { Text(tab.label) }
             )
         }
     }
