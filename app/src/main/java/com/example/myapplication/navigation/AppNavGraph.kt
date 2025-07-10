@@ -10,12 +10,14 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
     NavHost(
         navController = navController,
         startDestination = "explore",
-        modifier = modifier
+        modifier = modifier,
+        route = "main"
     ) {
         exploreNav(navController)
         tripNav(navController)
         chatNav()
         createNav(navController)
         tripDetailNav(navController)
+        savedNav(navController)
     }
 }

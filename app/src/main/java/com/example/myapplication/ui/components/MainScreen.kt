@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.myapplication.ui.components
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -8,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.myapplication.navigation.AppNavGraph
-import com.example.myapplication.ui.components.BottomNavigationBar
-import com.example.myapplication.ui.components.TopBar
 
 @Composable
 fun MainScreen(navController: NavHostController) {

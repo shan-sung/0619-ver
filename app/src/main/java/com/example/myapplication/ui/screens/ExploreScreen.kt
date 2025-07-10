@@ -13,14 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.ui.components.ExploreSection
+import com.example.myapplication.ui.screens.explore.ExploreSection
 import com.example.myapplication.util.getCurrentOrFallbackLocation
 import com.example.myapplication.viewmodel.AttractionsViewModel
+import com.example.myapplication.viewmodel.SavedViewModel
 import com.example.myapplication.viewmodel.TripsViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun ExploreScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun ExploreScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    savedViewModel: SavedViewModel = hiltViewModel() // ✅ 在這統一建立
+) {
     val context = LocalContext.current
     val viewModel: AttractionsViewModel = hiltViewModel()
     val tripsViewModel: TripsViewModel = hiltViewModel()
@@ -54,7 +59,9 @@ fun ExploreScreen(modifier: Modifier = Modifier, navController: NavController) {
                     refreshNearbyAttractions()
                 }
             },
-            travels = allTrips
+            travels = allTrips,
+            savedViewModel = savedViewModel // ✅ 傳遞共用 ViewModel
         )
+
     }
 }

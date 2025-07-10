@@ -10,11 +10,8 @@ import kotlinx.coroutines.tasks.await
 
 suspend fun getCurrentOrFallbackLocation(context: Context): String {
     val fallbackTaiwan = listOf(
-        "25.033964,121.564468",
-        "25.042232,121.508083",
         "22.627278,120.301435",
-        "24.136829,120.686936",
-        "23.480075,120.448874"
+        "23.480075,121.448874"
     ).random()
 
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)

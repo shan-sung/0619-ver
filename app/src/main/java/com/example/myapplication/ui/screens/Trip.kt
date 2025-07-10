@@ -1,16 +1,23 @@
 package com.example.myapplication.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ScrollableTabRow
@@ -24,7 +31,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.ItineraryDay
@@ -32,7 +42,8 @@ import com.example.myapplication.data.Travel
 import com.example.myapplication.ui.components.AddFab
 import com.example.myapplication.ui.components.AddScheduleDialog
 import com.example.myapplication.ui.components.InfoCard
-import com.example.myapplication.ui.components.Timeline
+import com.example.myapplication.ui.components.ScheduleList
+import com.example.myapplication.ui.components.SheetItem
 import com.example.myapplication.viewmodel.TripDetailViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.CoroutineScope
@@ -62,12 +73,11 @@ fun TripScreen(
     if (travel != null) {
         TripContent(
             navController = navController,
-            travelState = travelState // ✅ 傳狀態本體進去
+            travelState = travelState
         )
     } else {
         CircularProgressIndicator()
     }
-
 }
 
 @Composable
@@ -80,76 +90,83 @@ fun TripContent(
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { days })
     val coroutineScope = rememberCoroutineScope()
     val showDialog = remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val tripStartDate = travel.startDate?.let { LocalDate.parse(it) } ?: LocalDate.now()
     val tripEndDate = travel.endDate?.let { LocalDate.parse(it) } ?: LocalDate.now().plusDays((days - 1).toLong())
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 0.dp), // 不保留任何 FAB 空間
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            TripInfoCard(navController = navController, travel = travel)
+    ModalBottomSheetLayout(
+        sheetState = sheetState,
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetContent = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            ) {
+                Box(
+                    Modifier
+                        .width(40.dp)
+                        .height(4.dp)
+                        .background(Color.LightGray, RoundedCornerShape(2.dp))
+                        .align(Alignment.CenterHorizontally)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            if (days > 0) {
-                TripDayTabs(days = days, pagerState = pagerState, coroutineScope = coroutineScope)
+                Text("Add New Itinerary", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
 
-                TripPager(
-                    pagerState = pagerState,
-                    days = days,
-                    itinerary = travel.itinerary ?: emptyList(),
-                    startDate = travel.startDate, // ✅ 加這行
-                    modifier = Modifier.weight(1f)
+                SheetItem("From Search") { /* handle click */ }
+                SheetItem("From Saved List") { /* handle click */ }
+                SheetItem("Hand-Input") { showDialog.value = true }
+            }
+        }
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = 0.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TripInfoCard(navController = navController, travel = travel)
+
+                if (days > 0) {
+                    TripDayTabs(days = days, pagerState = pagerState, coroutineScope = coroutineScope)
+
+                    TripPager(
+                        pagerState = pagerState,
+                        days = days,
+                        itinerary = travel.itinerary ?: emptyList(),
+                        startDate = travel.startDate ?: "",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            AddFab(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                onClick = {
+                    coroutineScope.launch {
+                        sheetState.show()
+                    }
+                }
+            )
+
+            if (showDialog.value) {
+                AddScheduleDialog(
+                    travelId = travel._id,
+                    tripStartDate = tripStartDate,
+                    tripEndDate = tripEndDate,
+                    onDismiss = { showDialog.value = false },
+                    onScheduleAdded = { /* update state */ }
                 )
             }
         }
-
-        // 完全浮動的 FAB，不影響 layout
-        AddFab(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp),
-            onClick = { showDialog.value = true }
-        )
-
-        if (showDialog.value) {
-            AddScheduleDialog(
-                travelId = travel._id,
-                tripStartDate = tripStartDate,
-                tripEndDate = tripEndDate,
-                onDismiss = { showDialog.value = false },
-                onScheduleAdded = { newItem ->
-                    val currentTravel = travelState.value ?: return@AddScheduleDialog
-                    val updatedItinerary = currentTravel.itinerary?.toMutableList() ?: mutableListOf()
-
-                    val dayEntry = updatedItinerary.find { it.day == newItem.day }
-
-                    if (dayEntry != null) {
-                        val updatedSchedule = dayEntry.schedule.toMutableList()
-                        updatedSchedule.add(newItem)
-                        updatedItinerary[updatedItinerary.indexOf(dayEntry)] =
-                            dayEntry.copy(schedule = updatedSchedule)
-                    } else {
-                        // 新增該天的 ItineraryDay 並自動補上正確日期
-                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                        val startDate = LocalDate.parse(travel.startDate, formatter)
-                        val date = startDate.plusDays((newItem.day - 1).toLong()).format(formatter)
-
-                        updatedItinerary.add(
-                            ItineraryDay(
-                                day = newItem.day,
-                                schedule = listOf(newItem)
-                            )
-                        )
-                    }
-                    travelState.value = currentTravel.copy(itinerary = updatedItinerary)
-                }
-            )
-        }
-
     }
 }
+
 
 
 @Composable
@@ -215,7 +232,7 @@ fun TripPager(
         DayContent(
             dayIndex = page,
             itineraryDay = item,
-            dateOverride = computedDate // ✅ 加這個
+            dateOverride = computedDate
         )
     }
 }
@@ -229,12 +246,12 @@ fun DayContent(dayIndex: Int, itineraryDay: ItineraryDay?, dateOverride: String)
             .verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = "Day ${dayIndex + 1} - $dateOverride", // ✅ 強制使用 dateOverride
+            text = "Day ${dayIndex + 1} - $dateOverride",
             style = MaterialTheme.typography.headlineSmall
         )
         Spacer(modifier = Modifier.height(8.dp))
         if (itineraryDay != null) {
-            Timeline(schedule = itineraryDay.schedule)
+            ScheduleList(schedule = itineraryDay.schedule, modifier = Modifier.weight(1f))
         } else {
             Text("尚無行程資料")
         }

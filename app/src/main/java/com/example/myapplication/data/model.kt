@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 data class TripCreationInfo(
+//    val userId: String,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val peopleCount: Int = 1,
@@ -23,11 +24,14 @@ data class Attraction(
     val city: String,
     val country: String,
     val rating: Double?,
+    val category: String,  // <--- 新增類別欄位（如 "Park", "Museum"）
     val imageUrl: String? = null
 )
 
+
 data class TripRequestResponse(
     val _id: String,
+//    val userId: String,
     val title: String,
     val startDate: String?,         // 建議用 String 接收後端回傳的日期
     val endDate: String?,
@@ -42,6 +46,7 @@ data class TripRequestResponse(
 
 data class Travel(
     val _id: String,
+//    val userId: String,
     val created: Boolean = false,
     val title: String?,
     val startDate: String,
@@ -60,7 +65,6 @@ data class Travel(
                 val end = LocalDate.parse(endDate, formatter)
                 ChronoUnit.DAYS.between(start, end).toInt() + 1
             } catch (e: Exception) {
-                // ✅ 無效格式或 null 時預設為 0 天
                 0
             }
         }
@@ -148,6 +152,7 @@ data class LatLng(
 
 data class ChatMessage(
     val id: String,
+//    val senderId: String,
     val sender: String,
     val message: String,
     val timestamp: Long

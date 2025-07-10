@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,11 +22,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,12 +41,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
+import coil.compose.AsyncImage
 import com.example.myapplication.data.Attraction
 import com.example.myapplication.data.Travel
+import com.example.myapplication.viewmodel.SavedViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 data class InfoCardData(
@@ -109,53 +119,113 @@ fun TripList(trips: List<Travel>, navController: NavController) {
 }
 
 @Composable
-fun AttractionList(attractions: List<Attraction>) {
+fun AttractionList(
+    attractions: List<Attraction>,
+    savedViewModel: SavedViewModel,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope
+)
+ {
     val context = LocalContext.current
+    var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
+
     LazyColumn {
         items(attractions) { a ->
-            InfoCard(a.toInfoCardData(context))
+            InfoCard(
+                data = a.toInfoCardData(context).copy(
+                    onClick = { selectedAttraction = a }
+                )
+            )
         }
     }
-}
 
+    selectedAttraction?.let { attraction ->
+        AlertDialog(
+            onDismissRequest = { selectedAttraction = null },
+            title = { Text("你想要做什麼？") },
+            text = { Text(attraction.name) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        savedViewModel.addToSaved(attraction)
+                        selectedAttraction = null
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar("已加入收藏：${attraction.name}")
+                        }
+                    }
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        val query = Uri.encode(attraction.name)
+                        val gmmIntentUri = "geo:0,0?q=$query".toUri()
+                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                            setPackage("com.google.android.apps.maps")
+                        }
+
+                        if (mapIntent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(mapIntent)
+                        } else {
+                            val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
+                            val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+                            context.startActivity(webIntent)
+                        }
+
+                        selectedAttraction = null
+                    }
+                ) {
+                    Text("Google Maps")
+                }
+            }
+        )
+    }
+}
 @Composable
 fun InfoCard(
     data: InfoCardData,
     modifier: Modifier = Modifier
 ) {
-    val cardModifier = modifier
-        .fillMaxWidth()
-        .height(100.dp)
-
-    Card(
-        onClick = { data.onClick?.invoke() },
-        shape = RoundedCornerShape(16.dp),
-        modifier = cardModifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { data.onClick?.invoke() }
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            Modifier.fillMaxSize().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        AsyncImage(
+            model = data.imageUrl ?: "https://via.placeholder.com/80",
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(data.location, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(data.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold), maxLines = 1)
-                Text(data.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2)
-            }
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            if (data.imageUrl != null) {
-                Image(
-                    painter = rememberAsyncImagePainter(data.imageUrl),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.size(100.dp, 72.dp).clip(RoundedCornerShape(12.dp))
-                )
-            } else {
-                Box(modifier = Modifier.size(100.dp, 72.dp).background(Color.Gray).clip(RoundedCornerShape(12.dp)))
-            }
+            Text(
+                text = data.title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = data.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

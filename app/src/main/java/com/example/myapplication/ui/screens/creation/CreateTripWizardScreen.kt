@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.myapplication.ui.screens.creation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,17 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.components.NextPre
-import com.example.myapplication.ui.screens.creation.AgeRangeScreen
-import com.example.myapplication.ui.screens.creation.BudgetScreen
-import com.example.myapplication.ui.screens.creation.CitySelectionScreen
-import com.example.myapplication.ui.screens.creation.DateRangeScreen
-import com.example.myapplication.ui.screens.creation.PeopleCountScreen
-import com.example.myapplication.ui.screens.creation.PreferencesScreen
-import com.example.myapplication.ui.screens.creation.TitleInputScreen
-import com.example.myapplication.ui.screens.creation.TransportOptionsScreen
 import com.example.myapplication.viewmodel.TripCreationViewModel
 import java.time.LocalDate
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,8 +99,6 @@ fun CreateTripWizardScreen(
     ) {
         mutableIntStateOf(10000)
     }
-
-
 
     Scaffold(
         modifier = modifier,

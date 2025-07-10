@@ -1,161 +1,59 @@
 package com.example.myapplication.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.ScheduleItem
-import com.example.myapplication.data.ScheduleTime
-import com.example.myapplication.ui.theme.AppTheme
 import java.time.format.DateTimeFormatter
-
-object LineParametersDefaults {
-
-    private val defaultStrokeWidth = 3.dp
-
-    fun linearGradient(
-        strokeWidth: Dp = defaultStrokeWidth,
-        startColor: Color,
-        endColor: Color,
-        startY: Float = 0.0f,
-        endY: Float = Float.POSITIVE_INFINITY
-    ): LineParameters {
-        val brush = Brush.verticalGradient(
-            colors = listOf(startColor, endColor),
-            startY = startY,
-            endY = endY
-        )
-        return LineParameters(strokeWidth, brush)
-    }
-}
-
-enum class TimelineNodePosition {
-    FIRST,
-    MIDDLE,
-    LAST
-}
-
-data class CircleParameters(
-    val radius: Dp,
-    val backgroundColor: Color
-)
-
-object CircleParametersDefaults {
-    private val defaultRadius = 6.dp
-
-    fun circleParameters(backgroundColor: Color): CircleParameters {
-        return CircleParameters(radius = defaultRadius, backgroundColor = backgroundColor)
-    }
-}
-
-data class LineParameters(
-    val strokeWidth: Dp,
-    val brush: Brush
-)
+import androidx.compose.foundation.lazy.items
 
 @Composable
-fun Timeline(schedule: List<ScheduleItem>) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        val sortedSchedule = remember(schedule) {
-            schedule.sortedBy { it.startTime }
-        }
-
-        sortedSchedule.forEachIndexed { index, item ->
-            val position = when (index) {
-                0 -> TimelineNodePosition.FIRST
-                sortedSchedule.lastIndex -> TimelineNodePosition.LAST
-                else -> TimelineNodePosition.MIDDLE
-            }
-
-            TimelineNode(
-                position = position,
-                circleParameters = CircleParametersDefaults.circleParameters(
-                    backgroundColor = MaterialTheme.colorScheme.primary
-                ),
-                lineParameters = if (position != TimelineNodePosition.LAST)
-                    LineParametersDefaults.linearGradient(
-                        startColor = MaterialTheme.colorScheme.primary,
-                        endColor = MaterialTheme.colorScheme.primary
-                    )
-                else null,
-                contentStartOffset = 40.dp
-            ) { modifier ->
-                MessageBubble(item = item)
-            }
-        }
-
-    }
-}
-
-@Composable
-fun TimelineNode(
-    position: TimelineNodePosition,
-    circleParameters: CircleParameters,
-    lineParameters: LineParameters? = null, // 可以選擇不畫線
-    contentStartOffset: Dp = 40.dp,
-    spacerBetweenNodes: Dp = 32.dp,
-    content: @Composable BoxScope.(modifier: Modifier) -> Unit
+fun ScheduleList(
+    schedule: List<ScheduleItem>,
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier
-            .wrapContentSize()
-            .drawBehind {
-                val circleRadiusInPx = circleParameters.radius.toPx()
-                drawCircle(
-                    color = circleParameters.backgroundColor,
-                    radius = circleRadiusInPx,
-                    center = Offset(circleRadiusInPx, circleRadiusInPx)
-                )
-                lineParameters?.let {
-                    drawLine(
-                        brush = it.brush,
-                        start = Offset(x = circleRadiusInPx, y = circleRadiusInPx * 2),
-                        end = Offset(x = circleRadiusInPx, y = this.size.height),
-                        strokeWidth = it.strokeWidth.toPx()
-                    )
-                }
-            }
-            .padding(bottom = 16.dp)
+    LazyColumn(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp)
     ) {
-        content(
-            Modifier
-                .padding(
-                    start = contentStartOffset,
-                    bottom = if (position != TimelineNodePosition.LAST) {
-                        spacerBetweenNodes
-                    } else {
-                        0.dp
-                    }
-                )
-        )
+        val sortedSchedule = schedule.sortedBy { it.startTime }
+
+        items(sortedSchedule) { item ->
+            MessageBubble(item = item)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
 }
 
-@Composable
-fun MessageBubble(modifier: Modifier = Modifier, item: ScheduleItem) {
-    val timeFormatter = DateTimeFormatter.ofPattern("h:mm a") // 例如 8:00 AM
 
+@Composable
+fun MessageBubble(
+    modifier: Modifier = Modifier,
+    item: ScheduleItem,
+    onClick: () -> Unit = {}
+) {
+    val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
     val timeText = item.startTime?.let { start ->
         item.endTime?.let { end ->
             "${start.format(timeFormatter)} – ${end.format(timeFormatter)}"
@@ -166,33 +64,42 @@ fun MessageBubble(modifier: Modifier = Modifier, item: ScheduleItem) {
         "未定 – ${end.format(timeFormatter)}"
     } ?: "時間未定"
 
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 圓形底色 icon
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .background(color = Color(0xFFE0F7FA), shape = CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Event,
+                contentDescription = "Event Icon",
+                tint = Color(0xFF00796B),
+                modifier = Modifier.size(24.dp)
+            )
+        }
 
-    Column(modifier = modifier.padding(bottom = 10.dp, start = 40.dp)) {
-        Text(
-            text = item.activity,
-            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
-        )
-        Spacer(modifier = Modifier.height(1.dp))
-        Text(
-            text = timeText,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-}
+        Spacer(modifier = Modifier.width(12.dp))
 
-@Preview(showBackground = true)
-@Composable
-private fun TimelinePreview() {
-    val schedule = listOf(
-        ScheduleItem(
-            day = 1,
-            time = ScheduleTime(start = "19:00", end = "20:00"),
-            activity = "Evening: Dinner & Drinks",
-            transportation = "Boat"
-        )
-    )
-
-    AppTheme {
-        Timeline(schedule = schedule)
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = item.activity,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = timeText,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+        }
     }
 }

@@ -61,6 +61,7 @@ class AttractionsViewModel @Inject constructor( // @Inject constructor(...): 使
                             city = "$city $district",
                             country = "Taiwan",
                             rating = place.rating ?: 0.0,
+                            category = "Art Museum",
                             imageUrl = place.photos?.firstOrNull()?.photo_reference?.let { ref ->
                                 buildPhotoUrl(ref)
                             }
