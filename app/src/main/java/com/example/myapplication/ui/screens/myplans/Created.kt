@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.trips
+package com.example.myapplication.ui.screens.myplans
 
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -12,11 +12,11 @@ import com.example.myapplication.ui.components.TripList
 import com.example.myapplication.viewmodel.TripsViewModel
 
 @Composable
-fun ParticipatingTripsScreen(
+fun CreatedTripsScreen(
     navController: NavController,
     viewModel: TripsViewModel = hiltViewModel()
 ) {
-    val joinedTrips by viewModel.joinedTrips.collectAsState()
+    val createdTrips by viewModel.myCreatedTrips.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
@@ -32,7 +32,7 @@ fun ParticipatingTripsScreen(
             Text("錯誤：$errorMessage")
         }
         else -> {
-            TripList(navController = navController, trips = joinedTrips)
+            TripList(navController = navController, trips = createdTrips)
         }
     }
 }

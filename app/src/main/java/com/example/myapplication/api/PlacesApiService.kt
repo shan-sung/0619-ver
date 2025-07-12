@@ -1,8 +1,8 @@
 // 建立 Places API 的 Retrofit 結構
 package com.example.myapplication.api
 
-import com.example.myapplication.data.GeocodingResponse
-import com.example.myapplication.data.PlacesSearchResponse
+import com.example.myapplication.model.GeocodingResponse
+import com.example.myapplication.model.PlacesSearchResponse
 import retrofit2.http.GET // 用 GET 方法去呼叫 API
 import retrofit2.http.Query // 用來指定 URL 上的參數
 

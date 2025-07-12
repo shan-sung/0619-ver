@@ -23,7 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.data.ScheduleItem
+import com.example.myapplication.model.ScheduleItem
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.lazy.items
 

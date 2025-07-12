@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,8 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.data.ScheduleItem
-import com.example.myapplication.data.ScheduleTime
+import com.example.myapplication.model.ScheduleItem
+import com.example.myapplication.model.ScheduleTime
 import com.example.myapplication.viewmodel.TripDetailViewModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -42,11 +41,14 @@ fun AddScheduleDialog(
 ) {
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var location by remember { mutableStateOf("") }
+    var transportation by remember { mutableStateOf("") }
+    var note by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf<LocalTime?>(null) }
     var endTime by remember { mutableStateOf<LocalTime?>(null) }
 
     val context = LocalContext.current
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     fun showTimePicker(initialTime: LocalTime?, onTimeSelected: (LocalTime) -> Unit) {
         val now = initialTime ?: LocalTime.of(9, 0)
@@ -64,26 +66,14 @@ fun AddScheduleDialog(
         title = { Text("新增行程") },
         text = {
             Column {
-                var showLocationDialog by remember { mutableStateOf(false) }
-
-                if (showLocationDialog) {
-                    LocationSourceDialog(
-                        onDismiss = { showLocationDialog = false },
-                        onSelectFromSaved = {
-                            // TODO: 導向 Saved 地點頁面（或彈窗）
-                        },
-                        onSearchGoogle = {
-                            // TODO: 導向 Google Maps 搜尋頁面
-                        }
-                    )
-                }
-
-                LocationSelectorFieldWithOverlay(
-                    location = location,
-                    onClick = { showLocationDialog = true }
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("地點") },
+                    modifier = Modifier.fillMaxWidth()
                 )
+                Spacer(modifier = Modifier.height(8.dp))
 
-                val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 DateSelectorFieldWithOverlay(
                     label = "選擇日期",
                     date = selectedDate,
@@ -104,6 +94,8 @@ fun AddScheduleDialog(
                     }
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
                 TimeSelectorFieldWithOverlay(
                     label = "結束時間",
                     time = endTime,
@@ -111,6 +103,24 @@ fun AddScheduleDialog(
                     onClick = {
                         showTimePicker(endTime) { selected -> endTime = selected }
                     }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = transportation,
+                    onValueChange = { transportation = it },
+                    label = { Text("交通方式") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    label = { Text("備註") },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         },
@@ -129,20 +139,12 @@ fun AddScheduleDialog(
                                 start = startTime!!.format(formatter),
                                 end = endTime!!.format(formatter)
                             ),
-                            activity = "activity",
-                            transportation = location
+                            activity = location,
+                            transportation = transportation,
+                            note = note
                         )
-                        // 🔁 新增到後端
-                        val dto = mapOf(
-                            "day" to dayIndex,
-                            "time" to mapOf(
-                                "start" to startTime!!.format(formatter),
-                                "end" to endTime!!.format(formatter)
-                            ),
-                            "activity" to "activity",
-                            "transportation" to location
-                        )
-                        viewModel.submitScheduleItem(travelId, dto) { success ->
+
+                        viewModel.submitScheduleItem(travelId, scheduleItem) { success ->
                             if (success) {
                                 Toast.makeText(context, "新增成功！", Toast.LENGTH_SHORT).show()
                                 onScheduleAdded(scheduleItem)
@@ -151,7 +153,6 @@ fun AddScheduleDialog(
                                 Toast.makeText(context, "新增失敗", Toast.LENGTH_SHORT).show()
                             }
                         }
-
                     },
                     text = "Done"
                 )
@@ -232,59 +233,4 @@ fun DateSelectorFieldWithOverlay(
                 .clickable { onClick() }
         )
     }
-}
-
-@Composable
-fun LocationSelectorFieldWithOverlay(
-    location: String,
-    onClick: () -> Unit
-) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = location,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("地點") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable { onClick() }
-        )
-    }
-}
-
-@Composable
-fun LocationSourceDialog(
-    onDismiss: () -> Unit,
-    onSelectFromSaved: () -> Unit,
-    onSearchGoogle: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("選擇地點來源") },
-        text = {
-            Column {
-                TextButton(onClick = {
-                    onSelectFromSaved()
-                    onDismiss()
-                }) {
-                    Text("從收藏清單選擇")
-                }
-                TextButton(onClick = {
-                    onSearchGoogle()
-                    onDismiss()
-                }) {
-                    Text("使用 Google 地圖搜尋")
-                }
-            }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        }
-    )
 }

@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.creation
+package com.example.myapplication.ui.screens.myplans.creation
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement

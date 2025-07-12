@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.myapplication.ui.screens.myplans.trip
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -25,7 +25,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,11 +38,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.ItineraryDay
-import com.example.myapplication.data.Travel
+import com.example.myapplication.model.ItineraryDay
+import com.example.myapplication.model.ScheduleItem
+import com.example.myapplication.model.Travel
 import com.example.myapplication.ui.components.AddFab
 import com.example.myapplication.ui.components.AddScheduleDialog
-import com.example.myapplication.ui.components.InfoCard
+import com.example.myapplication.ui.components.ImgCard
 import com.example.myapplication.ui.components.ScheduleList
 import com.example.myapplication.ui.components.SheetItem
 import com.example.myapplication.viewmodel.TripDetailViewModel
@@ -60,39 +62,45 @@ fun TripScreen(
     travelId: String,
     viewModel: TripDetailViewModel = hiltViewModel()
 ) {
-    val travelState = remember { mutableStateOf<Travel?>(null) }
+    val travel by viewModel.travel.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     LaunchedEffect(travelId) {
-        viewModel.getTravelById(travelId).collect { travel ->
-            travelState.value = travel
-        }
+        viewModel.fetchTravelById(travelId)
     }
 
-    val travel = travelState.value
-
-    if (travel != null) {
+    if (isLoading) {
+        CircularProgressIndicator()
+    } else if (travel != null) {
         TripContent(
             navController = navController,
-            travelState = travelState
+            travel = travel!!,
+            onScheduleAdded = { newItem ->
+                viewModel.submitScheduleItemAndRefresh(travelId, newItem) { success ->
+                    if (!success) {
+                        // TODO: 可顯示 Snackbar 或 Toast
+                    }
+                }
+            }
         )
     } else {
-        CircularProgressIndicator()
+        Text("找不到行程")
     }
 }
 
 @Composable
 fun TripContent(
     navController: NavController,
-    travelState: MutableState<Travel?>
+    travel: Travel,
+    onScheduleAdded: (ScheduleItem) -> Unit
 ) {
-    val travel = travelState.value ?: return
-    val days = travel.days ?: 0
+    val days = travel.days
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { days })
     val coroutineScope = rememberCoroutineScope()
     val showDialog = remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val tripStartDate = travel.startDate?.let { LocalDate.parse(it) } ?: LocalDate.now()
-    val tripEndDate = travel.endDate?.let { LocalDate.parse(it) } ?: LocalDate.now().plusDays((days - 1).toLong())
+    val tripStartDate = LocalDate.parse(travel.startDate)
+    val tripEndDate = LocalDate.parse(travel.endDate)
 
     ModalBottomSheetLayout(
         sheetState = sheetState,
@@ -137,7 +145,7 @@ fun TripContent(
                         pagerState = pagerState,
                         days = days,
                         itinerary = travel.itinerary ?: emptyList(),
-                        startDate = travel.startDate ?: "",
+                        startDate = travel.startDate,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -160,7 +168,10 @@ fun TripContent(
                     tripStartDate = tripStartDate,
                     tripEndDate = tripEndDate,
                     onDismiss = { showDialog.value = false },
-                    onScheduleAdded = { /* update state */ }
+                    onScheduleAdded = { item ->
+                        onScheduleAdded(item)
+                        showDialog.value = false
+                    }
                 )
             }
         }
@@ -168,16 +179,15 @@ fun TripContent(
 }
 
 
-
 @Composable
 fun TripInfoCard(navController: NavController, travel: Travel) {
-    InfoCard(
+    ImgCard(
         navController = navController,
         travelId = travel._id,
         title = travel.title ?: "未命名行程",
         subtitle = listOfNotNull(
-            travel.members?.let { "$it member${if (it > 1) "s" else ""}" },
-            travel.days?.let { "$it day${if (it > 1) "s" else ""}" },
+            travel.members.size.let { "$it member${if (it > 1) "s" else ""}" },
+            travel.days.let { "$it day${if (it > 1) "s" else ""}" },
             travel.budget?.let { "Budget: ${String.format(Locale.US, "$%,d", it)}" }
         ).joinToString(" · ")
     )

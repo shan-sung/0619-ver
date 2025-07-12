@@ -46,8 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.myapplication.data.Attraction
-import com.example.myapplication.data.Travel
+import com.example.myapplication.model.Attraction
+import com.example.myapplication.model.Travel
 import com.example.myapplication.viewmodel.SavedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -65,12 +65,10 @@ data class InfoCardData(
 
 fun Travel.toInfoCardData(navController: NavController): InfoCardData {
     val subtitleParts = listOfNotNull(
-        members?.let { "$it 人" },
-        "$days 天", // ✅ 不用 ?.let
-        budget?.let { "預算 ${String.format(Locale.US, "%,d", it)} 元" }
+        "Member: ${members.size} people",
+        "$days days",
+        budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
     )
-
-
     return InfoCardData(
         id = _id,
         title = title ?: "未命名行程",
@@ -83,12 +81,11 @@ fun Travel.toInfoCardData(navController: NavController): InfoCardData {
     )
 }
 
-
 fun Attraction.toInfoCardData(context: Context): InfoCardData {
     return InfoCardData(
         title = name,
         subtitle = "${rating ?: 0.0} 星",
-        location = city, // ✅ address 欄位並不存在，就用 city 即可
+        location = city,
         imageUrl = imageUrl,
         mapSearchQuery = name,
         onClick = {
@@ -97,7 +94,6 @@ fun Attraction.toInfoCardData(context: Context): InfoCardData {
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
                 setPackage("com.google.android.apps.maps")
             }
-
             if (mapIntent.resolveActivity(context.packageManager) != null) {
                 context.startActivity(mapIntent)
             } else {
@@ -110,10 +106,57 @@ fun Attraction.toInfoCardData(context: Context): InfoCardData {
 }
 
 @Composable
+fun ColCard( // Used for TripList and AttractionList
+    data: InfoCardData,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(72.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable { data.onClick?.invoke() }
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = data.imageUrl ?: "https://via.placeholder.com/80",
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(12.dp))
+        )
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = data.title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = data.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
 fun TripList(trips: List<Travel>, navController: NavController) {
     LazyColumn {
         items(trips) { trip ->
-            InfoCard(trip.toInfoCardData(navController))
+            ColCard(trip.toInfoCardData(navController))
         }
     }
 }
@@ -125,13 +168,13 @@ fun AttractionList(
     snackbarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope
 )
- {
+{
     val context = LocalContext.current
     var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
 
     LazyColumn {
         items(attractions) { a ->
-            InfoCard(
+            ColCard(
                 data = a.toInfoCardData(context).copy(
                     onClick = { selectedAttraction = a }
                 )
@@ -183,62 +226,15 @@ fun AttractionList(
         )
     }
 }
-@Composable
-fun InfoCard(
-    data: InfoCardData,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .clickable { data.onClick?.invoke() }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = data.imageUrl ?: "https://via.placeholder.com/80",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(12.dp))
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = data.title,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = data.subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
 
 @Composable
-fun RowInfoCard(
+fun RowCard(
     navController: NavController,
     data: InfoCardData,
     modifier: Modifier = Modifier
 ) {
     Card(
         onClick = {
-            Log.d("TravelNavigate", "Navigating to trip_detail/${data.id}")
             try {
                 navController.navigate("trip_detail/${data.id}")
             } catch (e: Exception) {
@@ -248,32 +244,53 @@ fun RowInfoCard(
         shape = RoundedCornerShape(16.dp),
         modifier = modifier
             .width(280.dp)
-            .height(200.dp)
+            .height(160.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
-                        startY = 300f
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 背景圖片
+            AsyncImage(
+                model = data.imageUrl ?: "https://via.placeholder.com/280x160",
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // 漸層遮罩，避免文字難讀
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.55f)
+                            ),
+                            startY = 100f
+                        )
                     )
-                )
-                .padding(16.dp),
-            contentAlignment = Alignment.BottomStart
-        ) {
-            Column {
+            )
+
+            // 文字資訊
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+            ) {
                 Text(
                     text = data.title,
-                    style = MaterialTheme.typography.titleLarge.copy(
+                    style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = data.subtitle,
-                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
         }
@@ -287,7 +304,7 @@ fun CardRowLib(navController: NavController, travels: List<Travel>) {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(travels) { travel ->
-            RowInfoCard(
+            RowCard(
                 navController = navController,
                 data = travel.toInfoCardData(navController)
             )

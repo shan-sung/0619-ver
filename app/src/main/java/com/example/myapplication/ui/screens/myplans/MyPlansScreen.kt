@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.trips
+package com.example.myapplication.ui.screens.myplans
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

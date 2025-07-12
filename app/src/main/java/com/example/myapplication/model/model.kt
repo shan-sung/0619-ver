@@ -1,12 +1,17 @@
-package com.example.myapplication.data
+package com.example.myapplication.model
 
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
+object DummyUser {
+    const val userId = "test-user-123"
+}
+
 data class TripCreationInfo(
-//    val userId: String,
+    val userId: String = DummyUser.userId,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val peopleCount: Int = 1,
@@ -28,30 +33,15 @@ data class Attraction(
     val imageUrl: String? = null
 )
 
-
-data class TripRequestResponse(
-    val _id: String,
-//    val userId: String,
-    val title: String,
-    val startDate: String?,         // 建議用 String 接收後端回傳的日期
-    val endDate: String?,
-    val peopleCount: Int,
-    val averageAgeRange: String,
-    val preferences: List<String>,
-    val transportOptions: List<String>,
-    val cities: List<String>,
-    val budget: Int,
-    val createdAt: String
-)
-
 data class Travel(
     val _id: String,
-//    val userId: String,
+    val userId: String = DummyUser.userId,
+    val chatRoomId: String,
+    val members: List<String>,
     val created: Boolean = false,
     val title: String?,
     val startDate: String,
     val endDate: String,
-    val members: Int? = null,
     val budget: Int? = null,
     val description: String? = null,
     val imageUrl: String? = null,
@@ -70,6 +60,17 @@ data class Travel(
         }
 }
 
+@Serializable
+data class ChatMessage(
+    val id: String,
+    val chatRoomId: String,             // 對應 Travel.chatRoomId
+    val senderId: String,
+    val sender: String,                 // 可選（顯示暱稱）
+    val message: String,
+    val timestamp: Long
+)
+
+
 data class ItineraryDay(
     val day: Int,               // 第幾天
     val schedule: List<ScheduleItem>
@@ -79,11 +80,11 @@ data class ScheduleItem(
     val day: Int,
     val time: ScheduleTime,
     val activity: String,
-    val transportation: String
+    val transportation: String,
+    val note: String = ""
 ) {
     val startTime: LocalTime?
         get() = time.start.toLocalTimeOrNull()
-
     val endTime: LocalTime?
         get() = time.end.toLocalTimeOrNull()
 }
@@ -148,12 +149,4 @@ data class Geometry(
 data class LatLng(
     val lat: Double,
     val lng: Double
-)
-
-data class ChatMessage(
-    val id: String,
-//    val senderId: String,
-    val sender: String,
-    val message: String,
-    val timestamp: Long
 )

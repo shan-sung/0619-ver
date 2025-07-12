@@ -1,11 +1,11 @@
 plugins {
+    kotlin("plugin.serialization") version "1.9.0" // 例如 "1.9.10"
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id ("dagger.hilt.android.plugin")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10" // Replace x.y.z with your Kotlin version
 }
 
 android {
@@ -77,17 +77,18 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.56")
     kapt("com.google.dagger:hilt-compiler:2.56")
+    implementation ("androidx.datastore:datastore-preferences:1.1.7")
+
 
     implementation("com.google.accompanist:accompanist-placeholder-material:0.36.0")
     implementation("com.google.accompanist:accompanist-pager:0.36.0")
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.36.0")
 
-
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // 或更新版
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

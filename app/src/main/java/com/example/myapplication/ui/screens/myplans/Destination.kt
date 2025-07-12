@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.trips
+package com.example.myapplication.ui.screens.myplans
 
 enum class TripTab(val label: String, val route: String) {
     CREATED("Created", "created_trips"),

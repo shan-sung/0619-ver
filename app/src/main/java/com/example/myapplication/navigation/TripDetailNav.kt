@@ -5,7 +5,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.myapplication.ui.screens.TripScreen
+import com.example.myapplication.ui.screens.myplans.trip.TripScreen
 
 fun NavGraphBuilder.tripDetailNav(navController: NavController) {
     composable(

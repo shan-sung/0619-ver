@@ -13,8 +13,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.data.Attraction
-import com.example.myapplication.data.Travel
+import com.example.myapplication.model.Attraction
+import com.example.myapplication.model.Travel
 import com.example.myapplication.viewmodel.SavedViewModel
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -25,7 +25,7 @@ fun ExploreSection(
     attractions: List<Attraction>,
     onRefresh: () -> Unit,
     travels: List<Travel>,
-    savedViewModel: SavedViewModel // ✅ 加入這行
+    savedViewModel: SavedViewModel
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()

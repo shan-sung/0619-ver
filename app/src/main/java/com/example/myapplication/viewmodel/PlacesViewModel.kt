@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.BuildConfig
 import com.example.myapplication.api.PlacesApiService
-import com.example.myapplication.data.Attraction
+import com.example.myapplication.model.Attraction
 import com.example.myapplication.util.buildPhotoUrl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async

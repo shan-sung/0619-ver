@@ -4,7 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.TripsApiService
-import com.example.myapplication.data.TripCreationInfo
+import com.example.myapplication.model.DummyUser
+import com.example.myapplication.model.TripCreationInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,21 +20,17 @@ class TripCreationViewModel @Inject constructor(
     private val tripsApiService: TripsApiService
 ) : ViewModel() {
 
-
     private val _tripInfo = MutableStateFlow(TripCreationInfo())
     val tripInfo: StateFlow<TripCreationInfo> = _tripInfo.asStateFlow()
 
     private val _step = MutableStateFlow(0)
     val step: StateFlow<Int> = _step.asStateFlow()
-    companion object {
-        const val TOTAL_STEPS = 8
-    }
 
     fun submitTrip() {
         viewModelScope.launch {
             try {
-                val trip = tripInfo.value
-                val createdTrip = tripsApiService.createTrip(trip)
+                val trip = tripInfo.value.copy(userId = DummyUser.userId)
+                val createdTrip = tripsApiService.createTripFromRequest(trip)
                 Log.d("TripCreation", "建立成功：$createdTrip")
                 resetTrip()
             } catch (e: Exception) {
@@ -42,16 +39,10 @@ class TripCreationViewModel @Inject constructor(
         }
     }
 
-
     fun resetTrip() {
         _tripInfo.value = TripCreationInfo()
         _step.value = 0
     }
-
-
-    val isLastStep: Boolean
-        get() = step.value == TOTAL_STEPS - 1
-
 
     fun updateStartDate(date: LocalDate) {
         _tripInfo.update { it.copy(startDate = date) }

@@ -1,19 +1,16 @@
-package com.example.myapplication.ui.screens
+package com.example.myapplication.ui.screens.explore
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.ui.screens.explore.ExploreSection
 import com.example.myapplication.util.getCurrentOrFallbackLocation
 import com.example.myapplication.viewmodel.AttractionsViewModel
 import com.example.myapplication.viewmodel.SavedViewModel
@@ -26,29 +23,27 @@ fun ExploreScreen(
     navController: NavController,
     savedViewModel: SavedViewModel = hiltViewModel() // ✅ 在這統一建立
 ) {
-    val context = LocalContext.current
-    val viewModel: AttractionsViewModel = hiltViewModel()
-    val tripsViewModel: TripsViewModel = hiltViewModel()
+    /* ViewModel */
+    val viewModel: AttractionsViewModel = hiltViewModel() // AttractionViewModel
+    val tripsViewModel: TripsViewModel = hiltViewModel() // TripsViewModel
 
-    val attractions by viewModel.attractions.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    /*  State Listening */
+    val attractions by viewModel.attractions.collectAsState() // 景點清單
+    val allTrips by tripsViewModel.trips.collectAsState() // 行程清單
+    val isLoading by viewModel.isLoading.collectAsState() // 景點載入中
 
-    val allTrips by tripsViewModel.trips.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
-    val refreshNearbyAttractions = remember {
-        suspend {
-            val latLng = getCurrentOrFallbackLocation(context)
-            Log.d("ExploreScreen", "使用座標：$latLng")
-            viewModel.fetchNearbyAttractions(latLng)
-        }
-    }
-
+    /* 位置偵測與資料載入邏輯 */
+    val context = LocalContext.current
+    // 使用者開啟畫面時，就自動取得位置並載入附近景點
     LaunchedEffect(Unit) {
-        refreshNearbyAttractions()
-        tripsViewModel.fetchAllTrips()
+        val latLng = getCurrentOrFallbackLocation(context)
+        viewModel.fetchNearbyAttractions(latLng) // 第一次手動抓一次
+        tripsViewModel.fetchAllTrips()  // 抓行程
     }
 
+    // UI
     Column(modifier = modifier.fillMaxWidth()) {
         ExploreSection(
             navController = navController,
@@ -56,12 +51,12 @@ fun ExploreScreen(
             attractions = attractions,
             onRefresh = {
                 coroutineScope.launch {
-                    refreshNearbyAttractions()
+                    val latLng = getCurrentOrFallbackLocation(context)
+                    viewModel.fetchNearbyAttractions(latLng) // 使用者手動刷新
                 }
             },
             travels = allTrips,
-            savedViewModel = savedViewModel // ✅ 傳遞共用 ViewModel
+            savedViewModel = savedViewModel // 傳遞共用 ViewModel
         )
-
     }
 }

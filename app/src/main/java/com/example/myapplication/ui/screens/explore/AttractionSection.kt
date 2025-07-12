@@ -19,22 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.myapplication.data.Attraction
-import com.example.myapplication.data.Travel
+import com.example.myapplication.model.Attraction
 import com.example.myapplication.ui.components.AttractionList
-import com.example.myapplication.ui.components.CardRowLib
 import com.example.myapplication.viewmodel.SavedViewModel
 import kotlinx.coroutines.CoroutineScope
-
-@Composable
-fun FeaturedSection(navController: NavController, travels: List<Travel>) {
-    SectionWithHeader(
-        title = "Featured",
-        onMoreClick = { navController.navigate("featured/more") }
-    ) {
-        CardRowLib(navController = navController, travels = travels)
-    }
-}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -47,6 +35,7 @@ fun AttractionsSection(
     snackbarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope
 ) {
+    // PullRefresh 狀態管理
     val pullRefreshState = rememberPullRefreshState(refreshing = isLoading, onRefresh = onRefresh)
 
     Box(
@@ -60,44 +49,29 @@ fun AttractionsSection(
                 title = "Attractions",
                 onMoreClick = { navController.navigate("attractions/more") }
             ) {
-                AttractionList(
-                    attractions = attractions,
-                    savedViewModel = savedViewModel,
-                    snackbarHostState = snackbarHostState,
-                    coroutineScope = coroutineScope
-                )
-            }
+                when {
+                    isLoading && attractions.isEmpty() -> {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-            if (isLoading) {
-                PullRefreshIndicator(
-                    refreshing = true,
-                    state = pullRefreshState,
-                    modifier = Modifier.align(alignment = Alignment.CenterHorizontally)
-                )
-            }
+                    attractions.isEmpty() -> {
+                        Text(
+                            "附近沒有景點",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .testTag("no-attractions")
+                        )
+                    }
 
-            when {
-                isLoading && attractions.isEmpty() -> {
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                attractions.isEmpty() -> {
-                    Text(
-                        "附近沒有景點",
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .testTag("no-attractions")
-                    )
-                }
-
-                else -> {
-                    AttractionList(
-                        attractions = attractions,
-                        savedViewModel = savedViewModel,
-                        snackbarHostState = snackbarHostState,
-                        coroutineScope = coroutineScope
-                    )
+                    else -> {
+                        AttractionList(
+                            attractions = attractions,
+                            savedViewModel = savedViewModel,
+                            snackbarHostState = snackbarHostState,
+                            coroutineScope = coroutineScope
+                        )
+                    }
                 }
             }
         }

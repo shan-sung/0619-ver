@@ -1,15 +1,14 @@
 package com.example.myapplication.navigation
 
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.myapplication.ui.screens.trips.CreatedTripsScreen
-import com.example.myapplication.ui.screens.trips.ParticipatingTripsScreen
-import com.example.myapplication.ui.screens.trips.TripTab
+import com.example.myapplication.ui.screens.myplans.CreatedTripsScreen
+import com.example.myapplication.ui.screens.myplans.ParticipatingTripsScreen
+import com.example.myapplication.ui.screens.myplans.TripTab
 
 fun NavGraphBuilder.tripTabNav(parentNavController: NavHostController) {
     composable(TripTab.CREATED.route) {

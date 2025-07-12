@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun InfoCard(
+fun ImgCard(
     navController: NavController,
     travelId: String,
     title: String,

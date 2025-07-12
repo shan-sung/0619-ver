@@ -11,10 +11,18 @@ import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Named
 import javax.inject.Singleton
 
-
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides
+    @Singleton
+    @Named("TripsRetrofit")
+    fun provideTripsRetrofit(): Retrofit =
+        Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8000/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
     @Provides
     @Singleton
@@ -31,15 +39,6 @@ object NetworkModule {
         @Named("PlacesRetrofit") retrofit: Retrofit
     ): PlacesApiService =
         retrofit.create(PlacesApiService::class.java)
-
-    @Provides
-    @Singleton
-    @Named("TripsRetrofit")
-    fun provideTripsRetrofit(): Retrofit =
-        Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000/") // 模擬器對應 localhost
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
     @Provides
     @Singleton

@@ -1,7 +1,7 @@
 package com.example.myapplication.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.myapplication.data.Attraction
+import com.example.myapplication.model.Attraction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
