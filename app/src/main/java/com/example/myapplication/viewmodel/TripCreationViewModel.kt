@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.TripsApiService
+import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.DummyUser
 import com.example.myapplication.model.TripCreationInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -29,15 +30,21 @@ class TripCreationViewModel @Inject constructor(
     fun submitTrip() {
         viewModelScope.launch {
             try {
-                val trip = tripInfo.value.copy(userId = DummyUser.userId)
-                val createdTrip = tripsApiService.createTripFromRequest(trip)
-                Log.d("TripCreation", "建立成功：$createdTrip")
-                resetTrip()
+                val currentUser = CurrentUser.user
+                if (currentUser != null) {
+                    val trip = tripInfo.value.copy(userId = currentUser.id)
+                    val createdTrip = tripsApiService.createTripFromRequest(trip)
+                    Log.d("TripCreation", "建立成功：$createdTrip")
+                    resetTrip()
+                } else {
+                    Log.e("TripCreation", "未登入使用者，無法建立行程")
+                }
             } catch (e: Exception) {
                 Log.e("TripCreation", "建立失敗", e)
             }
         }
     }
+
 
     fun resetTrip() {
         _tripInfo.value = TripCreationInfo()

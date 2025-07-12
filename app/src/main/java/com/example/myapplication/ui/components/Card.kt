@@ -9,37 +9,27 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,9 +38,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.Travel
-import com.example.myapplication.viewmodel.SavedViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import java.util.Locale
 
 data class InfoCardData(
@@ -65,7 +52,7 @@ data class InfoCardData(
 
 fun Travel.toInfoCardData(navController: NavController): InfoCardData {
     val subtitleParts = listOfNotNull(
-        "Member: ${members.size} people",
+        "${members.size} people",
         "$days days",
         budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
     )
@@ -153,86 +140,14 @@ fun ColCard( // Used for TripList and AttractionList
 }
 
 @Composable
-fun TripList(trips: List<Travel>, navController: NavController) {
-    LazyColumn {
-        items(trips) { trip ->
-            ColCard(trip.toInfoCardData(navController))
-        }
-    }
-}
-
-@Composable
-fun AttractionList(
-    attractions: List<Attraction>,
-    savedViewModel: SavedViewModel,
-    snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope
-)
-{
-    val context = LocalContext.current
-    var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
-
-    LazyColumn {
-        items(attractions) { a ->
-            ColCard(
-                data = a.toInfoCardData(context).copy(
-                    onClick = { selectedAttraction = a }
-                )
-            )
-        }
-    }
-
-    selectedAttraction?.let { attraction ->
-        AlertDialog(
-            onDismissRequest = { selectedAttraction = null },
-            title = { Text("你想要做什麼？") },
-            text = { Text(attraction.name) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        savedViewModel.addToSaved(attraction)
-                        selectedAttraction = null
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("已加入收藏：${attraction.name}")
-                        }
-                    }
-                ) {
-                    Text("Save")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        val query = Uri.encode(attraction.name)
-                        val gmmIntentUri = "geo:0,0?q=$query".toUri()
-                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                            setPackage("com.google.android.apps.maps")
-                        }
-
-                        if (mapIntent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(mapIntent)
-                        } else {
-                            val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
-                            val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-                            context.startActivity(webIntent)
-                        }
-
-                        selectedAttraction = null
-                    }
-                ) {
-                    Text("Google Maps")
-                }
-            }
-        )
-    }
-}
-
-@Composable
 fun RowCard(
     navController: NavController,
     data: InfoCardData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    aspectRatio: Float = 1.75f // 預設 280:160 = 1.75
 ) {
+    val imageUrl = data.imageUrl ?: "https://via.placeholder.com/280x160"
+
     Card(
         onClick = {
             try {
@@ -244,33 +159,28 @@ fun RowCard(
         shape = RoundedCornerShape(16.dp),
         modifier = modifier
             .width(280.dp)
-            .height(160.dp)
+            .aspectRatio(aspectRatio) // 依據寬度自動算出高度
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // 背景圖片
             AsyncImage(
-                model = data.imageUrl ?: "https://via.placeholder.com/280x160",
+                model = imageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
 
-            // 漸層遮罩，避免文字難讀
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.5f) // 可視比例調整遮罩高度
+                    .align(Alignment.BottomStart)
                     .background(
                         Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.55f)
-                            ),
-                            startY = 100f
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
                         )
                     )
             )
 
-            // 文字資訊
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -282,7 +192,7 @@ fun RowCard(
                         color = Color.White,
                         fontWeight = FontWeight.SemiBold
                     ),
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -293,21 +203,6 @@ fun RowCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun CardRowLib(navController: NavController, travels: List<Travel>) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(travels) { travel ->
-            RowCard(
-                navController = navController,
-                data = travel.toInfoCardData(navController)
-            )
         }
     }
 }

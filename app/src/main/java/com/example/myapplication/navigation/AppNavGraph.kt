@@ -10,8 +10,7 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
     NavHost(
         navController = navController,
         startDestination = "explore",
-        modifier = modifier,
-        route = "main"
+        modifier = modifier
     ) {
         exploreNav(navController)
         tripNav(navController)
@@ -19,5 +18,8 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
         createNav(navController)
         tripDetailNav(navController)
         savedNav(navController)
+        featuredNav(navController)
+        attractionNav(navController)
+        // ✅ 不需要再有 "main" route，這裡就是內部主流程
     }
 }

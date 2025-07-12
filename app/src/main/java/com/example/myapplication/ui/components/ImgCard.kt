@@ -63,3 +63,47 @@ fun ImgCard(
         }
     }
 }
+
+@Composable
+fun SquaredCard(
+    navController: NavController,
+    travelId: String,
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = { },
+        modifier = modifier
+            .width(200.dp)
+            .height(200.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                        startY = 300f
+                    )
+                )
+                .padding(16.dp),
+            contentAlignment = Alignment.BottomStart
+        ) {
+            Column {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.White)
+                )
+            }
+        }
+    }
+}

@@ -25,6 +25,7 @@ class AttractionsViewModel @Inject constructor( // @Inject constructor(...): 使
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
     private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
 
     // 取得附近景點

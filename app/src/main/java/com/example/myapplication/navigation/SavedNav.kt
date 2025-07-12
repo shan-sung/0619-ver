@@ -1,6 +1,5 @@
 package com.example.myapplication.navigation
 
-import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -10,11 +9,7 @@ import com.example.myapplication.viewmodel.SavedViewModel
 
 fun NavGraphBuilder.savedNav(navController: NavController) {
     composable("saved") {
-        val parentEntry = remember(navController.currentBackStackEntry) {
-            navController.getBackStackEntry("main")
-        }
-
-        val savedViewModel = hiltViewModel<SavedViewModel>(parentEntry)
+        val savedViewModel: SavedViewModel = hiltViewModel()
 
         SavedScreen(
             savedViewModel = savedViewModel,

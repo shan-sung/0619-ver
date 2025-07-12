@@ -10,11 +10,7 @@ import com.example.myapplication.viewmodel.SavedViewModel
 
 fun NavGraphBuilder.exploreNav(navController: NavController) {
     composable("explore") {
-        val parentEntry = remember(navController.currentBackStackEntry) {
-            navController.getBackStackEntry("main")
-        }
-
-        val savedViewModel = hiltViewModel<SavedViewModel>(parentEntry)
+        val savedViewModel: SavedViewModel = hiltViewModel()
 
         ExploreScreen(
             navController = navController,
@@ -22,3 +18,4 @@ fun NavGraphBuilder.exploreNav(navController: NavController) {
         )
     }
 }
+

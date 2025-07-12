@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens.explore
+package com.example.myapplication.ui.screens.explore.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +12,11 @@ import androidx.compose.ui.Modifier
 import com.example.myapplication.ui.components.SectionHeader
 
 @Composable
-fun SectionWithHeader(title: String, onMoreClick: () -> Unit, content: @Composable () -> Unit) {
+fun SectionWithHeader(
+    title: String,
+    onMoreClick: (() -> Unit)? = null,
+    content: @Composable () -> Unit
+) {
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -20,10 +24,13 @@ fun SectionWithHeader(title: String, onMoreClick: () -> Unit, content: @Composab
             verticalAlignment = Alignment.CenterVertically
         ) {
             SectionHeader(title)
-            TextButton(onClick = onMoreClick) {
-                Text("查看更多")
+            if (onMoreClick != null) {
+                TextButton(onClick = onMoreClick) {
+                    Text("查看更多")
+                }
             }
         }
         content()
     }
 }
+

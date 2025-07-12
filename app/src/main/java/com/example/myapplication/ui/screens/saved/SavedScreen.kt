@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -39,6 +40,11 @@ fun SavedScreen(
     onItemClick: (Attraction) -> Unit
 ) {
     val savedAttractions by savedViewModel.savedAttractions.collectAsState()
+
+    // 僅在畫面建立時呼叫一次
+    LaunchedEffect(Unit) {
+        savedViewModel.fetchSavedAttractions()
+    }
 
     if (savedAttractions.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

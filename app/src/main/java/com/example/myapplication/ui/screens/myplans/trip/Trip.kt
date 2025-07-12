@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.model.DummyUser
 import com.example.myapplication.model.ItineraryDay
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
@@ -150,18 +151,18 @@ fun TripContent(
                     )
                 }
             }
-
-            AddFab(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-                onClick = {
-                    coroutineScope.launch {
-                        sheetState.show()
+            if (travel.userId == DummyUser.userId) {
+                AddFab(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                    onClick = {
+                        coroutineScope.launch {
+                            sheetState.show()
+                        }
                     }
-                }
-            )
-
+                )
+            }
             if (showDialog.value) {
                 AddScheduleDialog(
                     travelId = travel._id,

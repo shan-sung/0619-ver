@@ -3,7 +3,7 @@ package com.example.myapplication.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.TripsApiService
-import com.example.myapplication.model.DummyUser
+import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.Travel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,19 +29,11 @@ class TripsViewModel @Inject constructor(
     val errorMessage: StateFlow<String?> = _errorMessage
 
     val myCreatedTrips: StateFlow<List<Travel>> = _trips.map { list ->
-        list.filter { it.userId == DummyUser.userId }
+        list.filter { it.userId == CurrentUser.user?.id }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val myJoinedTrips: StateFlow<List<Travel>> = _trips.map { list ->
-        list.filter { DummyUser.userId in it.members }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    val createdTrips: StateFlow<List<Travel>> = _trips.map { list ->
-        list.filter { it.created == true }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
-
-    val joinedTrips: StateFlow<List<Travel>> = _trips.map { list ->
-        list.filter { it.created == false }
+        list.filter { CurrentUser.user?.id in it.members }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     fun fetchAllTrips() {
