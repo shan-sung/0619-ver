@@ -3,7 +3,6 @@ package com.example.myapplication.ui.components
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -18,10 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Card
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -38,9 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.compose.AsyncImagePainter
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.Travel
 import com.example.myapplication.navigation.routes.Routes
@@ -114,17 +107,33 @@ fun InfoCardVertical(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = data.imageUrl ?: "https://source.unsplash.com/280x160/?nature\n",
+            model = data.imageUrl?.takeIf { it.isNotBlank() }
+                ?: "https://source.unsplash.com/280x160/?nature",
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(56.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp)),
+            placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
+            error = painterResource(id = android.R.drawable.ic_menu_gallery)
         )
+
         Spacer(modifier = Modifier.width(12.dp))
+
         Column(modifier = Modifier.weight(1f)) {
-            Text(data.title, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(data.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                data.title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                data.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
@@ -145,16 +154,8 @@ fun InfoCard(
         else -> modifier
     }
 
-    val context = LocalContext.current
-
-    val imagePainter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(context)
-            .data(data.imageUrl)
-            .crossfade(true)
-            .build()
-    )
-
-    val imageState = imagePainter.state
+    val imageUrl = data.imageUrl?.takeIf { it.isNotBlank() }
+        ?: "https://source.unsplash.com/280x160/?nature"
 
     Card(
         onClick = { data.onClick?.invoke() },
@@ -162,31 +163,15 @@ fun InfoCard(
         modifier = sizeModifier
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            if (imageState is AsyncImagePainter.State.Success) {
-                Image(
-                    painter = imagePainter,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.matchParentSize()
-                )
-            } else {
-                // 自訂 fallback 畫面
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(MaterialTheme.colorScheme.surface), // 使用主題的 surface 顏色
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Image,
-                        contentDescription = "No image",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(48.dp)
-                    )
-                }
-            }
 
-            // 淡遮罩區
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize()
+            )
+
+            // 淡遮罩
             Box(
                 modifier = Modifier
                     .matchParentSize()

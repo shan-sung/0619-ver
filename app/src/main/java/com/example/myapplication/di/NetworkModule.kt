@@ -35,7 +35,6 @@ object NetworkModule {
         return retrofit.create(SavedApiService::class.java)
     }
 
-
     @Provides
     @Singleton
     @Named("TripsRetrofit")
