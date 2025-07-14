@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.TripsApiService
 import com.example.myapplication.model.CurrentUser
-import com.example.myapplication.model.DummyUser
 import com.example.myapplication.model.TripCreationInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

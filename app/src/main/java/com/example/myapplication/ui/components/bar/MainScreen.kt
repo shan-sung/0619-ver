@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.myapplication.ui.components.bar
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -7,7 +7,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.navigation.AppNavGraph
+import com.example.myapplication.navigation.main.AppNavGraph
+import com.example.myapplication.navigation.routes.Routes
 
 @Composable
 fun MainScreen() {
@@ -16,14 +17,28 @@ fun MainScreen() {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 
-    val showTopBar = currentRoute in listOf("trips", "saved", "profile", "create", "trip_detail/{id}")
-    val showBottomBar = currentRoute in listOf("explore", "trips", "saved", "profile")
-    val topBarTitle = when (currentRoute) {
-        "trip_detail/{id}" -> "My Trip"
-        "trips" -> "Trips"
-        "saved" -> "Saved"
-        "profile" -> "Profile"
-        "create" -> "Create"
+    val showTopBar = currentRoute?.run {
+        startsWith("trip_detail/") || this in listOf(
+            Routes.MyPlans.MAIN,
+            Routes.Saved.MAIN,
+            Routes.Profile.MAIN,
+            Routes.MyPlans.CREATE
+        )
+    } ?: false
+
+    val showBottomBar = currentRoute in listOf(
+        Routes.Explore.MAIN,
+        Routes.MyPlans.MAIN,
+        Routes.Saved.MAIN,
+        Routes.Profile.MAIN
+    )
+
+    val topBarTitle = when {
+        currentRoute?.startsWith("trip_detail/") == true -> "My Trip"
+        currentRoute == Routes.MyPlans.MAIN -> "Trips"
+        currentRoute == Routes.Saved.MAIN -> "Saved"
+        currentRoute == Routes.Profile.MAIN -> "Profile"
+        currentRoute == Routes.MyPlans.CREATE -> "Create"
         else -> currentRoute?.replaceFirstChar { it.uppercase() } ?: ""
     }
 

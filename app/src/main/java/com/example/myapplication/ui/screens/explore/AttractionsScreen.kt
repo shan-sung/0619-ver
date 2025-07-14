@@ -3,15 +3,8 @@ package com.example.myapplication.ui.screens.explore
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHostState
@@ -33,9 +26,9 @@ import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.model.Attraction
-import com.example.myapplication.ui.components.RowCard
+import com.example.myapplication.ui.components.SectionWithHeader
+import com.example.myapplication.ui.components.TwoColumnCardGrid
 import com.example.myapplication.ui.components.toInfoCardData
-import com.example.myapplication.ui.screens.explore.component.SectionWithHeader
 import com.example.myapplication.viewmodel.AttractionsViewModel
 import com.example.myapplication.viewmodel.SavedViewModel
 import kotlinx.coroutines.launch
@@ -68,11 +61,12 @@ fun AttractionsScreen(
                 error != null -> Text("發生錯誤：$error", color = Color.Red, modifier = Modifier.padding(16.dp))
                 attractions.isEmpty() -> Text("附近沒有景點資料", modifier = Modifier.padding(16.dp))
                 else -> {
-                    AttractionsList(
-                        navController = navController,
-                        attractions = attractions,
-                        onClick = { selectedAttraction = it },
-                        context = context
+                    TwoColumnCardGrid(
+                        items = attractions.map {
+                            it.toInfoCardData(context).copy(
+                                onClick = { selectedAttraction = it }
+                            )
+                        }
                     )
                 }
             }
@@ -117,40 +111,5 @@ fun AttractionsScreen(
                 }
             }
         )
-    }
-}
-
-@Composable
-fun AttractionsList(
-    navController: NavController,
-    attractions: List<Attraction>,
-    onClick: (Attraction) -> Unit,
-    context: Context
-) {
-    LazyColumn(
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(attractions.chunked(2)) { rowItems ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                RowCard(
-                    navController = navController,
-                    data = rowItems[0].toInfoCardData(context).copy(onClick = { onClick(rowItems[0]) }),
-                    modifier = Modifier.weight(1f)
-                )
-                if (rowItems.size > 1) {
-                    RowCard(
-                        navController = navController,
-                        data = rowItems[1].toInfoCardData(context).copy(onClick = { onClick(rowItems[1]) }),
-                        modifier = Modifier.weight(1f)
-                    )
-                } else {
-                    Spacer(modifier = Modifier.weight(1f)) // 對齊補空
-                }
-            }
-        }
     }
 }

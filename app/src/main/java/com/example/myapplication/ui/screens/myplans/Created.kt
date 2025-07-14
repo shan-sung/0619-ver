@@ -31,7 +31,7 @@ fun CreatedTripsScreen(
             Text("錯誤：$errorMessage")
         }
         else -> {
-            TripList(navController = navController, trips = createdTrips)
+            MyplansList(navController = navController, trips = createdTrips)
         }
     }
 }

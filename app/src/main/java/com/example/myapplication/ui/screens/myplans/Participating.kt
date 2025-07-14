@@ -31,7 +31,7 @@ fun ParticipatingTripsScreen(
             Text("錯誤：$errorMessage")
         }
         else -> {
-            TripList(navController = navController, trips = joinedTrips)
+            MyplansList(navController = navController, trips = joinedTrips)
         }
     }
 }

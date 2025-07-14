@@ -6,19 +6,15 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
-object DummyUser {
-    const val userId = "test-user-123"
-}
-
 data class TripCreationInfo(
-    val userId: String = DummyUser.userId,
+    val userId: String = "",  // 或使用 val userId: String? = null
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val peopleCount: Int = 1,
     val averageAgeRange: String = "",
-    val preferences: List<String> = emptyList(),     // ex: ["美食", "文化"]
-    val transportOptions: List<String> = emptyList(), // ex: ["步行", "大眾運輸"]
-    val cities: List<String> = emptyList(),   // ex: ["台北", "台中"]
+    val preferences: List<String> = emptyList(),
+    val transportOptions: List<String> = emptyList(),
+    val cities: List<String> = emptyList(),
     val budget: Int = 0,
     val title: String = ""
 )
@@ -35,7 +31,7 @@ data class Attraction(
 
 data class Travel(
     val _id: String,
-    val userId: String = DummyUser.userId,
+    val userId: String,
     val chatRoomId: String,
     val members: List<String>,
     val created: Boolean = false,

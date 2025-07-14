@@ -22,7 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.ui.components.NextPre
+import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.ui.components.AppExtendedFab
 import com.example.myapplication.viewmodel.TripCreationViewModel
 import java.time.LocalDate
 
@@ -110,7 +111,7 @@ fun CreateTripWizardScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (step > 0) {
-                    NextPre(text = "Previous",onClick = { viewModel.prevStep() })
+                    AppExtendedFab(text = "Previous",onClick = { viewModel.prevStep() })
                 } else {
                     Spacer(modifier = Modifier.weight(1f)) // 保持對齊
                 }
@@ -118,7 +119,7 @@ fun CreateTripWizardScreen(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 if (step < 7) {
-                    NextPre(text = "Next", onClick = {
+                    AppExtendedFab(modifier,"下一步", onClick = {
                         when (step) {
                             0 -> viewModel.updateTitle(title)
                             1 -> {
@@ -136,10 +137,10 @@ fun CreateTripWizardScreen(
                     })
                 }
                 else {
-                    NextPre(text = "Submit", onClick = {
+                    AppExtendedFab(text = "Submit", onClick = {
                         viewModel.updateBudget(budget)
                         viewModel.submitTrip()
-                        navController.navigate("trips")
+                        navController.navigate(Routes.App.MY_PLANS)
                     })
                 }
             }

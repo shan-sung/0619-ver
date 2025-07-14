@@ -117,7 +117,7 @@ fun SavedAttractionItem(
             Icon(
                 imageVector = Icons.Filled.Favorite, // 預設已儲存
                 contentDescription = "Remove from saved",
-                tint = Color.Red
+                tint = MaterialTheme.colorScheme.secondary
             )
         }
     }

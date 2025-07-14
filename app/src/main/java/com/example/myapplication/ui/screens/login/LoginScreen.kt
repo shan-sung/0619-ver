@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.screens
+package com.example.myapplication.ui.screens.login
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.model.CurrentUser
+import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.viewmodel.AuthViewModel
 
 @Composable
@@ -44,8 +45,8 @@ fun LoginScreen(
     LaunchedEffect(user) {
         if (user != null) {
             CurrentUser.login(user!!)
-            navController.navigate("main") { // ←✅ 改這裡
-                popUpTo("login") { inclusive = true }
+            navController.navigate(Routes.Root.MAIN) {
+                popUpTo(Routes.Root.LOGIN) { inclusive = true }
             }
         }
     }

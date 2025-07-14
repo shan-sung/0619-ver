@@ -1,64 +1,41 @@
 package com.example.myapplication.ui.components
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 
 @Composable
-fun FilledButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
-        )
-    ) {
-        Text(text)
-    }
-}
-
-
-@Composable
-fun AddFab(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun AppFab(
+    onClick: () -> Unit,
+    icon: ImageVector,
+    contentDescription: String,
+    modifier: Modifier = Modifier
+) {
     FloatingActionButton(
         onClick = onClick,
         modifier = modifier
     ) {
-        Icon(Icons.Filled.Add, contentDescription = "Add")
+        Icon(icon, contentDescription = contentDescription)
     }
 }
 
 @Composable
-fun RemoveFab(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    FloatingActionButton(
-        onClick = onClick,
-        modifier = modifier
-    ) {
-        Icon(Icons.Filled.Remove, contentDescription = "Remove")
-    }
-}
-
-
-@Composable
-fun NextPre(
+fun AppExtendedFab(
+    modifier: Modifier = Modifier,
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    icon: ImageVector? = null,
+    contentDescription: String? = null,
 ) {
     ExtendedFloatingActionButton(
         onClick = onClick,
-        icon = {}, // 可以放空，或加上你要的 icon
+        icon = {
+            if (icon != null) Icon(icon, contentDescription = contentDescription)
+        },
         text = { Text(text) },
         modifier = modifier
     )

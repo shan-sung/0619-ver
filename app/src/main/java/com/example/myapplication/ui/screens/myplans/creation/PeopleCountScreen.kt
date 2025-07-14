@@ -5,15 +5,17 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.ui.components.AddFab
+import com.example.myapplication.ui.components.AppFab
 import com.example.myapplication.ui.components.QuesText
-import com.example.myapplication.ui.components.RemoveFab
 
 @Composable
 fun PeopleCountScreen(count: Int, onCountChange: (Int) -> Unit) {
@@ -36,8 +38,8 @@ fun PeopleCountScreen(count: Int, onCountChange: (Int) -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
 
-            RemoveFab(onClick = { if (count > 1) onCountChange(count - 1) })
-            AddFab(onClick = { onCountChange(count + 1) })
+            AppFab(onClick = { if (count > 1) onCountChange(count - 1) }, icon = Icons.Filled.Remove, contentDescription = "Remove")
+            AppFab(onClick = { onCountChange(count + 1) },icon = Icons.Filled.Add, contentDescription = "Add")
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
@@ -25,10 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.model.ScheduleItem
 import java.time.format.DateTimeFormatter
-import androidx.compose.foundation.lazy.items
 
 @Composable
-fun ScheduleList(
+fun ScheduleTimeline(
     schedule: List<ScheduleItem>,
     modifier: Modifier = Modifier
 ) {
@@ -40,30 +40,18 @@ fun ScheduleList(
         val sortedSchedule = schedule.sortedBy { it.startTime }
 
         items(sortedSchedule) { item ->
-            MessageBubble(item = item)
+            ScheduleItemCard(item = item)
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
-
 @Composable
-fun MessageBubble(
-    modifier: Modifier = Modifier,
+fun ScheduleItemCard(
     item: ScheduleItem,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
-    val timeText = item.startTime?.let { start ->
-        item.endTime?.let { end ->
-            "${start.format(timeFormatter)} – ${end.format(timeFormatter)}"
-        }
-    } ?: item.startTime?.let { start ->
-        "${start.format(timeFormatter)} – 未定"
-    } ?: item.endTime?.let { end ->
-        "未定 – ${end.format(timeFormatter)}"
-    } ?: "時間未定"
-
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -71,17 +59,17 @@ fun MessageBubble(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 圓形底色 icon
+        // 圓形底色 icon         .background(MaterialTheme.colorScheme.surface), // 使用主題的 surface 顏色
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .background(color = Color(0xFFE0F7FA), shape = CircleShape),
+                .background(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Event,
                 contentDescription = "Event Icon",
-                tint = Color(0xFF00796B),
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -96,10 +84,24 @@ fun MessageBubble(
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = timeText,
+                text = item.formatTimeRange(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
         }
+    }
+}
+
+fun ScheduleItem.formatTimeRange(): String {
+    val formatter = DateTimeFormatter.ofPattern("h:mm a")
+
+    val start = this.startTime
+    val end = this.endTime
+
+    return when {
+        start != null && end != null -> "${start.format(formatter)} – ${end.format(formatter)}"
+        start != null -> "${start.format(formatter)} – 未定"
+        end != null -> "未定 – ${end.format(formatter)}"
+        else -> "時間未定"
     }
 }

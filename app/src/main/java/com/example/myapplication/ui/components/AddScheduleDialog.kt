@@ -129,7 +129,7 @@ fun AddScheduleDialog(
                     && selectedDate != null && startTime != null && endTime != null
 
             if (isValid) {
-                NextPre(
+                AppExtendedFab(
                     onClick = {
                         val dayIndex = ChronoUnit.DAYS.between(tripStartDate, selectedDate).toInt() + 1
 
@@ -159,7 +159,7 @@ fun AddScheduleDialog(
             }
         },
         dismissButton = {
-            NextPre(onClick = onDismiss, text = "Cancel")
+            AppExtendedFab(onClick = onDismiss, text = "Cancel")
         }
     )
 }

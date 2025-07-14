@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.myapplication.ui.components.bar
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.myapplication.navigation.routes.Routes
 
 data class BottomNavItem(
     val route: String,
@@ -22,10 +23,10 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem("explore", "Explore", Icons.Filled.Explore),
-    BottomNavItem("trips", "My Plans", Icons.Filled.Map),
-    BottomNavItem("saved", "Saved", Icons.Filled.FavoriteBorder),
-    BottomNavItem("profile", "Profile", Icons.Filled.Person)
+    BottomNavItem(Routes.App.EXPLORE, "Explore", Icons.Filled.Explore),
+    BottomNavItem(Routes.App.MY_PLANS, "My Plans", Icons.Filled.Map),
+    BottomNavItem(Routes.App.SAVED, "Saved", Icons.Filled.FavoriteBorder),
+    BottomNavItem(Routes.App.PROFILE, "Profile", Icons.Filled.Person)
 )
 
 @Composable

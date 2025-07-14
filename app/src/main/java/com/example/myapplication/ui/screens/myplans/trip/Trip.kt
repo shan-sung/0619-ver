@@ -17,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -38,22 +40,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.model.DummyUser
+import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.ItineraryDay
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
-import com.example.myapplication.ui.components.AddFab
 import com.example.myapplication.ui.components.AddScheduleDialog
-import com.example.myapplication.ui.components.ImgCard
-import com.example.myapplication.ui.components.ScheduleList
+import com.example.myapplication.ui.components.AppFab
+import com.example.myapplication.ui.components.InfoCard
+import com.example.myapplication.ui.components.ScheduleTimeline
 import com.example.myapplication.ui.components.SheetItem
+import com.example.myapplication.ui.components.toInfoCardData
 import com.example.myapplication.viewmodel.TripDetailViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -93,6 +95,7 @@ fun TripScreen(
 fun TripContent(
     navController: NavController,
     travel: Travel,
+    currentUserId: String = CurrentUser.user?.id.orEmpty(), // 🔧 修正這一行
     onScheduleAdded: (ScheduleItem) -> Unit
 ) {
     val days = travel.days
@@ -102,6 +105,8 @@ fun TripContent(
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val tripStartDate = LocalDate.parse(travel.startDate)
     val tripEndDate = LocalDate.parse(travel.endDate)
+    val isOwner = travel.userId == currentUserId
+
 
     ModalBottomSheetLayout(
         sheetState = sheetState,
@@ -151,16 +156,18 @@ fun TripContent(
                     )
                 }
             }
-            if (travel.userId == DummyUser.userId) {
-                AddFab(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp),
+            if (isOwner) {
+                AppFab(
                     onClick = {
                         coroutineScope.launch {
                             sheetState.show()
                         }
-                    }
+                    },
+                    icon = Icons.Filled.Add,
+                    contentDescription = "Add Itinerary",
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
                 )
             }
             if (showDialog.value) {
@@ -179,18 +186,12 @@ fun TripContent(
     }
 }
 
-
 @Composable
 fun TripInfoCard(navController: NavController, travel: Travel) {
-    ImgCard(
-        navController = navController,
-        travelId = travel._id,
-        title = travel.title ?: "未命名行程",
-        subtitle = listOfNotNull(
-            travel.members.size.let { "$it member${if (it > 1) "s" else ""}" },
-            travel.days.let { "$it day${if (it > 1) "s" else ""}" },
-            travel.budget?.let { "Budget: ${String.format(Locale.US, "$%,d", it)}" }
-        ).joinToString(" · ")
+    InfoCard(
+        data = travel.toInfoCardData(navController),
+        width = 360.dp,
+        height = 200.dp
     )
 }
 
@@ -262,7 +263,7 @@ fun DayContent(dayIndex: Int, itineraryDay: ItineraryDay?, dateOverride: String)
         )
         Spacer(modifier = Modifier.height(8.dp))
         if (itineraryDay != null) {
-            ScheduleList(schedule = itineraryDay.schedule, modifier = Modifier.weight(1f))
+            ScheduleTimeline(schedule = itineraryDay.schedule, modifier = Modifier.weight(1f))
         } else {
             Text("尚無行程資料")
         }

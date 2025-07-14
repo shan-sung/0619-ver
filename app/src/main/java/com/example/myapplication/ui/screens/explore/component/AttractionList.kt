@@ -16,7 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import com.example.myapplication.model.Attraction
-import com.example.myapplication.ui.components.ColCard
+import com.example.myapplication.ui.components.InfoCardVertical
 import com.example.myapplication.ui.components.toInfoCardData
 import com.example.myapplication.viewmodel.SavedViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -35,11 +35,10 @@ fun AttractionList(
 
     LazyColumn {
         items(attractions) { a ->
-            ColCard(
-                data = a.toInfoCardData(context).copy(
-                    onClick = { selectedAttraction = a }
-                )
-            )
+            val cardData = remember(a) {
+                a.toInfoCardData(context).copy(onClick = { selectedAttraction = a })
+            }
+            InfoCardVertical(data = cardData)
         }
     }
 

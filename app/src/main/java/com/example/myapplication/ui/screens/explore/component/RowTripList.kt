@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.model.Travel
-import com.example.myapplication.ui.components.RowCard
+import com.example.myapplication.ui.components.InfoCard
 import com.example.myapplication.ui.components.toInfoCardData
 
 @Composable
@@ -18,10 +18,10 @@ fun RowTripList(navController: NavController, travels: List<Travel>) {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(travels) { travel ->
-            RowCard(
-                navController = navController,
+            InfoCard(
                 data = travel.toInfoCardData(navController),
-                aspectRatio = 16f / 9f
+                width = 240.dp,
+                height = 160.dp
             )
         }
     }

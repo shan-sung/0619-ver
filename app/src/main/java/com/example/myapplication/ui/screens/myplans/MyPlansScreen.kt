@@ -3,6 +3,8 @@ package com.example.myapplication.ui.screens.myplans
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
@@ -17,8 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.navigation.TripNavHost
-import com.example.myapplication.ui.components.AddFab
+import com.example.myapplication.navigation.details.TripNavHost
+import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.ui.components.AppFab
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +38,7 @@ fun TripsScreen(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            AddFab(onClick = { navController.navigate("create") }) // 使用外層 navController
+            AppFab(onClick = { navController.navigate(Routes.MyPlans.CREATE) }, icon = Icons.Filled.Add, contentDescription = "Add") // 使用外層 navController
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
