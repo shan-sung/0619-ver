@@ -43,6 +43,7 @@ object Routes {
         const val CHAT = "trip_detail/{id}/chat"
 
         fun detailRoute(id: String) = "trip_detail/$id"
+        fun chatRoute(id: String) = "trip_detail/$id/chat"
     }
 
     object Saved {

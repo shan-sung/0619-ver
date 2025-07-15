@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,15 +48,18 @@ data class InfoCardData(
     val location: String = "",
     val imageUrl: String? = null,
     val mapSearchQuery: String? = null,
-    val onClick: (() -> Unit)? = null
+    val onClick: (() -> Unit)? = null,
+    val buttonText: String? = null, // 新增可選按鈕文字
+    val onButtonClick: (() -> Unit)? = null // 新增按鈕點擊事件
 )
 
-fun Travel.toInfoCardData(navController: NavController): InfoCardData {
+fun Travel.toInfoCardData(navController: NavController, showButton: Boolean = false): InfoCardData {
     val subtitleParts = listOfNotNull(
         "${members.size} people",
         "$days days",
         budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
     )
+
     return InfoCardData(
         id = _id,
         title = title ?: "未命名行程",
@@ -63,7 +68,11 @@ fun Travel.toInfoCardData(navController: NavController): InfoCardData {
         imageUrl = imageUrl,
         onClick = {
             navController.navigate(Routes.MyPlans.detailRoute(_id ?: ""))
-        }
+        },
+        buttonText = if (showButton) "聊天室" else null,
+        onButtonClick = if (showButton) {
+            { navController.navigate(Routes.MyPlans.chatRoute(_id.orEmpty())) }
+        } else null
     )
 }
 
@@ -171,34 +180,48 @@ fun InfoCard(
                 modifier = Modifier.matchParentSize()
             )
 
-            // 淡遮罩
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .background(Color.Black.copy(alpha = 0.2f))
             )
 
-            // 底部文字
-            Column(
+            // 底部 Row 排版：左側是文字，右側是按鈕（可選）
+            Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = data.title,
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold
-                    ),
-                    maxLines = 2
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = data.subtitle,
-                    style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = data.title,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.SemiBold
+                        ),
+                        maxLines = 2
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = data.subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                data.buttonText?.let { text ->
+                    TextButton(
+                        onClick = { data.onButtonClick?.invoke() }
+                    ) {
+                        Text(text = text, color = Color.White)
+                    }
+                }
             }
         }
     }

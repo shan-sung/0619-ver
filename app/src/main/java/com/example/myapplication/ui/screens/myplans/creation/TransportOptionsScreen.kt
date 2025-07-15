@@ -23,7 +23,7 @@ fun TransportOptionsScreen(
     selected: List<String> = emptyList(),
     onChange: (List<String>) -> Unit
 ) {
-    val options = listOf("Walking", "Bicycle", "Car", "Motorbike", "Bus", "Train", "Boat", "Plane")
+    val options = listOf("走路", "腳踏車", "汽車", "機車", "公車", "火車", "船")
     var selectedTransports by rememberSaveable { mutableStateOf(selected) }
 
     Column(

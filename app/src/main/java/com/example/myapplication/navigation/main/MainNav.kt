@@ -14,8 +14,8 @@ import com.example.myapplication.ui.screens.explore.ExploreScreen
 import com.example.myapplication.ui.screens.myplans.TripsScreen
 import com.example.myapplication.ui.screens.profile.ProfileScreen
 import com.example.myapplication.ui.screens.saved.SavedScreen
-import com.example.myapplication.viewmodel.ProfileViewModel
-import com.example.myapplication.viewmodel.SavedViewModel
+import com.example.myapplication.viewmodel.profile.ProfileViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 fun NavGraphBuilder.exploreNav(navController: NavController) {
     composable(Routes.Explore.MAIN) {

@@ -16,7 +16,7 @@ import androidx.navigation.NavController
 import com.example.myapplication.ui.components.SectionWithHeader
 import com.example.myapplication.ui.components.TwoColumnCardGrid
 import com.example.myapplication.ui.components.toInfoCardData
-import com.example.myapplication.viewmodel.TripsViewModel
+import com.example.myapplication.viewmodel.explore.TripsViewModel
 
 @Composable
 fun FeaturedScreen(

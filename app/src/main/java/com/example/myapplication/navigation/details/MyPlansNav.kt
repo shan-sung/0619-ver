@@ -55,7 +55,11 @@ fun NavGraphBuilder.createNav(navController: NavController) {
 }
 
 fun NavGraphBuilder.chatNav() {
-    composable(Routes.MyPlans.CHAT) {
-        ChatRoomScreen()
+    composable(
+        route = Routes.MyPlans.CHAT,
+        arguments = listOf(navArgument("id") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val tripId = backStackEntry.arguments?.getString("id") ?: return@composable
+        ChatRoomScreen(tripId = tripId)
     }
 }

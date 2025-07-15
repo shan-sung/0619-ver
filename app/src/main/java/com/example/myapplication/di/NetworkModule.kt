@@ -1,6 +1,7 @@
 package com.example.myapplication.di
 
 import com.example.myapplication.api.AuthApiService
+import com.example.myapplication.api.ChatApiService
 import com.example.myapplication.api.PlacesApiService
 import com.example.myapplication.api.SavedApiService
 import com.example.myapplication.api.TripsApiService
@@ -71,5 +72,13 @@ object NetworkModule {
         @Named("TripsRetrofit") retrofit: Retrofit
     ): TripsApiService {
         return retrofit.create(TripsApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideChatApiService(
+        @Named("TripsRetrofit") retrofit: Retrofit
+    ): ChatApiService {
+        return retrofit.create(ChatApiService::class.java)
     }
 }

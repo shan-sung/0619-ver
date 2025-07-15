@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.ScheduleTime
-import com.example.myapplication.viewmodel.TripDetailViewModel
+import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

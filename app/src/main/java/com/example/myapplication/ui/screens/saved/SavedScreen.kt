@@ -32,7 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.myapplication.model.Attraction
-import com.example.myapplication.viewmodel.SavedViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 @Composable
 fun SavedScreen(

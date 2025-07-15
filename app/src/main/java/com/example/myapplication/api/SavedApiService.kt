@@ -24,4 +24,3 @@ interface SavedApiService {
         @Path("attractionId") attractionId: String
     )
 }
-

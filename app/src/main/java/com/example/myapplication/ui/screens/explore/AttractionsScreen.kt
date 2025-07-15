@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.screens.explore
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Column
@@ -29,8 +28,8 @@ import com.example.myapplication.model.Attraction
 import com.example.myapplication.ui.components.SectionWithHeader
 import com.example.myapplication.ui.components.TwoColumnCardGrid
 import com.example.myapplication.ui.components.toInfoCardData
-import com.example.myapplication.viewmodel.AttractionsViewModel
-import com.example.myapplication.viewmodel.SavedViewModel
+import com.example.myapplication.viewmodel.explore.AttractionsViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 import kotlinx.coroutines.launch
 
 @Composable

@@ -18,7 +18,7 @@ import androidx.core.net.toUri
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.ui.components.InfoCardVertical
 import com.example.myapplication.ui.components.toInfoCardData
-import com.example.myapplication.viewmodel.SavedViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -27,9 +27,9 @@ fun AttractionList(
     attractions: List<Attraction>,
     savedViewModel: SavedViewModel,
     snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope
-)
-{
+    coroutineScope: CoroutineScope,
+    title: String = "你想要做什麼？"
+) {
     val context = LocalContext.current
     var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
 
@@ -43,46 +43,59 @@ fun AttractionList(
     }
 
     selectedAttraction?.let { attraction ->
-        AlertDialog(
-            onDismissRequest = { selectedAttraction = null },
-            title = { Text("你想要做什麼？") },
-            text = { Text(attraction.name) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        savedViewModel.addToSaved(attraction)
-                        selectedAttraction = null
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar("已加入收藏：${attraction.name}")
-                        }
-                    }
-                ) {
-                    Text("Save")
+        AttractionActionDialog(
+            attraction = attraction,
+            onDismiss = { selectedAttraction = null },
+            onSave = {
+                savedViewModel.addToSaved(attraction)
+                selectedAttraction = null
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("已加入收藏：${attraction.name}")
                 }
             },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        val query = Uri.encode(attraction.name)
-                        val gmmIntentUri = "geo:0,0?q=$query".toUri()
-                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                            setPackage("com.google.android.apps.maps")
-                        }
-
-                        if (mapIntent.resolveActivity(context.packageManager) != null) {
-                            context.startActivity(mapIntent)
-                        } else {
-                            val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
-                            val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-                            context.startActivity(webIntent)
-                        }
-
-                        selectedAttraction = null
-                    }
-                ) {
-                    Text("Google Maps")
+            onOpenMap = {
+                val query = Uri.encode(attraction.name)
+                val gmmIntentUri = "geo:0,0?q=$query".toUri()
+                val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+                    setPackage("com.google.android.apps.maps")
                 }
-            }
+
+                if (mapIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(mapIntent)
+                } else {
+                    val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
+                    val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+                    context.startActivity(webIntent)
+                }
+
+                selectedAttraction = null
+            },
+            dialogTitle = title
         )
     }
+}
+
+@Composable
+fun AttractionActionDialog(
+    attraction: Attraction,
+    onDismiss: () -> Unit,
+    onSave: () -> Unit,
+    onOpenMap: () -> Unit,
+    dialogTitle: String
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(dialogTitle) },
+        text = { Text(attraction.name) },
+        confirmButton = {
+            TextButton(onClick = onSave) {
+                Text("收藏")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onOpenMap) {
+                Text("Google Maps")
+            }
+        }
+    )
 }

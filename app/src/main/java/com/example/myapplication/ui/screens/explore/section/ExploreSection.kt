@@ -28,7 +28,7 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.SectionWithHeader
 import com.example.myapplication.ui.screens.explore.component.AttractionList
 import com.example.myapplication.ui.screens.explore.component.RowTripList
-import com.example.myapplication.viewmodel.SavedViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalMaterialApi::class)

@@ -50,7 +50,7 @@ import com.example.myapplication.ui.components.InfoCard
 import com.example.myapplication.ui.components.ScheduleTimeline
 import com.example.myapplication.ui.components.SheetItem
 import com.example.myapplication.ui.components.toInfoCardData
-import com.example.myapplication.viewmodel.TripDetailViewModel
+import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -106,7 +106,7 @@ fun TripContent(
     val tripStartDate = LocalDate.parse(travel.startDate)
     val tripEndDate = LocalDate.parse(travel.endDate)
     val isOwner = travel.userId == currentUserId
-
+    val isIn = travel.members.contains(currentUserId) || travel.userId == currentUserId
 
     ModalBottomSheetLayout(
         sheetState = sheetState,
@@ -142,7 +142,7 @@ fun TripContent(
                     .padding(bottom = 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TripInfoCard(navController = navController, travel = travel)
+                TripInfoCard(navController = navController, travel = travel, showButton = isIn)
 
                 if (days > 0) {
                     TripDayTabs(days = days, pagerState = pagerState, coroutineScope = coroutineScope)
@@ -187,13 +187,18 @@ fun TripContent(
 }
 
 @Composable
-fun TripInfoCard(navController: NavController, travel: Travel) {
+fun TripInfoCard(
+    navController: NavController,
+    travel: Travel,
+    showButton: Boolean
+) {
     InfoCard(
-        data = travel.toInfoCardData(navController),
+        data = travel.toInfoCardData(navController, showButton = showButton),
         width = 360.dp,
         height = 200.dp
     )
 }
+
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable

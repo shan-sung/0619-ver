@@ -1,6 +1,5 @@
-package com.example.myapplication.viewmodel
+package com.example.myapplication.viewmodel.profile
 
-import android.os.UserManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.model.CurrentUser

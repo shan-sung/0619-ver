@@ -13,9 +13,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.screens.explore.section.ExploreSection
 import com.example.myapplication.util.getCurrentOrFallbackLocation
-import com.example.myapplication.viewmodel.AttractionsViewModel
-import com.example.myapplication.viewmodel.SavedViewModel
-import com.example.myapplication.viewmodel.TripsViewModel
+import com.example.myapplication.viewmodel.explore.AttractionsViewModel
+import com.example.myapplication.viewmodel.explore.TripsViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 import kotlinx.coroutines.launch
 
 @Composable

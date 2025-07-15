@@ -1,4 +1,4 @@
-package com.example.myapplication.viewmodel
+package com.example.myapplication.viewmodel.myplans
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -26,9 +26,6 @@ class TripDetailViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
-    /**
-     * 根據 ID 抓取該筆 Travel 並更新狀態
-     */
     fun fetchTravelById(travelId: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -47,9 +44,6 @@ class TripDetailViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 非同步方式提交行程項目，並更新行程資料
-     */
     fun submitScheduleItemAndRefresh(
         travelId: String,
         item: ScheduleItem,
@@ -69,15 +63,12 @@ class TripDetailViewModel @Inject constructor(
                 }
                 onResult(false)
             } catch (e: Exception) {
-                Log.e("TripVM", "提交 ScheduleItem 發生錯誤", e)
+                Log.e("TripVM", "提交發生錯誤", e)
                 onResult(false)
             }
         }
     }
 
-    /**
-     * 若只需要發送不更新狀態，可用此
-     */
     fun submitScheduleItem(
         travelId: String,
         item: ScheduleItem,

@@ -24,7 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.AppExtendedFab
-import com.example.myapplication.viewmodel.TripCreationViewModel
+import com.example.myapplication.viewmodel.myplans.TripCreationViewModel
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
