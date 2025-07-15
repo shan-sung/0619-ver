@@ -5,7 +5,6 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,50 +17,46 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.BuildConfig
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.ui.components.SectionWithHeader
 import com.example.myapplication.ui.components.TwoColumnCardGrid
 import com.example.myapplication.ui.components.toInfoCardData
-import com.example.myapplication.viewmodel.explore.AttractionsViewModel
+import com.example.myapplication.viewmodel.explore.RecommendationViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun AttractionsScreen(
     navController: NavController,
-    location: String = "25.033964,121.564468", // 預設台北101
-    viewModel: AttractionsViewModel = hiltViewModel(),
+    apiKey: String = BuildConfig.MAPS_API_KEY,
+    viewModel: RecommendationViewModel = hiltViewModel(),
     savedViewModel: SavedViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    val attractions by viewModel.attractions.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.errorMessage.collectAsState()
+    val recommended by viewModel.recommended.collectAsState()
 
     var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
 
-    LaunchedEffect(location) {
-        viewModel.fetchNearbyAttractions(location)
+    LaunchedEffect(Unit) {
+        viewModel.fetchRecommendedAttractions(apiKey)
     }
 
     Column {
-        SectionWithHeader(title = "附近景點") {
+        SectionWithHeader(title = "你可能會喜歡") {
             when {
-                isLoading -> CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-                error != null -> Text("發生錯誤：$error", color = Color.Red, modifier = Modifier.padding(16.dp))
-                attractions.isEmpty() -> Text("附近沒有景點資料", modifier = Modifier.padding(16.dp))
+                recommended.isEmpty() -> Text("暫無推薦景點", modifier = Modifier.padding(16.dp))
                 else -> {
                     TwoColumnCardGrid(
-                        items = attractions.map {
+                        items = recommended.map {
                             it.toInfoCardData(context).copy(
                                 onClick = { selectedAttraction = it }
                             )
@@ -112,3 +107,4 @@ fun AttractionsScreen(
         )
     }
 }
+

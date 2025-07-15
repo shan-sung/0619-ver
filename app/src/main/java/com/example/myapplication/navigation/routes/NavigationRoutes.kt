@@ -27,6 +27,10 @@ object Routes {
         object Attraction {
             const val MAIN = "attraction"
         }
+
+        object Recommend {
+            const val MAIN = "recommendation"
+        }
     }
 
     // MyPlans 區塊

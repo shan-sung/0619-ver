@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// 負責從 Google Maps API 取得「附近的景點資訊」
 @HiltViewModel
 class AttractionsViewModel @Inject constructor( // @Inject constructor(...): 使用 Hilt 注入 PlacesApiService，負責與 Google Maps API 溝通。
     private val apiService: PlacesApiService // 告訴Hilt此為我需要的東西，請幫我注入

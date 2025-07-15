@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -18,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -36,7 +38,8 @@ import kotlinx.coroutines.CoroutineScope
 fun ExploreSection(
     navController: NavController,
     isLoading: Boolean,
-    attractions: List<Attraction>,
+    nearbyAttractions: List<Attraction>,
+    recommendedAttractions: List<Attraction>,
     onRefresh: () -> Unit,
     travels: List<Travel>,
     savedViewModel: SavedViewModel
@@ -52,18 +55,31 @@ fun ExploreSection(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             FeaturedSection(navController, travels)
+
+            //  猜你喜歡
+            RecommendedSection(
+                navController = navController,
+                recommendedAttractions = recommendedAttractions,
+                savedViewModel = savedViewModel,
+                snackbarHostState = snackbarHostState,
+                coroutineScope = coroutineScope
+            )
+
+            // 附近熱門景點
             AttractionsSection(
-                navController,
-                isLoading,
-                attractions,
-                onRefresh,
-                savedViewModel,
-                snackbarHostState,
-                coroutineScope
+                navController = navController,
+                isLoading = isLoading,
+                nearbyAttractions = nearbyAttractions,
+                onRefresh = onRefresh,
+                savedViewModel = savedViewModel,
+                snackbarHostState = snackbarHostState,
+                coroutineScope = coroutineScope
             )
         }
     }
 }
+
+
 
 @Composable
 fun FeaturedSection(navController: NavController, travels: List<Travel>) {
@@ -76,18 +92,18 @@ fun FeaturedSection(navController: NavController, travels: List<Travel>) {
 }
 
 
+// 首頁部分只顯示附近熱門景點
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun AttractionsSection(
     navController: NavController,
     isLoading: Boolean,
-    attractions: List<Attraction>,
+    nearbyAttractions: List<Attraction>,
     onRefresh: () -> Unit,
     savedViewModel: SavedViewModel,
     snackbarHostState: SnackbarHostState,
     coroutineScope: CoroutineScope
 ) {
-    // PullRefresh 狀態管理
     val pullRefreshState = rememberPullRefreshState(refreshing = isLoading, onRefresh = onRefresh)
 
     Box(
@@ -98,17 +114,24 @@ fun AttractionsSection(
     ) {
         Column {
             SectionWithHeader(
-                title = "Attractions",
+                title = "附近熱門景點",
                 onMoreClick = { navController.navigate(Routes.Explore.Attraction.MAIN) }
             ) {
                 when {
-                    isLoading && attractions.isEmpty() -> {
-                        Spacer(modifier = Modifier.height(16.dp))
+                    isLoading && nearbyAttractions.isEmpty() -> {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
 
-                    attractions.isEmpty() -> {
+                    nearbyAttractions.isEmpty() -> {
                         Text(
-                            "附近沒有景點",
+                            "附近沒有熱門景點",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier
                                 .padding(16.dp)
@@ -118,14 +141,37 @@ fun AttractionsSection(
 
                     else -> {
                         AttractionList(
-                            attractions = attractions,
+                            attractions = nearbyAttractions,
                             savedViewModel = savedViewModel,
                             snackbarHostState = snackbarHostState,
                             coroutineScope = coroutineScope
                         )
                     }
                 }
+
             }
+        }
+    }
+}
+
+@Composable
+fun RecommendedSection(
+    navController: NavController,
+    recommendedAttractions: List<Attraction>,
+    savedViewModel: SavedViewModel,
+    snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope
+) {
+    if (recommendedAttractions.isNotEmpty()) {
+        SectionWithHeader(
+            title = "猜你喜歡"
+        ) {
+            AttractionList(
+                attractions = recommendedAttractions,
+                savedViewModel = savedViewModel,
+                snackbarHostState = snackbarHostState,
+                coroutineScope = coroutineScope
+            )
         }
     }
 }

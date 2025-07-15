@@ -14,6 +14,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// 根據使用者收藏過的景點名稱
+// 從中抽取出常見關鍵字（例如「博物館」、「動物園」、「美術館」等），
+// 再呼叫 Google Maps 的 Text Search API 查找相關景點，
+// 組成推薦清單。
 @HiltViewModel
 class RecommendationViewModel @Inject constructor(
     private val placesApi: PlacesApiService,
@@ -29,18 +33,21 @@ class RecommendationViewModel @Inject constructor(
             try {
                 val saved = savedRepo.getSavedAttractions(userId)
 
-                // 萃取關鍵字（景點名稱拆字詞）
                 val keywords = saved.map { it.name }
                     .flatMap { it.split(Regex("[\\s,，\\-]")) }
-                    .filter { it.length >= 2 }
+                    .filter { it.length >= 2 && it.any { c -> c.isLetterOrDigit() } } // ✅ 避免空值或無效字
                     .groupingBy { it }.eachCount()
                     .entries.sortedByDescending { it.value }
                     .take(3)
                     .map { it.key }
 
+
                 val results = mutableListOf<Attraction>()
                 for (kw in keywords) {
-                    val response = placesApi.getTextSearchResults(query = kw, apiKey = apiKey)
+                    val response = placesApi.getTextSearchResults(
+                        query = kw,
+                        apiKey = apiKey
+                    )
                     results += response.results.map {
                         Attraction(
                             id = it.place_id,

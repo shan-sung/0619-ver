@@ -28,6 +28,7 @@ interface PlacesApiService {
     @GET("place/textsearch/json")
     suspend fun getTextSearchResults(
         @Query("query") query: String,
+        @Query("type") type: String = "tourist_attraction",
         @Query("region") region: String = "TW",
         @Query("key") apiKey: String
     ): PlacesSearchResponse

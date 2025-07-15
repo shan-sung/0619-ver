@@ -11,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.myapplication.BuildConfig
 import com.example.myapplication.ui.screens.explore.section.ExploreSection
 import com.example.myapplication.util.getCurrentOrFallbackLocation
 import com.example.myapplication.viewmodel.explore.AttractionsViewModel
+import com.example.myapplication.viewmodel.explore.RecommendationViewModel
 import com.example.myapplication.viewmodel.explore.TripsViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
 import kotlinx.coroutines.launch
@@ -22,42 +24,42 @@ import kotlinx.coroutines.launch
 fun ExploreScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    savedViewModel: SavedViewModel = hiltViewModel() // ✅ 在這統一建立
+    savedViewModel: SavedViewModel = hiltViewModel()
 ) {
-    /* ViewModel */
-    val viewModel: AttractionsViewModel = hiltViewModel() // AttractionViewModel
-    val tripsViewModel: TripsViewModel = hiltViewModel() // TripsViewModel
+    val viewModel: AttractionsViewModel = hiltViewModel()
+    val tripsViewModel: TripsViewModel = hiltViewModel()
+    val recommendationViewModel: RecommendationViewModel = hiltViewModel()
 
-    /*  State Listening */
-    val attractions by viewModel.attractions.collectAsState() // 景點清單
-    val allTrips by tripsViewModel.trips.collectAsState() // 行程清單
-    val isLoading by viewModel.isLoading.collectAsState() // 景點載入中
+    val attractions by viewModel.attractions.collectAsState()
+    val allTrips by tripsViewModel.trips.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val recommendedAttractions by recommendationViewModel.recommended.collectAsState()
 
     val coroutineScope = rememberCoroutineScope()
-
-    /* 位置偵測與資料載入邏輯 */
     val context = LocalContext.current
-    // 使用者開啟畫面時，就自動取得位置並載入附近景點
+
     LaunchedEffect(Unit) {
         val latLng = getCurrentOrFallbackLocation(context)
-        viewModel.fetchNearbyAttractions(latLng) // 第一次手動抓一次
-        tripsViewModel.fetchAllTrips()  // 抓行程
+        viewModel.fetchNearbyAttractions(latLng)
+        tripsViewModel.fetchAllTrips()
+        recommendationViewModel.fetchRecommendedAttractions(BuildConfig.MAPS_API_KEY)
     }
 
-    // UI
     Column(modifier = modifier.fillMaxWidth()) {
         ExploreSection(
             navController = navController,
             isLoading = isLoading,
-            attractions = attractions,
+            nearbyAttractions = attractions,
+            recommendedAttractions = recommendedAttractions,
             onRefresh = {
                 coroutineScope.launch {
                     val latLng = getCurrentOrFallbackLocation(context)
-                    viewModel.fetchNearbyAttractions(latLng) // 使用者手動刷新
+                    viewModel.fetchNearbyAttractions(latLng)
+                    recommendationViewModel.fetchRecommendedAttractions(BuildConfig.MAPS_API_KEY)
                 }
             },
             travels = allTrips,
-            savedViewModel = savedViewModel // 傳遞共用 ViewModel
+            savedViewModel = savedViewModel
         )
     }
 }
