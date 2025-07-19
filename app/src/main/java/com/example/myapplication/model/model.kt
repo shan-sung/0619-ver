@@ -32,7 +32,6 @@ data class Attraction(
     val imageUrl: String? = null              // 可透過 Place Details API 拿照片
 )
 
-
 data class Travel(
     val _id: String,
     val userId: String,
@@ -69,7 +68,6 @@ data class ChatMessage(
     val message: String,
     val timestamp: Long
 )
-
 
 data class ItineraryDay(
     val day: Int,               // 第幾天

@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens.myplans.trip
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,7 +45,7 @@ import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.ItineraryDay
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
-import com.example.myapplication.ui.components.AddScheduleDialog
+import com.example.myapplication.ui.components.dialogs.AddScheduleDialog
 import com.example.myapplication.ui.components.AppFab
 import com.example.myapplication.ui.components.InfoCard
 import com.example.myapplication.ui.components.ScheduleTimeline
@@ -78,18 +79,16 @@ fun TripScreen(
         TripContent(
             navController = navController,
             travel = travel!!,
-            onScheduleAdded = { newItem ->
-                viewModel.submitScheduleItemAndRefresh(travelId, newItem) { success ->
-                    if (!success) {
-                        // TODO: 可顯示 Snackbar 或 Toast
-                    }
-                }
+            onScheduleAdded = {
+                // 這邊不再呼叫 submit，因為已在 Dialog 中完成
+                Log.d("TripScreen", "已新增新行程項目：${it.activity}")
             }
         )
     } else {
         Text("找不到行程")
     }
 }
+
 
 @Composable
 fun TripContent(

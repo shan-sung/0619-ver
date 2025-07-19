@@ -26,6 +26,9 @@ class TripDetailViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    /**
+     * 載入行程
+     */
     fun fetchTravelById(travelId: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -44,22 +47,30 @@ class TripDetailViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 編輯行程項目（指定第幾天的第幾個 index）
+     */
     fun updateScheduleItemAndRefresh(
         travelId: String,
+        day: Int,
+        index: Int,
         updatedItem: ScheduleItem,
         onResult: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
             try {
-                val response = tripsApi.updateScheduleItem(travelId, updatedItem)
+                val response = tripsApi.updateScheduleItem(travelId, day, index, updatedItem)
                 if (response.isSuccessful) {
-                    // 更新成功後，重新抓取最新的行程資料
                     val updatedTrip = tripsApi.getAllTrips().find { it._id == travelId }
                     if (updatedTrip != null) {
                         _travel.value = updatedTrip
                         onResult(true)
                         return@launch
+                    } else {
+                        Log.e("TripVM", "更新成功但無法取得 tripId=$travelId 的行程")
                     }
+                } else {
+                    Log.e("TripVM", "更新失敗: code=${response.code()}, errorBody=${response.errorBody()?.string()}")
                 }
                 onResult(false)
             } catch (e: Exception) {
@@ -69,46 +80,39 @@ class TripDetailViewModel @Inject constructor(
         }
     }
 
-
-    fun submitScheduleItemAndRefresh(
+    /**
+     * 新增 schedule 並自動 refresh，防止重複送出
+     */
+    fun submitScheduleItemSafely(
         travelId: String,
         item: ScheduleItem,
         onResult: (Boolean) -> Unit
     ) {
+        if (_isLoading.value) return  // 🛡️ 防止重複點擊
+        _isLoading.value = true
+
         viewModelScope.launch {
             try {
                 val response = tripsApi.addScheduleItem(travelId, item)
                 if (response.isSuccessful) {
-                    // 重新取得該筆 Travel 更新畫面
                     val updatedTrip = tripsApi.getAllTrips().find { it._id == travelId }
                     if (updatedTrip != null) {
                         _travel.value = updatedTrip
                         onResult(true)
-                        return@launch
+                    } else {
+                        Log.e("TripVM", "新增成功但找不到行程")
+                        onResult(false)
                     }
+                } else {
+                    Log.e("TripVM", "新增失敗: code=${response.code()}, errorBody=${response.errorBody()?.string()}")
+                    onResult(false)
                 }
-                onResult(false)
             } catch (e: Exception) {
-                Log.e("TripVM", "提交發生錯誤", e)
+                Log.e("TripVM", "新增發生錯誤", e)
                 onResult(false)
-            }
-        }
-    }
-
-    fun submitScheduleItem(
-        travelId: String,
-        item: ScheduleItem,
-        callback: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                val response = tripsApi.addScheduleItem(travelId, item)
-                callback(response.isSuccessful)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                callback(false)
+            } finally {
+                _isLoading.value = false
             }
         }
     }
 }
-

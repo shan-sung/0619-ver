@@ -8,6 +8,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface TripsApiService {
@@ -26,10 +27,11 @@ interface TripsApiService {
         @Body item: ScheduleItem
     ): Response<ScheduleItem>
 
-    @PATCH("trips/{travelId}/schedules")
+    @PUT("trips/{travelId}/schedule/{day}/{index}")
     suspend fun updateScheduleItem(
         @Path("travelId") travelId: String,
+        @Path("day") day: Int,
+        @Path("index") index: Int,
         @Body updatedItem: ScheduleItem
     ): Response<Unit>
-
 }
