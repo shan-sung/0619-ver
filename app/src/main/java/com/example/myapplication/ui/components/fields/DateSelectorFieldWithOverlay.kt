@@ -16,7 +16,9 @@ fun DateSelectorFieldWithOverlay(
     label: String,
     date: LocalDate?,
     formatter: DateTimeFormatter,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isEditing: Boolean
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -29,7 +31,7 @@ fun DateSelectorFieldWithOverlay(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .clickable { onClick() }
+                .clickable(enabled = isEditing) { if (isEditing) onClick() }
         )
     }
 }

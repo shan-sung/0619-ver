@@ -22,7 +22,8 @@ fun MainScreen() {
             Routes.MyPlans.MAIN,
             Routes.Saved.MAIN,
             Routes.Profile.MAIN,
-            Routes.MyPlans.CREATE
+            Routes.MyPlans.CREATE,
+            Routes.MyPlans.SELECT_FROM_SAVED // ✅ 加這行
         )
     } ?: false
 
@@ -39,8 +40,10 @@ fun MainScreen() {
         currentRoute == Routes.Saved.MAIN -> "Saved"
         currentRoute == Routes.Profile.MAIN -> "Profile"
         currentRoute == Routes.MyPlans.CREATE -> "Create"
+        currentRoute == Routes.MyPlans.SELECT_FROM_SAVED -> "Select Attraction" // ✅ 給新頁面自訂標題
         else -> currentRoute?.replaceFirstChar { it.uppercase() } ?: ""
     }
+
 
     Scaffold(
         topBar = { if (showTopBar) TopBar(title = topBarTitle) },

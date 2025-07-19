@@ -84,3 +84,13 @@ fun SectionWithHeader(
         content()
     }
 }
+
+@Composable
+fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(bottom = 4.dp)
+    )
+}

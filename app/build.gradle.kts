@@ -6,6 +6,7 @@ plugins {
     id ("dagger.hilt.android.plugin")
     id("com.google.dagger.hilt.android")
     id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    id("kotlin-parcelize")
 }
 
 android {
@@ -84,6 +85,8 @@ dependencies {
     implementation("com.google.accompanist:accompanist-pager:0.36.0")
     implementation ("com.google.accompanist:accompanist-pager-indicators:0.36.0")
     implementation("com.google.accompanist:accompanist-permissions:0.37.0")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.8.3")
 
 
     implementation(libs.androidx.core.ktx)

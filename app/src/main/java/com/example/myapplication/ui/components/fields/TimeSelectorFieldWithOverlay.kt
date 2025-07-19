@@ -15,7 +15,9 @@ fun TimeSelectorFieldWithOverlay(
     label: String,
     time: LocalTime?,
     formatter: DateTimeFormatter,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    isEditing: Boolean
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -28,7 +30,7 @@ fun TimeSelectorFieldWithOverlay(
         Box(
             modifier = Modifier
                 .matchParentSize()
-                .clickable { onClick() }
+                .clickable(enabled = isEditing) { if (isEditing) onClick() }
         )
     }
 }

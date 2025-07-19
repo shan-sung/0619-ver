@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,15 +42,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.ItineraryDay
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
-import com.example.myapplication.ui.components.dialogs.AddScheduleDialog
+import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.AppFab
 import com.example.myapplication.ui.components.InfoCard
 import com.example.myapplication.ui.components.ScheduleTimeline
 import com.example.myapplication.ui.components.SheetItem
+import com.example.myapplication.ui.components.dialogs.AddScheduleDialog
 import com.example.myapplication.ui.components.toInfoCardData
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -68,6 +72,13 @@ fun TripScreen(
 ) {
     val travel by viewModel.travel.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val currentBackStackEntry = navController.currentBackStackEntryAsState().value
+    val savedStateHandle = currentBackStackEntry?.savedStateHandle
+
+    // 觀察從 Saved 傳回來的 Attraction
+    val selectedAttraction = savedStateHandle?.getStateFlow<Attraction?>("selected_attraction", null)
+        ?.collectAsState()?.value
+
 
     LaunchedEffect(travelId) {
         viewModel.fetchTravelById(travelId)
@@ -79,8 +90,8 @@ fun TripScreen(
         TripContent(
             navController = navController,
             travel = travel!!,
+            selectedAttraction = selectedAttraction,  // ✅ 傳進去
             onScheduleAdded = {
-                // 這邊不再呼叫 submit，因為已在 Dialog 中完成
                 Log.d("TripScreen", "已新增新行程項目：${it.activity}")
             }
         )
@@ -94,18 +105,29 @@ fun TripScreen(
 fun TripContent(
     navController: NavController,
     travel: Travel,
-    currentUserId: String = CurrentUser.user?.id.orEmpty(), // 🔧 修正這一行
+    selectedAttraction: Attraction?, // ✅ 新增參數
+    currentUserId: String = CurrentUser.user?.id.orEmpty(),
     onScheduleAdded: (ScheduleItem) -> Unit
 ) {
     val days = travel.days
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { days })
     val coroutineScope = rememberCoroutineScope()
-    val showDialog = remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val tripStartDate = LocalDate.parse(travel.startDate)
     val tripEndDate = LocalDate.parse(travel.endDate)
     val isOwner = travel.userId == currentUserId
     val isIn = travel.members.contains(currentUserId) || travel.userId == currentUserId
+
+    var showDialog by remember { mutableStateOf(false) }
+    var defaultLocation by remember { mutableStateOf("") }
+
+    LaunchedEffect(selectedAttraction) {
+        selectedAttraction?.let {
+            defaultLocation = it.name
+            showDialog = true
+            navController.currentBackStackEntry?.savedStateHandle?.set("selected_attraction", null)
+        }
+    }
 
     ModalBottomSheetLayout(
         sheetState = sheetState,
@@ -129,8 +151,8 @@ fun TripContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SheetItem("From Search") { /* handle click */ }
-                SheetItem("From Saved List") { /* handle click */ }
-                SheetItem("Hand-Input") { showDialog.value = true }
+                SheetItem("From Saved List") {navController.navigate(Routes.MyPlans.SELECT_FROM_SAVED) }
+                SheetItem("Hand-Input") { showDialog = true }
             }
         }
     ) {
@@ -169,16 +191,19 @@ fun TripContent(
                         .padding(16.dp)
                 )
             }
-            if (showDialog.value) {
+            if (showDialog) {
                 AddScheduleDialog(
                     travelId = travel._id,
                     tripStartDate = tripStartDate,
                     tripEndDate = tripEndDate,
-                    onDismiss = { showDialog.value = false },
+                    onDismiss = {
+                        showDialog = false
+                    },
                     onScheduleAdded = { item ->
                         onScheduleAdded(item)
-                        showDialog.value = false
-                    }
+                        showDialog = false
+                    },
+                    initialLocation = defaultLocation
                 )
             }
         }

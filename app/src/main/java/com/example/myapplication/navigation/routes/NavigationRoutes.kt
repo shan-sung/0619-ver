@@ -45,6 +45,8 @@ object Routes {
         const val CREATE = "create_trip"
         const val DETAIL = "trip_detail/{id}"
         const val CHAT = "trip_detail/{id}/chat"
+        const val SELECT_FROM_SAVED = "select_from_saved"
+
 
         fun detailRoute(id: String) = "trip_detail/$id"
         fun chatRoute(id: String) = "trip_detail/$id/chat"

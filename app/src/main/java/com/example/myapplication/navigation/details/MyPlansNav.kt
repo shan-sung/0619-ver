@@ -15,6 +15,7 @@ import com.example.myapplication.ui.screens.myplans.ParticipatingTripsScreen
 import com.example.myapplication.ui.screens.myplans.TripTab
 import com.example.myapplication.ui.screens.myplans.creation.CreateTripWizardScreen
 import com.example.myapplication.ui.screens.myplans.trip.ChatRoomScreen
+import com.example.myapplication.ui.screens.myplans.trip.SelectFromSavedListScreen
 import com.example.myapplication.ui.screens.myplans.trip.TripScreen
 
 @Composable
@@ -61,5 +62,13 @@ fun NavGraphBuilder.chatNav() {
     ) { backStackEntry ->
         val tripId = backStackEntry.arguments?.getString("id") ?: return@composable
         ChatRoomScreen(tripId = tripId)
+    }
+}
+
+fun NavGraphBuilder.selectFromSavedNav(navController: NavController) {
+    composable(Routes.MyPlans.SELECT_FROM_SAVED) {
+        SelectFromSavedListScreen(
+            onSelect = {}, navController = navController
+        )
     }
 }

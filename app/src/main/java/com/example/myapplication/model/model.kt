@@ -1,5 +1,7 @@
 package com.example.myapplication.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 import java.time.LocalDate
 import java.time.LocalTime
@@ -19,18 +21,19 @@ data class TripCreationInfo(
     val title: String = ""
 )
 
+@Parcelize
 data class Attraction(
     val id: String,
     val name: String,
     val rating: Double? = null,
     val tags: List<String>? = null,
+    val city: String = "",
+    val country: String = "",
+    val description: String? = null,
+    val imageUrl: String? = null
+) : Parcelable
 
-    // 以下欄位為選填，從 Google Text Search API 無法直接取得
-    val city: String = "",                    // 可留空，或後續補上
-    val country: String = "",                 // 同上
-    val description: String? = null,          // 可從 formatted_address 暫時替代
-    val imageUrl: String? = null              // 可透過 Place Details API 拿照片
-)
+
 
 data class Travel(
     val _id: String,
@@ -68,6 +71,7 @@ data class ChatMessage(
     val message: String,
     val timestamp: Long
 )
+
 
 data class ItineraryDay(
     val day: Int,               // 第幾天

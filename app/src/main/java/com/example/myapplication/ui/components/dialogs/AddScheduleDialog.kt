@@ -37,11 +37,11 @@ fun AddScheduleDialog(
     tripEndDate: LocalDate,
     onDismiss: () -> Unit,
     onScheduleAdded: (ScheduleItem) -> Unit,
+    initialLocation: String = "", // ✅ 新增這行
     viewModel: TripDetailViewModel = hiltViewModel()
 ) {
-    // 狀態區塊
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    var location by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf(initialLocation) }
     var transportation by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var startTime by remember { mutableStateOf<LocalTime?>(null) }
@@ -72,18 +72,30 @@ fun AddScheduleDialog(
                         showDatePicker(context, tripStartDate, tripEndDate) {
                             selectedDate = it
                         }
-                    }
+                    },
+                    isEditing = true
                 )
 
-                TimeSelectorFieldWithOverlay("開始時間", startTime, timeFormatter) {
-                    showTimePickerDialog(context, startTime) { startTime = it }
-                }
+                TimeSelectorFieldWithOverlay(
+                    label = "開始時間",
+                    time = startTime,
+                    formatter = timeFormatter,
+                    onClick = {
+                        showTimePickerDialog(context, startTime) { startTime = it }
+                    },
+                    isEditing = true
+                )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                TimeSelectorFieldWithOverlay(
+                    label = "結束時間",
+                    time = endTime,
+                    formatter = timeFormatter,
+                    onClick = {
+                        showTimePickerDialog(context, endTime) { endTime = it }
+                    },
+                    isEditing = true
+                )
 
-                TimeSelectorFieldWithOverlay("結束時間", endTime, timeFormatter) {
-                    showTimePickerDialog(context, endTime) { endTime = it }
-                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -103,10 +115,9 @@ fun AddScheduleDialog(
             }
         },
         confirmButton = {
-            val isValid = location.isNotBlank() && selectedDate != null && startTime != null && endTime != null
-
             AppExtendedFab(
                 onClick = {
+                    val isValid = location.isNotBlank() && selectedDate != null && startTime != null && endTime != null
                     if (!isValid || isSaving) {
                         Toast.makeText(context, "請填寫完整欄位", Toast.LENGTH_SHORT).show()
                         return@AppExtendedFab
@@ -136,8 +147,7 @@ fun AddScheduleDialog(
                         }
                     }
                 },
-                text = "Done",
-//                enabled = isValid && !isSaving
+                text = "Done"
             )
         },
         dismissButton = {
@@ -145,4 +155,3 @@ fun AddScheduleDialog(
         }
     )
 }
-

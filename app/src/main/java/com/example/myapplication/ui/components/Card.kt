@@ -167,8 +167,6 @@ fun AttractionInfoCardVertical(
     )
 }
 
-
-
 @Composable
 fun InfoCard(
     data: InfoCardData,
