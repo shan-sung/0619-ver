@@ -44,6 +44,32 @@ class TripDetailViewModel @Inject constructor(
         }
     }
 
+    fun updateScheduleItemAndRefresh(
+        travelId: String,
+        updatedItem: ScheduleItem,
+        onResult: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = tripsApi.updateScheduleItem(travelId, updatedItem)
+                if (response.isSuccessful) {
+                    // 更新成功後，重新抓取最新的行程資料
+                    val updatedTrip = tripsApi.getAllTrips().find { it._id == travelId }
+                    if (updatedTrip != null) {
+                        _travel.value = updatedTrip
+                        onResult(true)
+                        return@launch
+                    }
+                }
+                onResult(false)
+            } catch (e: Exception) {
+                Log.e("TripVM", "更新行程失敗", e)
+                onResult(false)
+            }
+        }
+    }
+
+
     fun submitScheduleItemAndRefresh(
         travelId: String,
         item: ScheduleItem,

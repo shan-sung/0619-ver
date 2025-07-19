@@ -32,6 +32,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.myapplication.model.Attraction
+import com.example.myapplication.viewmodel.explore.typeMap
 import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 @Composable
@@ -74,7 +75,6 @@ fun SavedScreen(
     }
 }
 
-
 @Composable
 fun SavedAttractionItem(
     attraction: Attraction,
@@ -100,14 +100,14 @@ fun SavedAttractionItem(
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(
-            modifier = Modifier.weight(1f) // 推擠愛心到右側
+            modifier = Modifier.weight(1f)
         ) {
             Text(
                 text = attraction.name,
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = attraction.category,
+                text = attraction.tags?.joinToString("、") { typeMap[it] ?: it } ?: "未知類別",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray
             )
@@ -115,7 +115,7 @@ fun SavedAttractionItem(
 
         IconButton(onClick = { onRemoveFromSaved(attraction) }) {
             Icon(
-                imageVector = Icons.Filled.Favorite, // 預設已儲存
+                imageVector = Icons.Filled.Favorite,
                 contentDescription = "Remove from saved",
                 tint = MaterialTheme.colorScheme.secondary
             )

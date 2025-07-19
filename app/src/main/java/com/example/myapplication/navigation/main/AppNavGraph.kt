@@ -4,12 +4,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.example.myapplication.navigation.details.attractionNav
 import com.example.myapplication.navigation.details.chatNav
 import com.example.myapplication.navigation.details.createNav
 import com.example.myapplication.navigation.details.featuredNav
-import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.navigation.details.tripDetailNav
+import com.example.myapplication.navigation.routes.Routes
 
 @Composable
 fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -26,6 +25,5 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
         tripDetailNav(navController)
         savedNav(navController)
         featuredNav(navController)
-        attractionNav(navController)
     }
 }

@@ -19,8 +19,7 @@ import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 fun NavGraphBuilder.exploreNav(navController: NavController) {
     composable(Routes.Explore.MAIN) {
-        val savedViewModel: SavedViewModel = hiltViewModel()
-        ExploreScreen(navController = navController, savedViewModel = savedViewModel)
+        ExploreScreen(navController = navController)
     }
 }
 

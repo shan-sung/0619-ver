@@ -22,12 +22,16 @@ data class TripCreationInfo(
 data class Attraction(
     val id: String,
     val name: String,
-    val city: String,
-    val country: String,
-    val rating: Double?,
-    val category: String,  // <--- 新增類別欄位（如 "Park", "Museum"）
-    val imageUrl: String? = null
+    val rating: Double? = null,
+    val tags: List<String>? = null,
+
+    // 以下欄位為選填，從 Google Text Search API 無法直接取得
+    val city: String = "",                    // 可留空，或後續補上
+    val country: String = "",                 // 同上
+    val description: String? = null,          // 可從 formatted_address 暫時替代
+    val imageUrl: String? = null              // 可透過 Place Details API 拿照片
 )
+
 
 data class Travel(
     val _id: String,
@@ -77,7 +81,7 @@ data class ScheduleItem(
     val time: ScheduleTime,
     val activity: String,
     val transportation: String,
-    val note: String = ""
+    val note: String? = ""
 ) {
     val startTime: LocalTime?
         get() = time.start.toLocalTimeOrNull()
@@ -100,49 +104,3 @@ fun String.toLocalTimeOrNull(): LocalTime? {
         null
     }
 }
-
-data class PlacesSearchResponse(
-    val results: List<PlaceResult>,
-    val status: String
-)
-
-data class PlaceResult(
-    val place_id: String,
-    val name: String,
-    val rating: Double?,
-    val vicinity: String?,
-    val photos: List<Photo>?,
-    val geometry: Geometry
-)
-
-data class Photo(
-    val photo_reference: String
-)
-
-data class GeocodingResponse(
-    val results: List<GeocodingResult>,
-    val status: String
-)
-
-data class GeocodingResult(
-    val address_components: List<AddressComponent>,
-    val formatted_address: String,
-    val geometry: Geometry,
-    val place_id: String,
-    val types: List<String>
-)
-
-data class AddressComponent(
-    val long_name: String,
-    val short_name: String,
-    val types: List<String>
-)
-
-data class Geometry(
-    val location: LatLng
-)
-
-data class LatLng(
-    val lat: Double,
-    val lng: Double
-)

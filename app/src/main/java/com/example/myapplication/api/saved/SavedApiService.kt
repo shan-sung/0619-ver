@@ -1,4 +1,4 @@
-package com.example.myapplication.api
+package com.example.myapplication.api.saved
 
 import com.example.myapplication.model.Attraction
 import retrofit2.http.Body

@@ -3,7 +3,7 @@ package com.example.myapplication.di
 import com.example.myapplication.api.AuthApiService
 import com.example.myapplication.api.ChatApiService
 import com.example.myapplication.api.PlacesApiService
-import com.example.myapplication.api.SavedApiService
+import com.example.myapplication.api.saved.SavedApiService
 import com.example.myapplication.api.TripsApiService
 import com.example.myapplication.util.LocalDateAdapter
 import com.google.gson.GsonBuilder
@@ -30,6 +30,15 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    fun providePlacesApi(
+        @Named("PlacesRetrofit") retrofit: Retrofit
+    ): PlacesApiService {
+        return retrofit.create(PlacesApiService::class.java)
+    }
+
+
+    @Provides
+    @Singleton
     fun provideSavedApiService(
         @Named("TripsRetrofit") retrofit: Retrofit
     ): SavedApiService {
@@ -53,18 +62,12 @@ object NetworkModule {
     @Provides
     @Singleton
     @Named("PlacesRetrofit")
-    fun providePlacesRetrofit(): Retrofit =
-        Retrofit.Builder()
-            .baseUrl("https://maps.googleapis.com/maps/api/")
+    fun providePlacesRetrofit(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://maps.googleapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
-
-    @Provides
-    @Singleton
-    fun providePlacesApiService(
-        @Named("PlacesRetrofit") retrofit: Retrofit
-    ): PlacesApiService =
-        retrofit.create(PlacesApiService::class.java)
+    }
 
     @Provides
     @Singleton

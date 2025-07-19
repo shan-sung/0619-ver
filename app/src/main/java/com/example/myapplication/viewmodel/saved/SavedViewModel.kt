@@ -3,7 +3,7 @@ package com.example.myapplication.viewmodel.saved
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.SavedRepository
+import com.example.myapplication.api.saved.SavedRepository
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.CurrentUser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -32,6 +32,7 @@ class SavedViewModel @Inject constructor(
     }
 
     fun addToSaved(attraction: Attraction) {
+        Log.d("SavedViewModel", "儲存景點：${attraction.name}, tags = ${attraction.tags}")
         val userId = CurrentUser.user?.id ?: return
         viewModelScope.launch {
             try {

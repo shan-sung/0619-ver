@@ -3,6 +3,7 @@ package com.example.myapplication.ui.components
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,6 +68,7 @@ fun Travel.toInfoCardData(navController: NavController, showButton: Boolean = fa
         location = "$startDate 至 $endDate",
         imageUrl = imageUrl,
         onClick = {
+            Log.d("CLICK", "點擊了行程卡片：${_id}")
             navController.navigate(Routes.MyPlans.detailRoute(_id ?: ""))
         },
         buttonText = if (showButton) "聊天室" else null,
@@ -107,11 +109,13 @@ fun InfoCardVertical(
 ) {
     Row(
         modifier = modifier
+            .clickable(enabled = data.onClick != null) {
+                data.onClick?.invoke()
+            }
             .fillMaxWidth()
             .height(72.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .clickable { data.onClick?.invoke() }
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -146,6 +150,24 @@ fun InfoCardVertical(
         }
     }
 }
+
+@Composable
+fun AttractionInfoCardVertical(
+    attraction: Attraction,
+    context: Context,
+    onItemClick: (Attraction) -> Unit
+) {
+    InfoCardVertical(
+        data = attraction.toInfoCardData(context).copy(
+            onClick = {
+                Log.d("CLICK_ATTRACTION", "Clicked: ${attraction.name}")
+                onItemClick(attraction)
+            }
+        )
+    )
+}
+
+
 
 @Composable
 fun InfoCard(

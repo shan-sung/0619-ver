@@ -6,6 +6,7 @@ import com.example.myapplication.model.TripCreationInfo
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
@@ -24,4 +25,11 @@ interface TripsApiService {
         @Path("travelId") travelId: String,
         @Body item: ScheduleItem
     ): Response<ScheduleItem>
+
+    @PATCH("trips/{travelId}/schedules")
+    suspend fun updateScheduleItem(
+        @Path("travelId") travelId: String,
+        @Body updatedItem: ScheduleItem
+    ): Response<Unit>
+
 }
