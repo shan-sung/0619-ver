@@ -139,8 +139,10 @@ fun CreateTripWizardScreen(
                 else {
                     AppExtendedFab(text = "Submit", onClick = {
                         viewModel.updateBudget(budget)
-                        viewModel.submitTrip()
-                        navController.navigate(Routes.App.MY_PLANS)
+                        viewModel.submitTrip { travel ->
+                            navController.currentBackStackEntry?.savedStateHandle?.set("travel", travel)
+                            navController.navigate(Routes.MyPlans.PREVIEW)
+                        }
                     })
                 }
             }

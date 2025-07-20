@@ -34,7 +34,7 @@ data class Attraction(
 ) : Parcelable
 
 
-
+@Parcelize
 data class Travel(
     val _id: String,
     val userId: String,
@@ -48,7 +48,7 @@ data class Travel(
     val description: String? = null,
     val imageUrl: String? = null,
     val itinerary: List<ItineraryDay>? = null
-) {
+) : Parcelable {
     val days: Int
         get() {
             return try {
@@ -72,30 +72,31 @@ data class ChatMessage(
     val timestamp: Long
 )
 
-
+@Parcelize
 data class ItineraryDay(
     val day: Int,               // 第幾天
     val schedule: List<ScheduleItem>
-)
+): Parcelable
 
+@Parcelize
 data class ScheduleItem(
     val day: Int,
     val time: ScheduleTime,
     val activity: String,
     val transportation: String,
     val note: String? = ""
-) {
+) : Parcelable {
     val startTime: LocalTime?
         get() = time.start.toLocalTimeOrNull()
     val endTime: LocalTime?
         get() = time.end.toLocalTimeOrNull()
 }
 
-
+@Parcelize
 data class ScheduleTime(
     val start: String,              // "08:00"
     val end: String                 // "09:00"
-)
+): Parcelable
 
 // 擴充函式：讓 String 支援安全轉換為 LocalTime
 fun String.toLocalTimeOrNull(): LocalTime? {

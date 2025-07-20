@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.TripsApiService
 import com.example.myapplication.model.CurrentUser
+import com.example.myapplication.model.Travel
 import com.example.myapplication.model.TripCreationInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +27,7 @@ class TripCreationViewModel @Inject constructor(
     private val _step = MutableStateFlow(0)
     val step: StateFlow<Int> = _step.asStateFlow()
 
-    fun submitTrip() {
+    fun submitTrip(onSuccess: (Travel) -> Unit) {
         viewModelScope.launch {
             try {
                 val currentUser = CurrentUser.user
@@ -34,7 +35,12 @@ class TripCreationViewModel @Inject constructor(
                     val trip = tripInfo.value.copy(userId = currentUser.id)
                     val createdTrip = tripsApiService.createTripFromRequest(trip)
                     Log.d("TripCreation", "建立成功：$createdTrip")
-                    resetTrip()
+
+                    // ✅ 將 Travel 回傳給 UI 層處理跳轉
+                    onSuccess(createdTrip)
+
+                    // ❗如需在 preview 結束後才重設，可以延後呼叫 resetTrip()
+                    // resetTrip()
                 } else {
                     Log.e("TripCreation", "未登入使用者，無法建立行程")
                 }
@@ -43,6 +49,7 @@ class TripCreationViewModel @Inject constructor(
             }
         }
     }
+
 
 
     fun resetTrip() {
