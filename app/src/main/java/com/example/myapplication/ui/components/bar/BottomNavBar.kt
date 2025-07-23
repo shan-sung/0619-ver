@@ -4,6 +4,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -26,6 +27,7 @@ val bottomNavItems = listOf(
     BottomNavItem(Routes.App.EXPLORE, "Explore", Icons.Filled.Explore),
     BottomNavItem(Routes.App.MY_PLANS, "My Plans", Icons.Filled.Map),
     BottomNavItem(Routes.App.SAVED, "Saved", Icons.Filled.FavoriteBorder),
+    BottomNavItem(Routes.App.FRIEND, "Friend", Icons.Filled.People),
     BottomNavItem(Routes.App.PROFILE, "Profile", Icons.Filled.Person)
 )
 

@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.explore.ExploreScreen
+import com.example.myapplication.ui.screens.friend.FriendScreen
 import com.example.myapplication.ui.screens.myplans.TripsScreen
 import com.example.myapplication.ui.screens.profile.ProfileScreen
 import com.example.myapplication.ui.screens.saved.SavedScreen
@@ -49,5 +50,11 @@ fun NavGraphBuilder.profileNav(navController: NavController) {
         } ?: run {
             CircularProgressIndicator(modifier = Modifier.fillMaxSize())
         }
+    }
+}
+
+fun NavGraphBuilder.friendNav(navController: NavController) {
+    composable(Routes.App.FRIEND) {
+        FriendScreen(navController = navController)
     }
 }

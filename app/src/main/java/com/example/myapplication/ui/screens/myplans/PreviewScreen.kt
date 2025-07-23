@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,7 +35,6 @@ import com.example.myapplication.model.ItineraryDay
 import com.example.myapplication.model.Travel
 import com.example.myapplication.navigation.details.fakeTravel
 import com.example.myapplication.ui.components.AppExtendedFab
-import com.example.myapplication.ui.components.AppFab
 
 @Composable
 fun PreviewScreen(
@@ -47,7 +45,6 @@ fun PreviewScreen(
     val scrollState = rememberScrollState()
 
     Box(modifier = Modifier.fillMaxSize()) {
-
         Column(
             modifier = Modifier
                 .fillMaxSize()

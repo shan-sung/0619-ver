@@ -23,15 +23,16 @@ fun MainScreen() {
             Routes.Saved.MAIN,
             Routes.Profile.MAIN,
             Routes.MyPlans.CREATE,
-            Routes.MyPlans.SELECT_FROM_SAVED // ✅ 加這行
+            Routes.MyPlans.SELECT_FROM_SAVED
         )
     } ?: false
 
     val showBottomBar = currentRoute in listOf(
-        Routes.Explore.MAIN,
-        Routes.MyPlans.MAIN,
-        Routes.Saved.MAIN,
-        Routes.Profile.MAIN
+        Routes.App.EXPLORE,
+        Routes.App.MY_PLANS,
+        Routes.App.SAVED,
+        Routes.App.FRIEND,
+        Routes.App.PROFILE
     )
 
     val topBarTitle = when {
@@ -40,7 +41,7 @@ fun MainScreen() {
         currentRoute == Routes.Saved.MAIN -> "Saved"
         currentRoute == Routes.Profile.MAIN -> "Profile"
         currentRoute == Routes.MyPlans.CREATE -> "Create"
-        currentRoute == Routes.MyPlans.SELECT_FROM_SAVED -> "Select Attraction" // ✅ 給新頁面自訂標題
+        currentRoute == Routes.MyPlans.SELECT_FROM_SAVED -> "Select Attraction"
         else -> currentRoute?.replaceFirstChar { it.uppercase() } ?: ""
     }
 

@@ -14,6 +14,7 @@ object Routes {
         const val MY_PLANS = "my_plans"
         const val SAVED = "saved"
         const val PROFILE = "profile"
+        const val FRIEND = "friend"
     }
 
     // Explore 頁與其子頁面

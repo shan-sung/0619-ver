@@ -20,14 +20,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.viewmodel.auth.AuthViewModel
 
@@ -40,11 +38,10 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
 
+    // ✅ 加回這段才能在登入後跳轉
     LaunchedEffect(user) {
         if (user != null) {
-            CurrentUser.login(user!!)
             navController.navigate(Routes.Root.MAIN) {
                 popUpTo(Routes.Root.LOGIN) { inclusive = true }
             }

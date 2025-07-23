@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.AuthApiService
+import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.LoginRequest
 import com.example.myapplication.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,10 +26,15 @@ class AuthViewModel @Inject constructor(
             try {
                 val response = authApiService.login(LoginRequest(email, password))
                 _user.value = response.user
-                // Optional: 儲存 response.token 到 DataStore
+
+                // ✅ 補上這行
+                CurrentUser.login(response.user, response.token)
+                Log.d("Auth", "JWT Token: ${CurrentUser.token}")
+
             } catch (e: Exception) {
                 Log.e("AuthViewModel", "Login error: ${e.message}")
             }
         }
     }
+
 }
