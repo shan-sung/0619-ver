@@ -27,11 +27,11 @@ fun BudgetScreen(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 32.dp, start = 16.dp, end = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+            .padding(top = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        QuesText("What is your total budget for this trip?")
+        QuesText("總預算")
 
         Text("NT$${budget}", style = MaterialTheme.typography.titleLarge)
 

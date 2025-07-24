@@ -45,8 +45,8 @@ fun DateRangeScreen(
             .padding(top = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        QuesText("When is your trip?")
+    ){
+        QuesText("起迄日期")
 
         Box(
             modifier = Modifier

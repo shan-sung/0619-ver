@@ -18,7 +18,10 @@ data class TripCreationInfo(
     val transportOptions: List<String> = emptyList(),
     val cities: List<String> = emptyList(),
     val budget: Int = 0,
-    val title: String = ""
+    val google: Boolean = false,
+    val title: String = "",
+    val dailyStartHour: Int = 9,  // e.g. 9:00 AM
+    val dailyEndHour: Int = 20    // e.g. 8:00 PM
 )
 
 @Parcelize

@@ -24,7 +24,7 @@ fun TitleInputScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        QuesText("What is the name of your trip?")
+        QuesText("幫這次的旅遊取個名吧！")
 
         OutlinedTextField(
             value = title,

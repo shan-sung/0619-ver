@@ -1,24 +1,16 @@
 package com.example.myapplication.ui.screens.myplans.creation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import android.widget.Toast
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -34,6 +26,7 @@ fun CreateTripWizardScreen(
     navController: NavController,
     viewModel: TripCreationViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val step by viewModel.step.collectAsState()
 
     val localDateSaver = Saver<LocalDate, String>(
@@ -47,59 +40,17 @@ fun CreateTripWizardScreen(
     )
 
     var title by rememberSaveable { mutableStateOf("") }
-
-    var startDate by rememberSaveable(
-        inputs = arrayOf(title),
-        stateSaver = localDateSaver
-    ) {
-        mutableStateOf(LocalDate.now())
-    }
-
-    var endDate by rememberSaveable(
-        inputs = arrayOf(startDate),
-        stateSaver = localDateSaver
-    ) {
-        mutableStateOf(LocalDate.now().plusDays(1))
-    }
-
-    var peopleCount by rememberSaveable(
-        inputs = arrayOf(title)
-    ) {
-        mutableIntStateOf(1)
-    }
-
-    var ageRange by rememberSaveable(
-        inputs = arrayOf(peopleCount)
-    ) {
-        mutableStateOf("")
-    }
-
-    var prefer by rememberSaveable(
-        inputs = arrayOf(ageRange),
-        stateSaver = stringListSaver
-    ) {
-        mutableStateOf(listOf())
-    }
-
-    var transport by rememberSaveable(
-        inputs = arrayOf(prefer),
-        stateSaver = stringListSaver
-    ) {
-        mutableStateOf(listOf())
-    }
-
-    var city by rememberSaveable(
-        inputs = arrayOf(transport),
-        stateSaver = stringListSaver
-    ) {
-        mutableStateOf(listOf())
-    }
-
-    var budget by rememberSaveable(
-        inputs = arrayOf(city)
-    ) {
-        mutableIntStateOf(10000)
-    }
+    var startDate by rememberSaveable(stateSaver = localDateSaver) { mutableStateOf(LocalDate.now()) }
+    var endDate by rememberSaveable(stateSaver = localDateSaver) { mutableStateOf(LocalDate.now().plusDays(1)) }
+    var peopleCount by rememberSaveable { mutableIntStateOf(1) }
+    var startHour by rememberSaveable { mutableIntStateOf(9) }
+    var endHour by rememberSaveable { mutableIntStateOf(20) }
+    var ageRange by rememberSaveable { mutableStateOf("") }
+    var prefer by rememberSaveable(stateSaver = stringListSaver) { mutableStateOf(listOf()) }
+    var transport by rememberSaveable(stateSaver = stringListSaver) { mutableStateOf(listOf()) }
+    var city by rememberSaveable(stateSaver = stringListSaver) { mutableStateOf(listOf()) }
+    var budget by rememberSaveable { mutableIntStateOf(10000) }
+    var google by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         modifier = modifier,
@@ -111,15 +62,34 @@ fun CreateTripWizardScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 if (step > 0) {
-                    AppExtendedFab(text = "Previous",onClick = { viewModel.prevStep() })
+                    AppExtendedFab(text = "上一步", onClick = { viewModel.prevStep() })
                 } else {
-                    Spacer(modifier = Modifier.weight(1f)) // 保持對齊
+                    Spacer(modifier = Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
-                if (step < 7) {
-                    AppExtendedFab(modifier,"下一步", onClick = {
+                if (step < 9) {
+                    AppExtendedFab(text = "下一步", onClick = {
+                        val isValid = when (step) {
+                            0 -> title.isNotBlank()
+                            1 -> !endDate.isBefore(startDate)
+                            2 -> peopleCount > 0
+                            3 -> ageRange.isNotBlank()
+                            4 -> prefer.isNotEmpty()
+                            5 -> transport.isNotEmpty()
+                            6 -> city.isNotEmpty()
+                            7 -> budget > 0
+                            8 -> true
+                            9 -> endHour > startHour
+                            else -> true
+                        }
+
+                        if (!isValid) {
+                            Toast.makeText(context, "請完整填寫本頁資訊", Toast.LENGTH_SHORT).show()
+                            return@AppExtendedFab
+                        }
+
                         when (step) {
                             0 -> viewModel.updateTitle(title)
                             1 -> {
@@ -132,13 +102,42 @@ fun CreateTripWizardScreen(
                             5 -> viewModel.updateTransportOptions(transport)
                             6 -> viewModel.updateCities(city)
                             7 -> viewModel.updateBudget(budget)
+                            8 -> viewModel.updateGoogle(google)
+                            9 -> viewModel.updateDailyHourRange(startHour, endHour)
                         }
                         viewModel.nextStep()
                     })
-                }
-                else {
+                } else {
                     AppExtendedFab(text = "Submit", onClick = {
-                        viewModel.updateBudget(budget)
+                        val allValid = title.isNotBlank() &&
+                                !endDate.isBefore(startDate) &&
+                                peopleCount > 0 &&
+                                ageRange.isNotBlank() &&
+                                prefer.isNotEmpty() &&
+                                transport.isNotEmpty() &&
+                                city.isNotEmpty() &&
+                                budget > 0 &&
+                                startHour < endHour
+
+                        if (!allValid) {
+                            Toast.makeText(context, "請確認所有欄位皆已填寫", Toast.LENGTH_SHORT).show()
+                            return@AppExtendedFab
+                        }
+
+                        viewModel.updateAllInputs(
+                            title = title,
+                            startDate = startDate,
+                            endDate = endDate,
+                            peopleCount = peopleCount,
+                            ageRange = ageRange,
+                            preferences = prefer,
+                            transport = transport,
+                            cities = city,
+                            budget = budget,
+                            google = google,
+                            dailyStartHour = startHour,
+                            dailyEndHour = endHour
+                        )
                         viewModel.submitTrip { travel ->
                             navController.currentBackStackEntry?.savedStateHandle?.set("travel", travel)
                             navController.navigate(Routes.MyPlans.PREVIEW)
@@ -148,7 +147,18 @@ fun CreateTripWizardScreen(
             }
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            LinearProgressIndicator(
+                progress = { (step + 1) / 10f },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
+            )
+
             when (step) {
                 0 -> TitleInputScreen(title = title, onTitleChange = { title = it })
                 1 -> DateRangeScreen(
@@ -159,13 +169,21 @@ fun CreateTripWizardScreen(
                         endDate = end ?: LocalDate.now().plusDays(1)
                     }
                 )
-
                 2 -> PeopleCountScreen(count = peopleCount, onCountChange = { peopleCount = it })
                 3 -> AgeRangeScreen(value = ageRange, onValueChange = { ageRange = it })
                 4 -> PreferencesScreen(selected = prefer, onChange = { prefer = it })
                 5 -> TransportOptionsScreen(selected = transport, onChange = { transport = it })
                 6 -> CitySelectionScreen(selected = city, onChange = { city = it })
                 7 -> BudgetScreen(initialBudget = budget, onChange = { budget = it })
+                8 -> GoogleRatingScreen(value = google, onValueChange = { google = it })
+                9 -> DailyHourRangeScreen(
+                    startHour = startHour,
+                    endHour = endHour,
+                    onChange = { s, e ->
+                        startHour = s
+                        endHour = e
+                    }
+                )
             }
         }
     }

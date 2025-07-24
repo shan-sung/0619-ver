@@ -23,17 +23,17 @@ fun TransportOptionsScreen(
     selected: List<String> = emptyList(),
     onChange: (List<String>) -> Unit
 ) {
-    val options = listOf("走路", "腳踏車", "汽車", "機車", "公車", "火車", "船")
+    val options = listOf("步行", "腳踏車", "汽車", "機車", "公車")
     var selectedTransports by rememberSaveable { mutableStateOf(selected) }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.Start
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        QuesText("Which transport options are acceptable during your trip?")
+        QuesText("請選擇偏好的交通方式（可複選）")
 
         options.forEach { option ->
             val isSelected = selectedTransports.contains(option)

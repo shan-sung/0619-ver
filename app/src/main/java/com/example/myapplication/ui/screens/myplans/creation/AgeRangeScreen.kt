@@ -42,7 +42,7 @@ fun AgeRangeScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        QuesText("What is the age range of your group?")
+        QuesText("平均年齡")
 
         ageRanges.forEach { range ->
             Row(

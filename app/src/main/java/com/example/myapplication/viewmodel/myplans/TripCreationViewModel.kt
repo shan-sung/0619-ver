@@ -50,6 +50,41 @@ class TripCreationViewModel @Inject constructor(
         }
     }
 
+    fun updateAllInputs(
+        title: String,
+        startDate: LocalDate,
+        endDate: LocalDate,
+        peopleCount: Int,
+        ageRange: String,
+        preferences: List<String>,
+        transport: List<String>,
+        cities: List<String>,
+        budget: Int,
+        google: Boolean,
+        dailyStartHour: Int,
+        dailyEndHour: Int
+    ) {
+        _tripInfo.update {
+            it.copy(
+                title = title,
+                startDate = startDate,
+                endDate = endDate,
+                peopleCount = peopleCount,
+                averageAgeRange = ageRange,
+                preferences = preferences,
+                transportOptions = transport,
+                cities = cities,
+                budget = budget,
+                google = google,
+                dailyStartHour = dailyStartHour,
+                dailyEndHour = dailyEndHour
+            )
+        }
+    }
+
+    fun updateDailyHourRange(startHour: Int, endHour: Int) {
+        _tripInfo.update { it.copy(dailyStartHour = startHour, dailyEndHour = endHour) }
+    }
 
 
     fun resetTrip() {
@@ -91,6 +126,10 @@ class TripCreationViewModel @Inject constructor(
 
     fun updateBudget(amount: Int) {
         _tripInfo.update { it.copy(budget = amount) }
+    }
+
+    fun updateGoogle(google: Boolean) {
+        _tripInfo.update { it.copy(google = google) }
     }
 
     fun nextStep() {

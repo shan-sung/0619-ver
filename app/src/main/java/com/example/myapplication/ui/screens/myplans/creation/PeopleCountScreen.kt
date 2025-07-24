@@ -25,8 +25,8 @@ fun PeopleCountScreen(count: Int, onCountChange: (Int) -> Unit) {
             .padding(top = 32.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        QuesText("How many people are going on this trip?")
+    ){
+        QuesText("這次的旅遊人數")
 
         Text(
             text = "$count people",
