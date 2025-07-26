@@ -1,7 +1,16 @@
 package com.example.myapplication.navigation.details
 
+import android.widget.Toast
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -9,9 +18,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.myapplication.model.ItineraryDay
-import com.example.myapplication.model.ScheduleItem
-import com.example.myapplication.model.ScheduleTime
 import com.example.myapplication.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.myplans.CreatedTripsScreen
@@ -22,6 +28,8 @@ import com.example.myapplication.ui.screens.myplans.creation.CreateTripWizardScr
 import com.example.myapplication.ui.screens.myplans.trip.ChatRoomScreen
 import com.example.myapplication.ui.screens.myplans.trip.SelectFromSavedListScreen
 import com.example.myapplication.ui.screens.myplans.trip.TripScreen
+import com.example.myapplication.viewmodel.myplans.PreviewViewModel
+import com.example.myapplication.viewmodel.myplans.TripCreationViewModel
 
 @Composable
 fun TripNavHost(
@@ -78,73 +86,56 @@ fun NavGraphBuilder.selectFromSavedNav(navController: NavController) {
     }
 }
 
-fun NavGraphBuilder.previewNav() {
-    composable(Routes.MyPlans.PREVIEW) { backStackEntry ->
-//        val travel = backStackEntry.savedStateHandle?.get<Travel>("travel")
-        val travel = fakeTravel()
+fun NavGraphBuilder.previewNav(navController: NavController) {
+    composable(Routes.MyPlans.PREVIEW) {
+        val context = LocalContext.current
+        val previewViewModel: PreviewViewModel = hiltViewModel()
+        val creationViewModel: TripCreationViewModel = hiltViewModel()
+
+        val travel = navController.previousBackStackEntry
+            ?.savedStateHandle
+            ?.get<Travel>("travel")
+
         if (travel != null) {
             PreviewScreen(
                 travel = travel,
                 onConfirm = {
-                    // TODO: 送出 confirm API 並跳轉行程列表或詳細頁
+                    previewViewModel.confirmTrip(
+                        travel = travel,
+                        onSuccess = { confirmedTrip ->
+                            // ✅ 轉跳到行程詳細頁（假設路由為 /myplans/detail/{tripId}）
+                            navController.navigate(
+                                Routes.MyPlans.DETAIL.replace("{tripId}", confirmedTrip._id)
+                            )
+                        },
+                        onError = { msg ->
+                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 },
                 onRegenerate = {
-                    // TODO: 重新送出 trip-request 並更新 preview
+                    creationViewModel.submitTrip { regenerated ->
+                        // ✅ 將新的行程放入 savedStateHandle 並取代當前畫面
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("travel", regenerated)
+
+                        navController.navigate(Routes.MyPlans.PREVIEW) {
+                            popUpTo(Routes.MyPlans.PREVIEW) { inclusive = true }
+                        }
+                    }
                 }
             )
+        } else {
+            // 如果找不到行程，提示使用者
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("請重新建立行程")
+            }
         }
     }
-}
-
-fun fakeTravel(): Travel {
-    return Travel(
-        _id = "t123",
-        userId = "u001",
-        chatRoomId = "c001",
-        members = listOf("u001", "u002"),
-        created = false,
-        title = "Paris Trip",
-        startDate = "2025-08-01",
-        endDate = "2025-08-05",
-        budget = 20000,
-        description = "A romantic getaway",
-        imageUrl = "https://source.unsplash.com/featured/?eiffel-tower",
-        itinerary = listOf(
-            ItineraryDay(
-                day = 1,
-                schedule = listOf(
-                    ScheduleItem(1, ScheduleTime("09:00", "10:00"), "Eiffel Tower visit", "Walk"),
-                    ScheduleItem(1, ScheduleTime("12:00", "13:00"), "Lunch at bistro", "Walk"),
-                    ScheduleItem(1, ScheduleTime("14:00", "16:00"), "Louvre Museum exploration", "Metro")
-                )
-            ),
-            ItineraryDay(
-                day = 2,
-                schedule = listOf(
-                    ScheduleItem(2, ScheduleTime("10:00", "12:00"), "Notre Dame", "Metro"),
-                    ScheduleItem(2, ScheduleTime("13:00", "15:00"), "Seine River cruise", "Boat")
-                )
-            ),
-            ItineraryDay(
-                day = 3,
-                schedule = listOf(
-                    ScheduleItem(3, ScheduleTime("10:00", "11:00"), "Montmartre", "Metro"),
-                    ScheduleItem(3, ScheduleTime("11:30", "13:00"), "Sacré-Cœur Basilica", "Walk")
-                )
-            ),
-            ItineraryDay(
-                day = 4,
-                schedule = listOf(
-                    ScheduleItem(4, ScheduleTime("09:30", "12:00"), "Versailles Palace", "Train"),
-                    ScheduleItem(4, ScheduleTime("13:00", "15:00"), "Champs-Élysées", "Metro")
-                )
-            ),
-            ItineraryDay(
-                day = 5,
-                schedule = listOf(
-                    ScheduleItem(5, ScheduleTime("09:00", "10:00"), "Departure", "Taxi")
-                )
-            )
-        )
-    )
 }

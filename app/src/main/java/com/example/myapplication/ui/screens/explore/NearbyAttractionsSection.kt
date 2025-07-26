@@ -35,6 +35,4 @@ fun LazyListScope.nearbyAttractionsSection(
             onItemClick = onItemClick
         )
     }
-
 }
-

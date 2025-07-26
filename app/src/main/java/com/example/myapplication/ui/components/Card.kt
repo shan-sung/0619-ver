@@ -136,7 +136,7 @@ fun InfoCardVertical(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 data.title,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -155,7 +155,8 @@ fun InfoCardVertical(
 fun AttractionInfoCardVertical(
     attraction: Attraction,
     context: Context,
-    onItemClick: (Attraction) -> Unit
+    onItemClick: (Attraction) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     InfoCardVertical(
         data = attraction.toInfoCardData(context).copy(
@@ -163,9 +164,11 @@ fun AttractionInfoCardVertical(
                 Log.d("CLICK_ATTRACTION", "Clicked: ${attraction.name}")
                 onItemClick(attraction)
             }
-        )
+        ),
+        modifier = modifier // ✅ 傳入外部指定的寬度
     )
 }
+
 
 @Composable
 fun InfoCard(

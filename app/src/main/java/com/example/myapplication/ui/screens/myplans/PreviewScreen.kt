@@ -1,10 +1,13 @@
+@file:Suppress("DEPRECATION")
+
 package com.example.myapplication.ui.screens.myplans
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,11 +17,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,15 +35,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication.R
+import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.ItineraryDay
+import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
-import com.example.myapplication.navigation.details.fakeTravel
 import com.example.myapplication.ui.components.AppExtendedFab
+import com.example.myapplication.ui.components.AttractionInfoCardVertical
+
+fun ScheduleItem.toAttraction(): Attraction {
+    return Attraction(
+        id = placeId ?: activity,
+        name = placeName ?: activity,
+        city = "",
+        country = "",
+        description = note,
+        imageUrl = "https://your-image-api.com/search?placeId=$placeId" // 或直接傳進來
+    )
+}
+
 
 @Composable
 fun PreviewScreen(
@@ -52,12 +76,9 @@ fun PreviewScreen(
                 .verticalScroll(scrollState)
                 .padding(16.dp)
         ) {
-            // 1. 圖片區塊
+            // 圖片
             val imageRequest = ImageRequest.Builder(LocalContext.current)
-                .data(
-                    travel.imageUrl
-                        ?: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
-                )
+                .data(travel.imageUrl ?: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e")
                 .crossfade(true)
                 .build()
 
@@ -75,7 +96,7 @@ fun PreviewScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 3. 三欄基本資訊
+            // 基本資訊
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -87,45 +108,25 @@ fun PreviewScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // 每日行程
             travel.itinerary?.forEach { day ->
                 DayScheduleCard(day)
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            // 5. 操作按鈕
+            // Regenerate 按鈕
             Spacer(modifier = Modifier.height(16.dp))
-
             TextButton(
                 onClick = { onRegenerate() },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
                 Text("Regenerate")
             }
+
             Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                AppExtendedFab(
-                    modifier = Modifier.weight(1f),
-                    text = "Invite Contacts",
-                    onClick = { /* ... */ },
-                    contentPadding = PaddingValues(vertical = 4.dp, horizontal = 8.dp)
-                )
-
-                AppExtendedFab(
-                    modifier = Modifier.weight(1f),
-                    text = "Share Link",
-                    onClick = { /* ... */ },
-                    contentPadding = PaddingValues(vertical = 4.dp, horizontal = 8.dp)
-                )
-            }
-
         }
+
+        // Confirm 按鈕
         AppExtendedFab(
             onClick = { onConfirm() },
             contentDescription = "Confirm Trip",
@@ -137,6 +138,7 @@ fun PreviewScreen(
         )
     }
 }
+
 
 @Composable
 fun DetailItem(label: String, value: String) {
@@ -162,29 +164,66 @@ fun DetailItem(label: String, value: String) {
 
 @Composable
 fun DayScheduleCard(day: ItineraryDay) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surface),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Text(
             text = "Day ${day.day}",
-            style = MaterialTheme.typography.titleLarge
+            style = MaterialTheme.typography.headlineSmall,
         )
 
-        Column(modifier = Modifier.padding(start = 8.dp)) {
-            day.schedule.forEach {
-                Text(
-                    text = "${it.time.start}  ${it.activity}",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        day.schedule.forEach { schedule ->
+            PlaceItemCard(schedule)
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
-@Preview(showBackground = true)
 @Composable
-fun PreviewScreenPreview() {
-    PreviewScreen(
-        travel = fakeTravel(),
-        onConfirm = {},
-        onRegenerate = {}
+fun PlaceItemCard(item: ScheduleItem) {
+    val context = LocalContext.current
+    var showDialog by remember { mutableStateOf(false) }
+
+    AttractionInfoCardVertical(
+        attraction = item.toAttraction(),
+        context = context,
+        onItemClick = { showDialog = true },
+        modifier = Modifier.fillMaxWidth() // ✅ 加這個
     )
+
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = item.placeName ?: item.activity) },
+            text = {
+                Column {
+                    item.placeId?.let { placeId ->
+                        val gmapUrl = "https://www.google.com/maps/place/?q=place_id=$placeId"
+                        ClickableText(
+                            text = AnnotatedString("🔗 查看 Google 地圖"),
+                            onClick = { openMapUrl(gmapUrl, context) }
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("關閉")
+                }
+            }
+        )
+    }
+}
+
+fun openMapUrl(url: String, context: Context) {
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent)
 }

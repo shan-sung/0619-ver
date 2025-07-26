@@ -28,7 +28,7 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
         savedNav(navController)
         featuredNav(navController)
         selectFromSavedNav(navController)
-        previewNav()
+        previewNav(navController)
         friendNav(navController)
     }
 }

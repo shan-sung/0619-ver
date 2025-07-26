@@ -110,7 +110,6 @@ fun ScheduleItemCard(
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 圓形底色 icon         .background(MaterialTheme.colorScheme.surface), // 使用主題的 surface 顏色
         Box(
             modifier = Modifier
                 .size(48.dp)

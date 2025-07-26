@@ -71,7 +71,6 @@ fun ExploreScreen(
         }
     }
 
-    // ✅ 用 Box 包起來（這非常關鍵）
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
             if (travels.isNotEmpty()) {
@@ -99,7 +98,6 @@ fun ExploreScreen(
             }
         }
 
-        // ✅ Dialog 放在 Box 裡，但不屬於 LazyColumn！
         selectedAttraction?.let { attraction ->
             Log.d("DIALOG_STATE", "顯示 Dialog：${attraction.name}")
             AttractionActionDialog(
