@@ -104,9 +104,7 @@ fun NavGraphBuilder.previewNav(navController: NavController) {
                         travel = travel,
                         onSuccess = { confirmedTrip ->
                             // ✅ 轉跳到行程詳細頁（假設路由為 /myplans/detail/{tripId}）
-                            navController.navigate(
-                                Routes.MyPlans.DETAIL.replace("{tripId}", confirmedTrip._id)
-                            )
+                            navController.navigate(Routes.MyPlans.detailRoute(confirmedTrip._id))
                         },
                         onError = { msg ->
                             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()

@@ -27,7 +27,6 @@ class AuthViewModel @Inject constructor(
                 val response = authApiService.login(LoginRequest(email, password))
                 _user.value = response.user
 
-                // ✅ 補上這行
                 CurrentUser.login(response.user, response.token)
                 Log.d("Auth", "JWT Token: ${CurrentUser.token}")
 
@@ -36,5 +35,4 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
 }

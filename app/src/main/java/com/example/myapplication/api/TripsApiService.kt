@@ -1,5 +1,6 @@
 package com.example.myapplication.api
 
+import android.util.Log
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
 import com.example.myapplication.model.TripCreationInfo
@@ -24,9 +25,9 @@ interface TripsApiService {
 
     @POST("/trips")
     suspend fun createTrip(
-        @Body travel: Travel,
-        @Header("Authorization") token: String
+        @Body travel: Travel
     ): Response<Travel>
+
 
     // 使用者新增行程內的景點
     @POST("/trips/{travelId}/schedule")
@@ -49,7 +50,8 @@ class TripRepository @Inject constructor(
 ) {
     suspend fun createTrip(travel: Travel, token: String): Result<Travel> {
         return try {
-            val response = api.createTrip(travel, "Bearer $token")
+            Log.d("TripRepository", "Token 傳入：Bearer $token")
+            val response = api.createTrip(travel)
             if (response.isSuccessful) {
                 Result.success(response.body()!!)
             } else {
