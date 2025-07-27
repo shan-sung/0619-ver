@@ -53,8 +53,8 @@ fun NavGraphBuilder.profileNav(navController: NavController) {
     }
 }
 
-fun NavGraphBuilder.friendNav(navController: NavController) {
+fun NavGraphBuilder.friendNav(navController: NavController, refreshKey: Int) {
     composable(Routes.App.FRIEND) {
-        FriendScreen(navController = navController)
+        FriendScreen(navController = navController, refreshKey = refreshKey)
     }
 }

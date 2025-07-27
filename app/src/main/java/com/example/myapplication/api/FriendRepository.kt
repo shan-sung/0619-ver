@@ -1,5 +1,6 @@
 package com.example.myapplication.api
 
+import android.util.Log
 import com.example.myapplication.model.FriendRequest
 import com.example.myapplication.model.FriendRequestBody
 import com.example.myapplication.model.FriendResponseBody
@@ -14,7 +15,9 @@ class FriendRepository @Inject constructor(
     }
 
     suspend fun getPendingRequests(): List<FriendRequest> {
-        return api.getPendingRequests()
+        val response = api.getPendingRequests()
+        Log.d("FriendRepository", "取得 pending requests：${response.size} 筆")
+        return response
     }
 
     suspend fun sendFriendRequest(toUserId: String) {

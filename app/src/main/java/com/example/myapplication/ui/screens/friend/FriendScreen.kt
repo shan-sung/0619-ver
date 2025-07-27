@@ -5,8 +5,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,13 +20,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.People
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -52,56 +63,124 @@ import com.example.myapplication.ui.components.SectionHeader
 import com.example.myapplication.util.formatRelativeTime
 import com.example.myapplication.viewmodel.friend.FriendViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FriendScreen(navController: NavController) {
+fun FriendScreen(
+    navController: NavController,
+    refreshKey: Int
+) {
     val viewModel: FriendViewModel = hiltViewModel()
-
     val searchResult by viewModel.searchResult.collectAsState()
     val pendingRequests by viewModel.pendingRequests.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sentRequests by viewModel.sentRequests.collectAsState()
-
+    val allFriends by viewModel.friendList.collectAsState()
+    val friendList by viewModel.friendList.collectAsState()
+    var showFriendList by remember { mutableStateOf(false) }
     var selectedFriend by remember { mutableStateOf<UserSummary?>(null) }
+    var query by remember { mutableStateOf("") }
 
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     selectedFriend?.let { friend ->
+        val isFriend = friendList.any { it.id == friend.id }  // ✅ 判斷是否已是朋友
+
         FriendProfileDialog(
             friend = friend,
             alreadyRequested = sentRequests.contains(friend.id),
+            isFriend = isFriend,
             onDismiss = { selectedFriend = null },
             onToggleFriendRequest = { viewModel.toggleFriendRequest(friend.id) }
         )
+    }
+
+
+    LaunchedEffect(refreshKey) {
+        viewModel.loadFriendData()
+        viewModel.clearSearch()
+        query = ""
     }
 
     LaunchedEffect(pendingRequests) {
         Log.d("FriendScreen", "Pending requests: ${pendingRequests.size}")
     }
 
+    if (showFriendList) {
+        ModalBottomSheet(
+            onDismissRequest = { showFriendList = false },
+            sheetState = sheetState
+        ) {
+            Text(
+                text = "All Friends",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(16.dp)
+            )
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight(0.8f)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(friendList) { friend ->
+                    FriendListItem(
+                        friend = friend,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            selectedFriend = friend
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // ✅ LazyColumn UI
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 🔍 搜尋欄位
         item {
-            SearchBar(
-                onSearch = { query ->
-                    if (query.isNotBlank()) {
-                        viewModel.onSearchQueryChanged(query)
-                        viewModel.searchUser(query)
-                    }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SearchBar(
+                    query = query,
+                    onQueryChange = { query = it },
+                    onSearch = { newQuery ->
+                        if (newQuery.isNotBlank()) {
+                            viewModel.onSearchQueryChanged(newQuery)
+                            viewModel.searchUser(newQuery)
+                        }
+                    },
+                    modifier = Modifier.weight(9f)
+                )
+
+                IconButton(
+                    onClick = { showFriendList = true },
+                    modifier = Modifier
+                        .weight(1f)
+                        .aspectRatio(1f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Group,
+                        contentDescription = "Show All Friends"
+                    )
                 }
-            )
+            }
         }
 
-        // Section header
         if (pendingRequests.isNotEmpty()) {
             item {
                 SectionHeader("Pending Requests", modifier = Modifier.padding(vertical = 8.dp))
             }
-
             items(pendingRequests) { request ->
                 PendingFriendRequestCard(
                     avatarUrl = request.fromAvatarUrl,
@@ -113,7 +192,6 @@ fun FriendScreen(navController: NavController) {
             }
         }
 
-        // 🔎 搜尋結果
         if (searchQuery.isNotBlank()) {
             if (isLoading) {
                 item {
@@ -125,6 +203,9 @@ fun FriendScreen(navController: NavController) {
                     }
                 }
             } else if (searchResult != null) {
+                item {
+                    SectionHeader("Search Result", modifier = Modifier.padding(vertical = 8.dp))
+                }
                 item {
                     FriendListItem(
                         friend = searchResult!!,
@@ -200,8 +281,6 @@ fun PendingFriendRequestCard(
     }
 }
 
-
-
 @Composable
 fun FriendListItem(
     friend: UserSummary,
@@ -238,13 +317,6 @@ fun FriendListItem(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                "MBTI: ${friend.mbti}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
@@ -253,6 +325,7 @@ fun FriendListItem(
 fun FriendProfileDialog(
     friend: UserSummary,
     alreadyRequested: Boolean,
+    isFriend: Boolean, // ✅ 新增這個參數
     onDismiss: () -> Unit,
     onToggleFriendRequest: () -> Unit
 ) {
@@ -311,15 +384,25 @@ fun FriendProfileDialog(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Button(
-                    onClick = onToggleFriendRequest,
-                    colors = if (alreadyRequested)
-                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                    else
-                        ButtonDefaults.buttonColors()
-                ) {
-                    Text(if (alreadyRequested) "Cancel Request" else "Add Friend")
+                if (isFriend) {
+                    Icon(
+                        imageVector = Icons.Default.People,
+                        contentDescription = "Already Friends",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(36.dp)
+                    )
+                } else {
+                    Button(
+                        onClick = onToggleFriendRequest,
+                        colors = if (alreadyRequested)
+                            ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        else
+                            ButtonDefaults.buttonColors()
+                    ) {
+                        Text(if (alreadyRequested) "Cancel Request" else "Add Friend")
+                    }
                 }
+
             }
         }
     }

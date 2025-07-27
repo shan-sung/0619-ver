@@ -1,11 +1,7 @@
 package com.example.myapplication.model
 
-import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.Period
-import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 data class User(
     val id: String,
@@ -65,7 +61,6 @@ data class FriendRequest(
     val fromUsername: String,
     val fromAvatarUrl: String
 )
-
 
 data class LoginRequest(
     val email: String,

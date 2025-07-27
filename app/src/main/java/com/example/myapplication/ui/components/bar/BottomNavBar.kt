@@ -32,16 +32,19 @@ val bottomNavItems = listOf(
 )
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
+fun BottomNavigationBar(
+    navController: NavController,
+    currentRoute: String?,
+    onReselect: () -> Unit
+) {
     NavigationBar {
         bottomNavItems.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
                 onClick = {
-                    if (currentRoute != item.route) {
+                    if (currentRoute == item.route) {
+                        onReselect() // ✅ 點同一頁就重整
+                    } else {
                         navController.navigate(item.route) {
                             popUpTo(navController.graph.startDestinationId) {
                                 saveState = true

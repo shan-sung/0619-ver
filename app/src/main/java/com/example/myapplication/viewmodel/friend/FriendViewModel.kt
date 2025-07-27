@@ -47,9 +47,12 @@ class FriendViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
+                val friends = friendRepository.getFriends()
+                Log.d("FriendViewModel", "載入好友共 ${friends.size} 筆")
+                _friendList.value = friends
+
                 _sentRequests.value = friendRepository.getSentRequests().toSet()
                 _pendingRequests.value = friendRepository.getPendingRequests()
-                _friendList.value = friendRepository.getFriends()
             } catch (e: Exception) {
                 Log.e("FriendViewModel", "載入好友資料失敗", e)
             } finally {
@@ -57,7 +60,6 @@ class FriendViewModel @Inject constructor(
             }
         }
     }
-
     fun toggleFriendRequest(userId: String) {
         viewModelScope.launch {
             try {
@@ -95,5 +97,10 @@ class FriendViewModel @Inject constructor(
                 Log.e("FriendViewModel", "搜尋使用者失敗", e)
             }
         }
+    }
+
+    fun clearSearch() {
+        _searchResult.value = null
+        _searchQuery.value = ""
     }
 }

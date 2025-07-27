@@ -12,7 +12,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface FriendApiService {
-
     @GET("friends/list") // ✅ 改對應的後端 API
     suspend fun getFriends(): List<UserSummary>
 

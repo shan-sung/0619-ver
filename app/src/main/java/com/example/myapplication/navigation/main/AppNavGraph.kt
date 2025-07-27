@@ -13,7 +13,7 @@ import com.example.myapplication.navigation.details.tripDetailNav
 import com.example.myapplication.navigation.routes.Routes
 
 @Composable
-fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier, refreshKey: Int) {
     NavHost(
         navController = navController,
         startDestination = Routes.App.EXPLORE,
@@ -29,6 +29,6 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier)
         featuredNav(navController)
         selectFromSavedNav(navController)
         previewNav(navController)
-        friendNav(navController)
+        friendNav(navController, refreshKey)
     }
 }
