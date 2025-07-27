@@ -1,9 +1,13 @@
+
 package com.example.myapplication.ui.screens.myplans.trip
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,16 +20,22 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ModalBottomSheetLayout
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.MonetizationOn
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -37,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,6 +62,7 @@ import com.example.myapplication.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.AppFab
 import com.example.myapplication.ui.components.InfoCard
+import com.example.myapplication.ui.components.RoundedIconButton
 import com.example.myapplication.ui.components.ScheduleTimeline
 import com.example.myapplication.ui.components.SheetItem
 import com.example.myapplication.ui.components.dialogs.AddScheduleDialog
@@ -101,6 +113,7 @@ fun TripScreen(
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TripContent(
     navController: NavController,
@@ -112,14 +125,17 @@ fun TripContent(
     val days = travel.days
     val pagerState = rememberPagerState(initialPage = 0, pageCount = { days })
     val coroutineScope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
+
     val tripStartDate = LocalDate.parse(travel.startDate)
     val tripEndDate = LocalDate.parse(travel.endDate)
     val isOwner = travel.userId == currentUserId
     val isIn = travel.members.contains(currentUserId) || travel.userId == currentUserId
-
     var showDialog by remember { mutableStateOf(false) }
     var defaultLocation by remember { mutableStateOf("") }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedAttraction) {
         selectedAttraction?.let {
@@ -129,86 +145,118 @@ fun TripContent(
         }
     }
 
-    ModalBottomSheetLayout(
-        sheetState = sheetState,
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        sheetContent = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp)
-            ) {
-                Box(
-                    Modifier
-                        .width(40.dp)
-                        .height(4.dp)
-                        .background(Color.LightGray, RoundedCornerShape(2.dp))
-                        .align(Alignment.CenterHorizontally)
+    LaunchedEffect(showBottomSheet) {
+        if (showBottomSheet) {
+            sheetState.show()
+        } else {
+            sheetState.hide()
+        }
+    }
+
+
+    val showShareDialogForTripId = navController.currentBackStackEntry
+        ?.savedStateHandle
+        ?.getStateFlow<String?>("show_share_dialog", null)
+        ?.collectAsState()?.value
+
+    if (showShareDialogForTripId != null) {
+        ShareTripDialog(
+            tripId = showShareDialogForTripId,
+            onDismiss = {
+                navController.currentBackStackEntry?.savedStateHandle?.set("show_share_dialog", null)
+            }
+        )
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            TripInfoCard(navController = navController, travel = travel, showButton = isIn)
+
+            if (days > 0) {
+                TripDayTabs(days = days, pagerState = pagerState, coroutineScope = coroutineScope)
+
+                TripPager(
+                    pagerState = pagerState,
+                    days = days,
+                    itinerary = travel.itinerary ?: emptyList(),
+                    startDate = travel.startDate,
+                    modifier = Modifier.weight(1f)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("Add New Itinerary", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                SheetItem("From Search") { /* handle click */ }
-                SheetItem("From Saved List") {navController.navigate(Routes.MyPlans.SELECT_FROM_SAVED) }
-                SheetItem("Hand-Input") { showDialog = true }
             }
         }
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
+
+        if (isOwner) {
+            AppFab(
+                onClick = {
+                    showBottomSheet = true
+                },
+                icon = Icons.Filled.Add,
+                contentDescription = "Add Itinerary",
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 0.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            )
+        }
+
+        if (showDialog) {
+            AddScheduleDialog(
+                travelId = travel._id,
+                tripStartDate = tripStartDate,
+                tripEndDate = tripEndDate,
+                onDismiss = {
+                    showDialog = false
+                },
+                onScheduleAdded = { item ->
+                    onScheduleAdded(item)
+                    showDialog = false
+                },
+                initialLocation = defaultLocation
+            )
+        }
+
+        if (showBottomSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showBottomSheet = false },
+                sheetState = sheetState,
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
             ) {
-                TripInfoCard(navController = navController, travel = travel, showButton = isIn)
-
-                if (days > 0) {
-                    TripDayTabs(days = days, pagerState = pagerState, coroutineScope = coroutineScope)
-
-                    TripPager(
-                        pagerState = pagerState,
-                        days = days,
-                        itinerary = travel.itinerary ?: emptyList(),
-                        startDate = travel.startDate,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-            if (isOwner) {
-                AppFab(
-                    onClick = {
-                        coroutineScope.launch {
-                            sheetState.show()
-                        }
-                    },
-                    icon = Icons.Filled.Add,
-                    contentDescription = "Add Itinerary",
+                Column(
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp)
-                )
-            }
-            if (showDialog) {
-                AddScheduleDialog(
-                    travelId = travel._id,
-                    tripStartDate = tripStartDate,
-                    tripEndDate = tripEndDate,
-                    onDismiss = {
-                        showDialog = false
-                    },
-                    onScheduleAdded = { item ->
-                        onScheduleAdded(item)
-                        showDialog = false
-                    },
-                    initialLocation = defaultLocation
-                )
+                        .fillMaxWidth()
+                        .padding(24.dp)
+                ) {
+                    Box(
+                        Modifier
+                            .width(40.dp)
+                            .height(4.dp)
+                            .background(Color.LightGray, RoundedCornerShape(2.dp))
+                            .align(Alignment.CenterHorizontally)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("Add New Itinerary", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SheetItem("From Search") { /* handle click */ }
+                    SheetItem("From Saved List") {
+                        showBottomSheet = false
+                        navController.navigate(Routes.MyPlans.SELECT_FROM_SAVED)
+                    }
+                    SheetItem("Hand-Input") {
+                        showBottomSheet = false
+                        showDialog = true
+                    }
+                }
             }
         }
     }
 }
+
 
 @Composable
 fun TripInfoCard(
@@ -216,12 +264,55 @@ fun TripInfoCard(
     travel: Travel,
     showButton: Boolean
 ) {
-    InfoCard(
-        data = travel.toInfoCardData(navController, showButton = showButton),
-        width = 360.dp,
-        height = 200.dp
-    )
+    val cardData = travel.toInfoCardData(navController, showButton = showButton)
+
+    Box {
+        InfoCard(
+            data = cardData.copy(
+                buttonText = null,  // 不顯示原本的文字按鈕
+                onButtonClick = null
+            ),
+            width = 360.dp,
+            height = 200.dp
+        )
+
+        if (showButton) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (travel.userId == CurrentUser.user?.id || travel.members.contains(CurrentUser.user?.id)) {
+                    RoundedIconButton(
+                        icon = Icons.Default.MonetizationOn,
+                        description = "預算",
+                        onClick = {
+                            navController.navigate(Routes.MyPlans.chatRoute(travel._id.orEmpty()))
+                        }
+                    )
+                    RoundedIconButton(
+                        icon = Icons.Default.Chat,
+                        description = "聊天室",
+                        onClick = {
+                            navController.navigate(Routes.MyPlans.chatRoute(travel._id.orEmpty()))
+                        }
+                    )
+                    RoundedIconButton(
+                        icon = Icons.Default.Share,
+                        description = "分享行程",
+                        onClick = {
+                            navController.currentBackStackEntry
+                                ?.savedStateHandle
+                                ?.set("show_share_dialog", travel._id)
+                        }
+                    )
+                }
+            }
+        }
+    }
 }
+
 
 
 @OptIn(ExperimentalPagerApi::class)
@@ -297,4 +388,61 @@ fun DayContent(dayIndex: Int, itineraryDay: ItineraryDay?, dateOverride: String)
             Text("尚無行程資料")
         }
     }
+}
+
+@Composable
+fun ShareTripDialog(
+    tripId: String,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    var triggerShare by remember { mutableStateOf(false) }
+
+    // 🔁 真正處理分享行為
+    LaunchedEffect(triggerShare) {
+        if (triggerShare) {
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                putExtra(Intent.EXTRA_TEXT, "加入我的旅程：點此開啟 ➜ https://yourapp.com/trips/$tripId")
+                type = "text/plain"
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "分享行程"))
+            triggerShare = false // 重置狀態
+            onDismiss()
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("分享行程") },
+        text = {
+            Column {
+                Text("選擇一種方式分享行程")
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        onDismiss() // 邏輯分開，直接呼叫
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("邀請朋友加入")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = {
+                        triggerShare = true // ✅ 觸發分享
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("透過通訊軟體分享")
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
+        }
+    )
 }

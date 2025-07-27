@@ -68,7 +68,6 @@ fun Travel.toInfoCardData(navController: NavController, showButton: Boolean = fa
         location = "$startDate 至 $endDate",
         imageUrl = imageUrl,
         onClick = {
-            Log.d("CLICK", "點擊了行程卡片：${_id}")
             navController.navigate(Routes.MyPlans.detailRoute(_id ?: ""))
         },
         buttonText = if (showButton) "聊天室" else null,
