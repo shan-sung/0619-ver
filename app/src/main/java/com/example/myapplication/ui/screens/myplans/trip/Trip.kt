@@ -153,7 +153,6 @@ fun TripContent(
         }
     }
 
-
     val showShareDialogForTripId = navController.currentBackStackEntry
         ?.savedStateHandle
         ?.getStateFlow<String?>("show_share_dialog", null)
