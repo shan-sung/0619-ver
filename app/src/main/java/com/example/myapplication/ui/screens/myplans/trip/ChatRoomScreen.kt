@@ -17,7 +17,6 @@ import com.example.myapplication.ui.components.MessageBubble
 import com.example.myapplication.ui.components.MessageInput
 import com.example.myapplication.viewmodel.myplans.trip.ChatViewModel
 
-
 @Composable
 fun ChatRoomScreen(
     tripId: String,

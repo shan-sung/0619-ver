@@ -72,7 +72,7 @@ data class ChatMessage(
     val senderId: String,
     val sender: String,                 // 可選（顯示暱稱）
     val message: String,
-    val timestamp: Long
+    val timestamp: String
 )
 
 @Parcelize

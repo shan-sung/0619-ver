@@ -77,22 +77,42 @@ fun PreviewScreen(
                 .padding(16.dp)
         ) {
             // 圖片
-            val imageRequest = ImageRequest.Builder(LocalContext.current)
-                .data(travel.imageUrl ?: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e")
+            val context = LocalContext.current
+            val imageUrl = travel.imageUrl?.takeIf { it.isNotBlank() }
+            val imageRequest = ImageRequest.Builder(context)
+                .data(imageUrl ?: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e")
                 .crossfade(true)
                 .build()
 
-            AsyncImage(
-                model = imageRequest,
-                contentDescription = "Trip Image",
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(220.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.Crop,
-                placeholder = painterResource(R.drawable.dummy),
-                error = painterResource(R.drawable.dummy)
-            )
+                    .clip(RoundedCornerShape(16.dp))
+            ) {
+                AsyncImage(
+                    model = imageRequest,
+                    contentDescription = "Trip Image",
+                    modifier = Modifier
+                        .matchParentSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                if (imageUrl == null) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "無照片",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 

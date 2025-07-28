@@ -1,5 +1,6 @@
 package com.example.myapplication.viewmodel.myplans.trip
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.ChatRepository
@@ -9,6 +10,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import java.util.UUID
 import javax.inject.Inject
 
@@ -27,9 +30,10 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val msgs = repository.loadMessages(tripId)
+                Log.d("ChatViewModel", "載入訊息共 ${msgs.size} 筆")
                 _messages.value = msgs
             } catch (e: Exception) {
-                // TODO: 處理錯誤，顯示 Toast 或記錄 Log
+                Log.e("ChatViewModel", "載入訊息失敗", e)
             }
         }
     }
@@ -43,7 +47,7 @@ class ChatViewModel @Inject constructor(
             senderId = user.id,
             sender = user.username,
             message = content,
-            timestamp = System.currentTimeMillis()
+            timestamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
         )
 
         // 本地先加入訊息（立即顯示）
