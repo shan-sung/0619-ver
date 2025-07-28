@@ -1,6 +1,7 @@
 package com.example.myapplication.api
 
 import android.util.Log
+import com.example.myapplication.model.AddMembersRequest
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
 import com.example.myapplication.model.TripCreationInfo
@@ -42,6 +43,12 @@ interface TripsApiService {
         @Path("day") day: Int,
         @Path("index") index: Int,
         @Body updatedItem: ScheduleItem
+    ): Response<Unit>
+
+    @POST("/trips/{tripId}/members")
+    suspend fun addMembersToTrip(
+        @Path("tripId") tripId: String,
+        @Body body: AddMembersRequest
     ): Response<Unit>
 }
 

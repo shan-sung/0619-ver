@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.TripsApiService
+import com.example.myapplication.model.AddMembersRequest
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.Travel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -115,4 +116,22 @@ class TripDetailViewModel @Inject constructor(
             }
         }
     }
+
+    fun inviteFriends(tripId: String, friendIds: List<String>, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val result = tripsApi.addMembersToTrip(tripId, AddMembersRequest(friendIds))
+                if (result.isSuccessful) {
+                    val updatedTrip = tripsApi.getAllTrips().find { it._id == tripId }
+                    _travel.value = updatedTrip
+                    onComplete(true)
+                } else {
+                    onComplete(false)
+                }
+            } catch (e: Exception) {
+                onComplete(false)
+            }
+        }
+    }
+
 }

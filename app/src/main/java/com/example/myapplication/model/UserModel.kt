@@ -62,6 +62,10 @@ data class FriendRequest(
     val fromAvatarUrl: String
 )
 
+data class AddMembersRequest(
+    val memberIds: List<String>
+)
+
 data class LoginRequest(
     val email: String,
     val password: String

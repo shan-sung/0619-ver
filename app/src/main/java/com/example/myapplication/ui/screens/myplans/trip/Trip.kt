@@ -4,6 +4,7 @@ package com.example.myapplication.ui.screens.myplans.trip
 import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.MonetizationOn
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -40,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -67,6 +70,7 @@ import com.example.myapplication.ui.components.ScheduleTimeline
 import com.example.myapplication.ui.components.SheetItem
 import com.example.myapplication.ui.components.dialogs.AddScheduleDialog
 import com.example.myapplication.ui.components.toInfoCardData
+import com.example.myapplication.viewmodel.friend.FriendViewModel
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import kotlinx.coroutines.CoroutineScope
@@ -394,8 +398,11 @@ fun ShareTripDialog(
     tripId: String,
     onDismiss: () -> Unit
 ) {
+    val viewModel: TripDetailViewModel = hiltViewModel()
     val context = LocalContext.current
     var triggerShare by remember { mutableStateOf(false) }
+    var showFriendPicker by remember { mutableStateOf(false) }
+
 
     // 🔁 真正處理分享行為
     LaunchedEffect(triggerShare) {
@@ -419,11 +426,22 @@ fun ShareTripDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        onDismiss() // 邏輯分開，直接呼叫
+                        showFriendPicker = true
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("邀請朋友加入")
+                    Text("從好友列表中選擇")
+                }
+                if (showFriendPicker) {
+                    FriendPickerDialog(
+                        onDismiss = { showFriendPicker = false },
+                        onConfirm = { selectedFriendIds ->
+                            viewModel.inviteFriends(tripId, selectedFriendIds) { success ->
+                                showFriendPicker = false
+                                onDismiss()
+                            }
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -433,11 +451,60 @@ fun ShareTripDialog(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("透過通訊軟體分享")
+                    Text("分享連結")
                 }
             }
         },
         confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
+        }
+    )
+}
+
+@Composable
+fun FriendPickerDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (List<String>) -> Unit,
+    viewModel: FriendViewModel = hiltViewModel()
+) {
+    val friends by viewModel.friendList.collectAsState()
+    val selectedIds = remember { mutableStateListOf<String>() }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("邀請朋友加入行程") },
+        text = {
+            Column(Modifier.fillMaxWidth().height(300.dp).verticalScroll(rememberScrollState())) {
+                friends.forEach { friend ->
+                    val isSelected = selectedIds.contains(friend.id)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                if (isSelected) selectedIds.remove(friend.id)
+                                else selectedIds.add(friend.id)
+                            }
+                            .padding(8.dp)
+                    ) {
+                        Checkbox(checked = isSelected, onCheckedChange = null)
+                        Text(text = friend.username, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirm(selectedIds.toList())
+                }
+            ) {
+                Text("確定加入")
+            }
+        },
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("取消")
