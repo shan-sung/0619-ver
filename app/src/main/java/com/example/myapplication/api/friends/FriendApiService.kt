@@ -1,4 +1,4 @@
-package com.example.myapplication.api
+package com.example.myapplication.api.friends
 
 import com.example.myapplication.model.FriendRequest
 import com.example.myapplication.model.FriendRequestBody

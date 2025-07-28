@@ -1,4 +1,4 @@
-package com.example.myapplication.api
+package com.example.myapplication.api.friends
 
 import android.util.Log
 import com.example.myapplication.model.FriendRequest

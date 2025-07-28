@@ -1,6 +1,6 @@
 package com.example.myapplication.api.saved
 
-import com.example.myapplication.api.PlacesApiService
+import com.example.myapplication.api.places.PlacesApiService
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.TextSearchPlace
 import javax.inject.Inject

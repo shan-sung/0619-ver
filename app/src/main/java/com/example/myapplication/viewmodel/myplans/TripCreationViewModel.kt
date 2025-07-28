@@ -3,7 +3,7 @@ package com.example.myapplication.viewmodel.myplans
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.TripsApiService
+import com.example.myapplication.api.trips.TripsApiService
 import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.Travel
 import com.example.myapplication.model.TripCreationInfo

@@ -1,8 +1,6 @@
-package com.example.myapplication.api
+package com.example.myapplication.api.places
 
 import com.example.myapplication.model.NearbyPlacesResponse
-import com.example.myapplication.model.PlaceResult
-import com.example.myapplication.model.TextSearchPlace
 import javax.inject.Inject
 
 

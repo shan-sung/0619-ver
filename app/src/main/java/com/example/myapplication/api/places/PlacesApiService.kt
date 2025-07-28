@@ -1,5 +1,5 @@
 // 建立 Places API 的 Retrofit 結構
-package com.example.myapplication.api
+package com.example.myapplication.api.places
 
 import com.example.myapplication.BuildConfig
 import com.example.myapplication.model.NearbyPlacesResponse

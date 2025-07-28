@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.PlacesRepository
+import com.example.myapplication.api.places.PlacesRepository
 import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.buildPhotoUrl
 import com.example.myapplication.util.LocationUtils

@@ -3,7 +3,7 @@ package com.example.myapplication.viewmodel.friend
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.FriendRepository
+import com.example.myapplication.api.friends.FriendRepository
 import com.example.myapplication.model.FriendRequest
 import com.example.myapplication.model.UserSummary
 import dagger.hilt.android.lifecycle.HiltViewModel

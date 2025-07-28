@@ -2,11 +2,11 @@ package com.example.myapplication.di
 
 import com.example.myapplication.api.AuthApiService
 import com.example.myapplication.api.ChatApiService
-import com.example.myapplication.api.FriendApiService
-import com.example.myapplication.api.FriendRepository
-import com.example.myapplication.api.PlacesApiService
+import com.example.myapplication.api.friends.FriendApiService
+import com.example.myapplication.api.friends.FriendRepository
+import com.example.myapplication.api.places.PlacesApiService
 import com.example.myapplication.api.saved.SavedApiService
-import com.example.myapplication.api.TripsApiService
+import com.example.myapplication.api.trips.TripsApiService
 import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.util.LocalDateAdapter
 import com.google.gson.GsonBuilder
