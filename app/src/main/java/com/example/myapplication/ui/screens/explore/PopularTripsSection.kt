@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.model.Travel
+import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.InfoCard
 import com.example.myapplication.ui.components.toInfoCardData
 
@@ -19,7 +20,7 @@ fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavC
         SectionHeader(
             title = "Hot Itineraries",
             actionText = "more",
-            onActionClick = { navController.navigate("shared_itineraries") },
+            onActionClick = { navController.navigate(Routes.Explore.Featured.MAIN) },
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }
