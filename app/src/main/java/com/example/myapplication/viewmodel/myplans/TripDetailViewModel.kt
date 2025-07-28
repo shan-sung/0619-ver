@@ -122,8 +122,7 @@ class TripDetailViewModel @Inject constructor(
             try {
                 val result = tripsApi.addMembersToTrip(tripId, AddMembersRequest(friendIds))
                 if (result.isSuccessful) {
-                    val updatedTrip = tripsApi.getAllTrips().find { it._id == tripId }
-                    _travel.value = updatedTrip
+                    fetchTravelById(tripId) // ✅ 更新成員清單
                     onComplete(true)
                 } else {
                     onComplete(false)
@@ -133,5 +132,4 @@ class TripDetailViewModel @Inject constructor(
             }
         }
     }
-
 }

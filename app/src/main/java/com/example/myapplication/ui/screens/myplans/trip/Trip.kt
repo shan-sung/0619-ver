@@ -3,7 +3,6 @@ package com.example.myapplication.ui.screens.myplans.trip
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -25,7 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.MonetizationOn
-import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -165,6 +163,7 @@ fun TripContent(
     if (showShareDialogForTripId != null) {
         ShareTripDialog(
             tripId = showShareDialogForTripId,
+            memberIds = travel.members,  // 傳入已在行程中的 userId 清單
             onDismiss = {
                 navController.currentBackStackEntry?.savedStateHandle?.set("show_share_dialog", null)
             }
@@ -233,13 +232,6 @@ fun TripContent(
                         .fillMaxWidth()
                         .padding(24.dp)
                 ) {
-                    Box(
-                        Modifier
-                            .width(40.dp)
-                            .height(4.dp)
-                            .background(Color.LightGray, RoundedCornerShape(2.dp))
-                            .align(Alignment.CenterHorizontally)
-                    )
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text("Add New Itinerary", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -259,7 +251,6 @@ fun TripContent(
         }
     }
 }
-
 
 @Composable
 fun TripInfoCard(
@@ -302,7 +293,7 @@ fun TripInfoCard(
                         }
                     )
                     RoundedIconButton(
-                        icon = Icons.Default.Share,
+                        icon = Icons.Default.PersonAdd,
                         description = "分享行程",
                         onClick = {
                             navController.currentBackStackEntry
@@ -315,8 +306,6 @@ fun TripInfoCard(
         }
     }
 }
-
-
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -396,6 +385,7 @@ fun DayContent(dayIndex: Int, itineraryDay: ItineraryDay?, dateOverride: String)
 @Composable
 fun ShareTripDialog(
     tripId: String,
+    memberIds: List<String>,
     onDismiss: () -> Unit
 ) {
     val viewModel: TripDetailViewModel = hiltViewModel()
@@ -440,14 +430,15 @@ fun ShareTripDialog(
                                 showFriendPicker = false
                                 onDismiss()
                             }
-                        }
+                        },
+                        existingMemberIds = memberIds  // ✅ 傳入成員 ID
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
-                        triggerShare = true // ✅ 觸發分享
+                        triggerShare = true
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -468,40 +459,62 @@ fun ShareTripDialog(
 fun FriendPickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (List<String>) -> Unit,
+    existingMemberIds: List<String>,
     viewModel: FriendViewModel = hiltViewModel()
 ) {
     val friends by viewModel.friendList.collectAsState()
-    val selectedIds = remember { mutableStateListOf<String>() }
+    val selectedIds = remember {
+        mutableStateListOf<String>().apply {
+            addAll(existingMemberIds) // 預設勾選已有成員
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("邀請朋友加入行程") },
         text = {
-            Column(Modifier.fillMaxWidth().height(300.dp).verticalScroll(rememberScrollState())) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
                 friends.forEach { friend ->
+                    val isAlreadyInTrip = existingMemberIds.contains(friend.id)
                     val isSelected = selectedIds.contains(friend.id)
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                if (isSelected) selectedIds.remove(friend.id)
-                                else selectedIds.add(friend.id)
-                            }
+                            .then(
+                                if (!isAlreadyInTrip) Modifier.clickable {
+                                    if (isSelected) selectedIds.remove(friend.id)
+                                    else selectedIds.add(friend.id)
+                                } else Modifier // 不可點擊
+                            )
                             .padding(8.dp)
                     ) {
-                        Checkbox(checked = isSelected, onCheckedChange = null)
-                        Text(text = friend.username, modifier = Modifier.padding(start = 8.dp))
+                        Checkbox(
+                            checked = isSelected,
+                            onCheckedChange = null,
+                            enabled = !isAlreadyInTrip  // ✅ 禁用已在 trip 的 checkbox
+                        )
+                        Text(
+                            text = friend.username + if (isAlreadyInTrip) "（已加入）" else "",
+                            modifier = Modifier.padding(start = 8.dp),
+                            color = if (isAlreadyInTrip) Color.Gray else Color.Unspecified
+                        )
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirm(selectedIds.toList())
-                }
-            ) {
+            TextButton(onClick = {
+                // ✅ 僅傳回非既有成員
+                val newInvites = selectedIds.filterNot { existingMemberIds.contains(it) }
+                onConfirm(newInvites)
+            }) {
                 Text("確定加入")
             }
         },
