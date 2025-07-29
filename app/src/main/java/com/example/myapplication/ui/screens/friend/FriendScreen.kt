@@ -61,6 +61,10 @@ import com.example.myapplication.R
 import com.example.myapplication.model.UserSummary
 import com.example.myapplication.ui.components.SearchBar
 import com.example.myapplication.ui.components.SectionHeader
+import com.example.myapplication.ui.screens.friend.component.FriendListItem
+import com.example.myapplication.ui.screens.friend.component.FriendProfileDialog
+import com.example.myapplication.ui.screens.friend.component.PendingFriendRequestCard
+import com.example.myapplication.ui.screens.friend.component.SearchSection
 import com.example.myapplication.util.formatRelativeTime
 import com.example.myapplication.viewmodel.friend.FriendViewModel
 
@@ -156,41 +160,22 @@ fun FriendScreen(
     ) {
         // 🔍 搜尋欄
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SearchBar(
-                    query = query,
-                    onQueryChange = { query = it },
-                    onSearch = { newQuery ->
-                        if (newQuery.isNotBlank()) {
-                            viewModel.onSearchQueryChanged(newQuery)
-                            viewModel.searchUser(newQuery)
-                        }
-                    },
-                    modifier = Modifier.weight(9f)
-                )
-                IconButton(
-                    onClick = {
-                        if (friendList.isEmpty()) {
-                            viewModel.loadFriendData()  // ❗懶加載保險起見
-                        }
-                        showFriendList = true
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .aspectRatio(1f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Group,
-                        contentDescription = "Show All Friends"
-                    )
+            SearchSection(
+                query = query,
+                onQueryChange = { query = it },
+                onSearch = { newQuery ->
+                    if (newQuery.isNotBlank()) {
+                        viewModel.onSearchQueryChanged(newQuery)
+                        viewModel.searchUser(newQuery)
+                    }
+                },
+                onShowFriendList = {
+                    if (friendList.isEmpty()) {
+                        viewModel.loadFriendData()
+                    }
+                    showFriendList = true
                 }
-            }
+            )
         }
 
         // ⏳ 等待回應列表
@@ -240,192 +225,6 @@ fun FriendScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text("找不到使用者", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-@Composable
-fun PendingFriendRequestCard(
-    avatarUrl: String,
-    username: String,
-    timestamp: String,
-    onAccept: () -> Unit,
-    onReject: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = avatarUrl.ifBlank { "https://source.unsplash.com/64x64/?face" },
-            contentDescription = null,
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape),
-            placeholder = painterResource(id = R.drawable.user),
-            error = painterResource(id = R.drawable.user),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = username,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-            )
-            Text(
-                text = formatRelativeTime(timestamp),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Button(
-                onClick = onAccept,
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B82F6)) // 藍色 Confirm
-            ) {
-                Text("Confirm", color = Color.White)
-            }
-
-            OutlinedButton(
-                onClick = onReject,
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("Delete")
-            }
-        }
-    }
-}
-
-@Composable
-fun FriendListItem(
-    friend: UserSummary,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .clickable { onClick() }
-            .height(72.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = friend.avatarUrl?.takeIf { it.isNotBlank() }
-                ?: "https://source.unsplash.com/280x160/?face",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            placeholder = painterResource(id = R.drawable.user),
-            error = painterResource(id = R.drawable.user)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                friend.username,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-@Composable
-fun FriendProfileDialog(
-    friend: UserSummary,
-    alreadyRequested: Boolean,
-    isFriend: Boolean, // ✅ 新增這個參數
-    onDismiss: () -> Unit,
-    onToggleFriendRequest: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.background,
-            tonalElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(24.dp)
-                    .width(280.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AsyncImage(
-                    model = friend.avatarUrl ?: "https://source.unsplash.com/280x160/?face",
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape),
-                    placeholder = painterResource(id = R.drawable.user),
-                    error = painterResource(id = R.drawable.user)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(friend.username, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(text = friend.email ?: "", style = MaterialTheme.typography.bodyMedium)
-                Text(text = friend.birthday ?: "", style = MaterialTheme.typography.bodySmall)
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("${friend.tripCount ?: 0}", fontWeight = FontWeight.Bold)
-                        Text("Trips", style = MaterialTheme.typography.bodySmall)
-                    }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("${friend.followerCount ?: 0}", fontWeight = FontWeight.Bold)
-                        Text("Followers", style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    friend.bio ?: "這個人很神秘，尚未留下自我介紹。",
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (isFriend) {
-                    Icon(
-                        imageVector = Icons.Default.People,
-                        contentDescription = "Already Friends",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(36.dp)
-                    )
-                } else {
-                    Button(
-                        onClick = onToggleFriendRequest,
-                        colors = if (alreadyRequested)
-                            ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                        else
-                            ButtonDefaults.buttonColors()
-                    ) {
-                        Text(if (alreadyRequested) "Cancel Request" else "Add Friend")
                     }
                 }
             }
