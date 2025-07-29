@@ -106,7 +106,7 @@ fun TripScreen(
             travel = travel!!,
             selectedAttraction = selectedAttraction,  // ✅ 傳進去
             onScheduleAdded = {
-                Log.d("TripScreen", "已新增新行程項目：${it.activity}")
+                Log.d("TripScreen", "已新增新行程項目：${it.placeName}")
             }
         )
     } else {

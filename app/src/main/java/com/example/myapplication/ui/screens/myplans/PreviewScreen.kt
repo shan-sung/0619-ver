@@ -50,8 +50,8 @@ import com.example.myapplication.ui.components.AttractionInfoCardVertical
 
 fun ScheduleItem.toAttraction(): Attraction {
     return Attraction(
-        id = placeId ?: activity,
-        name = placeName ?: activity,
+        id = placeId ?: placeName,
+        name = placeName ?: placeName,
         city = "",
         country = "",
         description = note,
@@ -221,7 +221,7 @@ fun PlaceItemCard(item: ScheduleItem) {
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text(text = item.placeName ?: item.activity) },
+            title = { Text(text = item.placeName ?: item.placeName) },
             text = {
                 Column {
                     item.placeId?.let { placeId ->

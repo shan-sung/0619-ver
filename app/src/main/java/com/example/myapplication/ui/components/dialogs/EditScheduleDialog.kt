@@ -62,7 +62,7 @@ fun EditScheduleDialog(
     var isEditing by remember { mutableStateOf(false) } // 👈 狀態控制
 
     var selectedDate by remember { mutableStateOf(tripStartDate.plusDays((originalItem.day - 1).toLong())) }
-    var location by remember { mutableStateOf(originalItem.activity) }
+    var location by remember { mutableStateOf(originalItem.placeName) }
     var transportation by remember { mutableStateOf(originalItem.transportation) }
     var note by remember { mutableStateOf(originalItem.note ?: "") }
     var startTime by remember { mutableStateOf(originalItem.startTime) }
@@ -108,7 +108,7 @@ fun EditScheduleDialog(
                                     start = startTime?.format(timeFormatter) ?: "",
                                     end = endTime?.format(timeFormatter) ?: ""
                                 ),
-                                activity = location,
+                                placeName = location,
                                 transportation = transportation,
                                 note = note
                             )

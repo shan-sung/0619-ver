@@ -130,7 +130,7 @@ fun ScheduleItemCard(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = item.activity,
+                text = item.placeName,
                 style = MaterialTheme.typography.titleMedium
             )
             Text(

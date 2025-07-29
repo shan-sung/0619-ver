@@ -85,11 +85,10 @@ data class ItineraryDay(
 data class ScheduleItem(
     val day: Int,
     val time: ScheduleTime,
-    val activity: String,
     val transportation: String,
     val note: String? = "",
     val placeId: String? = null,
-    val placeName: String? = null,
+    val placeName: String,
     val photoReference: String? = null // ✅ 新增：Google Places 的照片參照
 ) : Parcelable {
     val startTime: LocalTime?
@@ -97,7 +96,6 @@ data class ScheduleItem(
     val endTime: LocalTime?
         get() = time.end.toLocalTimeOrNull()
 }
-
 
 @Parcelize
 data class ScheduleTime(

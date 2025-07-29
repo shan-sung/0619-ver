@@ -5,10 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.model.Attraction
 import com.example.myapplication.model.ScheduleItem
 import com.example.myapplication.model.ScheduleTime
 import com.example.myapplication.ui.components.AppExtendedFab
@@ -37,9 +44,13 @@ fun AddScheduleDialog(
     tripEndDate: LocalDate,
     onDismiss: () -> Unit,
     onScheduleAdded: (ScheduleItem) -> Unit,
-    initialLocation: String = "", // ✅ 新增這行
+    initialLocation: String = "",
     viewModel: TripDetailViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var location by remember { mutableStateOf(initialLocation) }
     var transportation by remember { mutableStateOf("") }
@@ -48,9 +59,13 @@ fun AddScheduleDialog(
     var endTime by remember { mutableStateOf<LocalTime?>(null) }
     var isSaving by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
+
+    LaunchedEffect(initialLocation) {
+        if (initialLocation.isNotBlank()) {
+            selectedAttraction = Attraction(id = "", name = initialLocation)  // 至少保住 name
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -58,10 +73,23 @@ fun AddScheduleDialog(
         text = {
             Column {
                 OutlinedTextField(
-                    value = location, onValueChange = { location = it },
+                    value = location,
+                    onValueChange = {
+                        location = it
+                        selectedAttraction = null // 若手動修改地點就清掉 selectedAttraction
+                    },
                     label = { Text("地點") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            // 可以在這裡開啟 SelectFromSavedList 畫面
+                            Toast.makeText(context, "請使用下方新增選項選取地點", Toast.LENGTH_SHORT).show()
+                        }) {
+                            Icon(Icons.Default.Place, contentDescription = "Select")
+                        }
+                    }
                 )
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 DateSelectorFieldWithOverlay(
@@ -96,11 +124,11 @@ fun AddScheduleDialog(
                     isEditing = true
                 )
 
-
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = transportation, onValueChange = { transportation = it },
+                    value = transportation,
+                    onValueChange = { transportation = it },
                     label = { Text("交通方式") },
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -108,10 +136,21 @@ fun AddScheduleDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = note, onValueChange = { note = it },
+                    value = note,
+                    onValueChange = { note = it },
                     label = { Text("備註") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                selectedAttraction?.let {
+                    Text(
+                        text = "✅ 已選擇景點 ID：${it.id}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
             }
         },
         confirmButton = {
@@ -133,10 +172,13 @@ fun AddScheduleDialog(
                             start = startTime!!.format(timeFormatter),
                             end = endTime!!.format(timeFormatter)
                         ),
-                        activity = location,
+                        placeName = location,  // ✅ 用 location 取代 activity
                         transportation = transportation,
-                        note = note
+                        note = note,
+                        placeId = selectedAttraction?.id,
+                        photoReference = selectedAttraction?.imageUrl
                     )
+
 
                     viewModel.submitScheduleItemSafely(travelId, scheduleItem) { success ->
                         isSaving = false
