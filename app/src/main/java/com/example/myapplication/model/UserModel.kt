@@ -1,5 +1,6 @@
 package com.example.myapplication.model
 
+import com.google.gson.annotations.SerializedName
 import java.time.LocalDate
 import java.time.Period
 
@@ -33,7 +34,7 @@ data class User(
 }
 
 data class UserSummary(
-    val id: String,
+    @SerializedName("_id") val id: String,
     val username: String,
     val mbti: String,
     val avatarUrl: String? = null,
@@ -45,8 +46,10 @@ data class UserSummary(
 )
 
 data class FriendRequestBody(
-    val to_user_id: String
+    @SerializedName("from_user_id") val fromUserId: String,
+    @SerializedName("to_user_id") val toUserId: String
 )
+
 
 data class FriendResponseBody(
     val from_user_id: String,

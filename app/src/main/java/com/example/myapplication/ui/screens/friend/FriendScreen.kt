@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -70,22 +71,25 @@ fun FriendScreen(
     refreshKey: Int
 ) {
     val viewModel: FriendViewModel = hiltViewModel()
+
+    val friendList by viewModel.friendList.collectAsState()
     val searchResult by viewModel.searchResult.collectAsState()
     val pendingRequests by viewModel.pendingRequests.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sentRequests by viewModel.sentRequests.collectAsState()
-    val allFriends by viewModel.friendList.collectAsState()
-    val friendList by viewModel.friendList.collectAsState()
+
     var showFriendList by remember { mutableStateOf(false) }
     var selectedFriend by remember { mutableStateOf<UserSummary?>(null) }
     var query by remember { mutableStateOf("") }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    selectedFriend?.let { friend ->
-        val isFriend = friendList.any { it.id == friend.id }  // ✅ 判斷是否已是朋友
+    val friendIdSet = remember(friendList) { friendList.map { it.id }.toSet() }
 
+    // 顯示個人檔案 Dialog
+    selectedFriend?.let { friend ->
+        val isFriend = friendIdSet.contains(friend.id)
         FriendProfileDialog(
             friend = friend,
             alreadyRequested = sentRequests.contains(friend.id),
@@ -95,54 +99,62 @@ fun FriendScreen(
         )
     }
 
-
+    // 螢幕進入或 refresh 時載入好友資料
     LaunchedEffect(refreshKey) {
+        Log.d("FriendScreen", "LaunchedEffect triggered with refreshKey = $refreshKey")
         viewModel.loadFriendData()
         viewModel.clearSearch()
         query = ""
     }
 
-    LaunchedEffect(pendingRequests) {
-        Log.d("FriendScreen", "Pending requests: ${pendingRequests.size}")
-    }
-
+    // 顯示全部好友 bottom sheet
     if (showFriendList) {
         ModalBottomSheet(
             onDismissRequest = { showFriendList = false },
             sheetState = sheetState
         ) {
+            Log.d("FriendScreen", "Current friendList size = ${friendList.size}")
             Text(
                 text = "All Friends",
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(16.dp)
             )
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight(0.8f)
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(friendList) { friend ->
-                    FriendListItem(
-                        friend = friend,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            selectedFriend = friend
-                        }
-                    )
+                if (friendList.isEmpty()) {
+                    item {
+                        Text(
+                            "目前尚未加入任何好友",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                } else {
+                    items(friendList) { friend ->
+                        Log.d("FriendScreen", "Friend item: ${friend.username} (${friend.id})")
+                        FriendListItem(
+                            friend = friend,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { selectedFriend = friend }
+                        )
+                    }
                 }
             }
         }
     }
 
-    // ✅ LazyColumn UI
+    // 畫面主內容
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // 🔍 搜尋欄
         item {
             Row(
                 modifier = Modifier
@@ -162,9 +174,13 @@ fun FriendScreen(
                     },
                     modifier = Modifier.weight(9f)
                 )
-
                 IconButton(
-                    onClick = { showFriendList = true },
+                    onClick = {
+                        if (friendList.isEmpty()) {
+                            viewModel.loadFriendData()  // ❗懶加載保險起見
+                        }
+                        showFriendList = true
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1f)
@@ -177,6 +193,7 @@ fun FriendScreen(
             }
         }
 
+        // ⏳ 等待回應列表
         if (pendingRequests.isNotEmpty()) {
             item {
                 SectionHeader("Pending Requests", modifier = Modifier.padding(vertical = 8.dp))
@@ -192,6 +209,7 @@ fun FriendScreen(
             }
         }
 
+        // 🔍 搜尋結果區塊
         if (searchQuery.isNotBlank()) {
             if (isLoading) {
                 item {
@@ -202,25 +220,33 @@ fun FriendScreen(
                         CircularProgressIndicator()
                     }
                 }
-            } else if (searchResult != null) {
-                item {
-                    SectionHeader("Search Result", modifier = Modifier.padding(vertical = 8.dp))
-                }
-                item {
-                    FriendListItem(
-                        friend = searchResult!!,
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { selectedFriend = searchResult }
-                    )
-                }
             } else {
-                item {
-                    Text("找不到使用者", style = MaterialTheme.typography.bodyMedium)
+                searchResult?.let { result ->
+                    item {
+                        SectionHeader("Search Result", modifier = Modifier.padding(vertical = 8.dp))
+                    }
+                    item {
+                        FriendListItem(
+                            friend = result,
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { selectedFriend = result }
+                        )
+                    }
+                } ?: item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("找不到使用者", style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun PendingFriendRequestCard(
@@ -288,7 +314,7 @@ fun FriendListItem(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier  // ✅ 用傳進來的 modifier 取代原本硬寫的 Modifier
+        modifier = modifier
             .clickable { onClick() }
             .height(72.dp)
             .clip(RoundedCornerShape(12.dp))
@@ -402,7 +428,6 @@ fun FriendProfileDialog(
                         Text(if (alreadyRequested) "Cancel Request" else "Add Friend")
                     }
                 }
-
             }
         }
     }

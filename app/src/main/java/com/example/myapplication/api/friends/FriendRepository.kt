@@ -11,7 +11,13 @@ class FriendRepository @Inject constructor(
     private val api: FriendApiService
 ) {
     suspend fun getFriends(): List<UserSummary> {
-        return api.getFriends()
+        return try {
+            val response = api.getFriends()
+            response.filter { it.id.isNotBlank() }
+        } catch (e: Exception) {
+            Log.e("FriendRepository", "取得好友失敗", e)
+            emptyList()
+        }
     }
 
     suspend fun getPendingRequests(): List<FriendRequest> {
@@ -20,9 +26,10 @@ class FriendRepository @Inject constructor(
         return response
     }
 
-    suspend fun sendFriendRequest(toUserId: String) {
-        api.sendFriendRequest(FriendRequestBody(to_user_id = toUserId))
+    suspend fun sendFriendRequest(fromUserId: String, toUserId: String) {
+        api.sendFriendRequest(FriendRequestBody(fromUserId = fromUserId, toUserId = toUserId))
     }
+
 
     suspend fun getSentRequests(): List<String> {
         return api.getSentRequests()

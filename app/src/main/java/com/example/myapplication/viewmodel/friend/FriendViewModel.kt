@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.api.friends.FriendRepository
+import com.example.myapplication.model.CurrentUser
 import com.example.myapplication.model.FriendRequest
 import com.example.myapplication.model.UserSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +17,8 @@ import kotlinx.coroutines.launch
 class FriendViewModel @Inject constructor(
     private val friendRepository: FriendRepository
 ) : ViewModel() {
+
+    private val currentUserId: String? = CurrentUser.user?.id  // ❗注意：nullable
 
     private val _friendList = MutableStateFlow<List<UserSummary>>(emptyList())
     val friendList = _friendList.asStateFlow()
@@ -47,10 +50,7 @@ class FriendViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val friends = friendRepository.getFriends()
-                Log.d("FriendViewModel", "載入好友共 ${friends.size} 筆")
-                _friendList.value = friends
-
+                _friendList.value = friendRepository.getFriends()
                 _sentRequests.value = friendRepository.getSentRequests().toSet()
                 _pendingRequests.value = friendRepository.getPendingRequests()
             } catch (e: Exception) {
@@ -60,16 +60,20 @@ class FriendViewModel @Inject constructor(
             }
         }
     }
+
     fun toggleFriendRequest(userId: String) {
         viewModelScope.launch {
+            val fromUserId = currentUserId ?: return@launch  // ✅ 正確的 null 判斷寫法
+
             try {
                 if (_sentRequests.value.contains(userId)) {
                     friendRepository.cancelFriendRequest(userId)
                     _sentRequests.value = _sentRequests.value - userId
                 } else {
-                    friendRepository.sendFriendRequest(userId)
+                    friendRepository.sendFriendRequest(fromUserId = fromUserId, toUserId = userId)
                     _sentRequests.value = _sentRequests.value + userId
                 }
+
                 _pendingRequests.value = friendRepository.getPendingRequests()
             } catch (e: Exception) {
                 Log.e("FriendViewModel", "切換好友邀請失敗", e)
