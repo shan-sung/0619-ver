@@ -8,7 +8,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface SavedApiService {
-
     @GET("/users/{userId}/saved")
     suspend fun getSavedAttractions(@Path("userId") userId: String): List<Attraction>
 
