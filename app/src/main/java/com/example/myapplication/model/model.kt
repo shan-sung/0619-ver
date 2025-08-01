@@ -37,7 +37,9 @@ data class Attraction(
     val description: String? = null,
     val imageUrl: String? = null,
     val openingHours: List<String>? = null,   // 🔹新增
-    val comments: List<Comment>? = null       // 🔹新增
+    val comments: List<Comment>? = null,       // 🔹新增
+    val lat: Double? = null,       // ← 加這行
+    val lng: Double? = null
 ) : Parcelable
 
 @Parcelize

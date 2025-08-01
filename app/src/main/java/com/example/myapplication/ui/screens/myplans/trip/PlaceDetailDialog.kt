@@ -106,22 +106,7 @@ fun PlaceDetailDialog(
 
                     // 🕒 營業時間
                     attraction.openingHours?.let { hours ->
-                        SectionTitle("營業狀態")
                         OpeningHoursSection(hours)
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
-                    // 🗺 地圖
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(140.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFE0E0E0)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Map Preview", style = MaterialTheme.typography.bodySmall)
                     }
 
                     Spacer(Modifier.height(16.dp))
@@ -146,6 +131,20 @@ fun PlaceDetailDialog(
                             }
                             RatingBar(stars, percent)
                         }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // 🗺 地圖
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(140.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(Color(0xFFE0E0E0)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Map Preview", style = MaterialTheme.typography.bodySmall)
                     }
 
                     Spacer(Modifier.height(24.dp))
@@ -174,13 +173,6 @@ fun PlaceDetailDialog(
             }
         }
     }
-}
-
-@Composable
-fun SectionTitle(title: String) {
-    Spacer(Modifier.height(8.dp))
-    Text(title, style = MaterialTheme.typography.labelLarge)
-    Spacer(Modifier.height(4.dp))
 }
 
 @Composable

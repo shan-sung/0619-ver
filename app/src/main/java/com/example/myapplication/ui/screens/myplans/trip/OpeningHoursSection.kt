@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens.myplans.trip
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,54 +53,49 @@ fun OpeningHoursSection(
         else -> this
     }
 
-    fun parseTimeString(input: String): LocalTime? {
-        return try {
-            val formatter = DateTimeFormatter.ofPattern("h[[:]mm] a", Locale.ENGLISH)
-            LocalTime.parse(input.uppercase(Locale.ENGLISH), formatter)
-        } catch (e: Exception) {
-            null
-        }
-    }
 
-    // 取得今天營業時間（如 10 AM–5 PM）
-    val todayHours = hours.find { it.startsWith(today, ignoreCase = true) }
-    val timeRange = todayHours?.split(":", limit = 2)?.getOrNull(1)?.trim()
+    // 擷取今天營業時間（例如：MONDAY: 10 AM–5 PM）
+    val todayHours = hours.find { it.uppercase().startsWith(today) }
+    val timeRange = todayHours
+        ?.split(":", limit = 2)
+        ?.getOrNull(1)
+        ?.let { normalizeTimeRange(it) }
 
-    val (statusText, statusColor) = remember(timeRange) {
-        try {
-            if (timeRange == null || timeRange.contains("Closed", ignoreCase = true)) {
-                "已打烊" to Color.Red
-            } else if (!timeRange.contains("–")) {
-                "營業資訊錯誤" to Color.Gray
+    val statusInfo = runCatching {
+        // 這裡是原本 try 裡的邏輯
+        if (timeRange.isNullOrBlank()) {
+            "今日營業資訊缺漏" to MaterialTheme.colorScheme.onSurfaceVariant
+        } else if (timeRange.equals("Closed", ignoreCase = true)) {
+            "已打烊" to MaterialTheme.colorScheme.primary
+        } else if (timeRange.equals("24 Hours", ignoreCase = true)) {
+            "24 小時營業" to MaterialTheme.colorScheme.primary
+        } else {
+            val parts = timeRange.split("-").map { it.trim() }
+            if (parts.size != 2) throw IllegalArgumentException("格式錯誤")
+            val openTime = parseTimeStringFlexible(parts[0])
+            val closeTime = parseTimeStringFlexible(parts[1])
+            if (openTime == null || closeTime == null) throw IllegalArgumentException("時間解析失敗")
+
+            val formatter = DateTimeFormatter.ofPattern("a h:mm", Locale.CHINESE)
+            if (now.isAfter(openTime) && now.isBefore(closeTime)) {
+                val closeDisplay = closeTime.format(formatter)
+                    .replace("AM", "上午").replace("PM", "下午")
+                "營業中 · 至 $closeDisplay" to MaterialTheme.colorScheme.primary
             } else {
-                val parts = timeRange.split("–").map { it.trim() }
-                if (parts.size != 2) return@remember "營業資訊錯誤" to Color.Gray
-
-                val openTime = parseTimeString(parts[0])
-                val closeTime = parseTimeString(parts[1])
-
-                if (openTime != null && closeTime != null) {
-                    if (now.isAfter(openTime) && now.isBefore(closeTime)) {
-                        val formatter = DateTimeFormatter.ofPattern("a h:mm", Locale.CHINESE)
-                        val closeDisplay = closeTime.format(formatter).replace("AM", "上午").replace("PM", "下午")
-                        "營業中 · 至 $closeDisplay" to Color(0xFF007B8F)
-                    } else {
-                        val formatter = DateTimeFormatter.ofPattern("a h:mm", Locale.CHINESE)
-                        val openDisplay = openTime.format(formatter).replace("AM", "上午").replace("PM", "下午")
-                        "尚未營業 · $openDisplay 開始" to Color.Red
-                    }
-                } else {
-                    "營業資訊錯誤" to Color.Gray
-                }
+                val openDisplay = openTime.format(formatter)
+                    .replace("AM", "上午").replace("PM", "下午")
+                "尚未營業 · $openDisplay 開始" to MaterialTheme.colorScheme.primary
             }
-        } catch (e: Exception) {
-            "營業資訊錯誤" to Color.Gray
         }
+    }.getOrElse {
+        Log.e("OpeningHours", "營業時間解析失敗：${it.message}")
+        "營業資訊錯誤" to MaterialTheme.colorScheme.onSurfaceVariant
     }
 
+    val (statusText, statusColor) = remember(statusInfo) { statusInfo }
 
     Column(modifier = modifier) {
-        // ⏰ 顯示狀態
+        // ⏰ 營業狀態
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -127,12 +123,19 @@ fun OpeningHoursSection(
             )
         }
 
-        // 📅 營業時間表
+        // 📅 每日營業時間表
         if (expanded) {
             Spacer(Modifier.height(4.dp))
             Column {
                 hours.forEach { hour ->
-                    val (dayEn, time) = hour.split(":", limit = 2).map { it.trim() }
+                    val (dayEn, time) = try {
+                        val parts = hour.split(":", limit = 2).map { it.trim() }
+                        if (parts.size != 2) throw IllegalArgumentException("格式錯誤")
+                        parts[0] to parts[1]
+                    } catch (e: Exception) {
+                        "格式錯誤" to hour
+                    }
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -152,4 +155,25 @@ fun OpeningHoursSection(
             }
         }
     }
+}
+
+fun normalizeTimeRange(raw: String): String {
+    return raw
+        .replace("–", "-")
+        .replace("—", "-")
+        .replace(Regex("[\u2000-\u206F\u2E00-\u2E7F\\s]+"), " ") // 移除特殊空白符
+        .replace(Regex("\\s*-\\s*"), "-") // 標準化 dash
+        .trim()
+}
+
+fun parseTimeStringFlexible(input: String): LocalTime? {
+    val formats = listOf("h:mm a", "h a", "hh:mm a", "hh a")
+    for (pattern in formats) {
+        try {
+            val formatter = DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH)
+            return LocalTime.parse(input.uppercase(Locale.ENGLISH), formatter)
+        } catch (_: Exception) {
+        }
+    }
+    return null
 }
