@@ -4,7 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,10 +26,12 @@ import com.example.myapplication.ui.screens.myplans.PreviewScreen
 import com.example.myapplication.ui.screens.myplans.TripTab
 import com.example.myapplication.ui.screens.myplans.creation.CreateTripWizardScreen
 import com.example.myapplication.ui.screens.myplans.trip.ChatRoomScreen
+import com.example.myapplication.ui.screens.myplans.trip.SearchMapsWrapper
 import com.example.myapplication.ui.screens.myplans.trip.SelectFromSavedListScreen
-import com.example.myapplication.ui.screens.myplans.trip.TripScreen
+import com.example.myapplication.ui.screens.myplans.trip.details.TripScreen
 import com.example.myapplication.viewmodel.myplans.PreviewViewModel
 import com.example.myapplication.viewmodel.myplans.TripCreationViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 @Composable
 fun TripNavHost(
@@ -75,14 +77,6 @@ fun NavGraphBuilder.chatNav() {
     ) { backStackEntry ->
         val tripId = backStackEntry.arguments?.getString("id") ?: return@composable
         ChatRoomScreen(tripId = tripId)
-    }
-}
-
-fun NavGraphBuilder.selectFromSavedNav(navController: NavController) {
-    composable(Routes.MyPlans.SELECT_FROM_SAVED) {
-        SelectFromSavedListScreen(
-            onSelect = {}, navController = navController
-        )
     }
 }
 
@@ -135,5 +129,24 @@ fun NavGraphBuilder.previewNav(navController: NavController) {
                 Text("請重新建立行程")
             }
         }
+    }
+}
+
+fun NavGraphBuilder.selectFromSavedNav(navController: NavController) {
+    composable(Routes.MyPlans.SELECT_FROM_SAVED) {
+        SelectFromSavedListScreen(
+            navController = navController,
+            onSelect = { selectedAttraction ->
+                navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("selected_attraction", selectedAttraction)
+                navController.popBackStack()
+            }
+        )
+    }
+
+    composable(Routes.MyPlans.SEARCH) {
+        val viewModel: SavedViewModel = hiltViewModel()
+        SearchMapsWrapper(navController = navController, viewModel = viewModel)
     }
 }

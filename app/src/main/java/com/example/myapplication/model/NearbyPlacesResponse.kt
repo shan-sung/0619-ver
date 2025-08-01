@@ -15,10 +15,6 @@ data class PlaceResult(
     val photos: List<Photo>?
 )
 
-data class Photo(
-    val photo_reference: String
-)
-
 fun buildPhotoUrl(photoRef: String): String {
     return "https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoRef&key=${BuildConfig.MAPS_API_KEY}"
 }

@@ -28,12 +28,24 @@ data class TripCreationInfo(
 data class Attraction(
     val id: String,
     val name: String,
+    val address: String? = null,
     val rating: Double? = null,
+    val userRatingsTotal: Int? = null,
     val tags: List<String>? = null,
     val city: String = "",
     val country: String = "",
     val description: String? = null,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val openingHours: List<String>? = null,   // 🔹新增
+    val comments: List<Comment>? = null       // 🔹新增
+) : Parcelable
+
+@Parcelize
+data class Comment(
+    val id: String,
+    val user: String,
+    val rating: Int,
+    val text: String
 ) : Parcelable
 
 

@@ -1,8 +1,11 @@
 package com.example.myapplication.api.saved
 
+import com.example.myapplication.BuildConfig
 import com.example.myapplication.api.places.PlacesApiService
 import com.example.myapplication.model.Attraction
+import com.example.myapplication.model.Comment
 import com.example.myapplication.model.TextSearchPlace
+import java.util.UUID
 import javax.inject.Inject
 
 class SavedRepository @Inject constructor(
@@ -21,5 +24,35 @@ class SavedRepository @Inject constructor(
     suspend fun getPlacesByKeyword(keyword: String): List<TextSearchPlace> {
         return placesApi.searchPlacesByKeyword("$keyword 台灣").results
     }
-}
 
+    suspend fun getPlaceDetails(placeId: String): Attraction {
+        val detail = placesApi.getPlaceDetails(placeId).result
+
+        // 🖼️ 嘗試取第一張照片的 photo_reference
+        val photoReference = detail.photos?.firstOrNull()?.photo_reference
+        val imageUrl = photoReference?.let {
+            "https://maps.googleapis.com/maps/api/place/photo" +
+                    "?maxwidth=800" +
+                    "&photoreference=$it" +
+                    "&key=${BuildConfig.MAPS_API_KEY}"
+        }
+
+        return Attraction(
+            id = placeId,
+            name = detail.name ?: "", // 建議補上名稱
+            address = detail.formatted_address,
+            rating = detail.rating,
+            userRatingsTotal = detail.user_ratings_total,
+            openingHours = detail.opening_hours?.weekday_text,
+            comments = detail.reviews?.map {
+                Comment(
+                    id = UUID.randomUUID().toString(), // ✅ 補上唯一 id
+                    user = it.author_name,
+                    rating = it.rating,
+                    text = it.text
+                )
+            },
+            imageUrl = imageUrl // ✅ 補上圖片網址
+        )
+    }
+}
