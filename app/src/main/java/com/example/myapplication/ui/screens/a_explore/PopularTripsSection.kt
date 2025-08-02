@@ -13,7 +13,6 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.InfoCard
-import com.example.myapplication.ui.components.toInfoCardData
 
 fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavController) {
     stickyHeader {
@@ -32,9 +31,16 @@ fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavC
         ) {
             items(travels) { travel ->
                 InfoCard(
-                    data = travel.toInfoCardData(navController),
+                    travel = travel,
                     width = 240.dp,
-                    height = 160.dp
+                    height = 160.dp,
+                    onClick = {
+                        navController.navigate(Routes.MyPlans.detailRoute(travel._id))
+                    },
+                    buttonText = "聊天室",
+                    onButtonClick = {
+                        navController.navigate(Routes.MyPlans.chatRoute(travel._id))
+                    }
                 )
             }
         }

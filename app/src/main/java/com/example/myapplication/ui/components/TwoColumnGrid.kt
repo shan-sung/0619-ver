@@ -10,10 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.myapplication.data.model.Travel
+import androidx.navigation.NavController
+import com.example.myapplication.navigation.routes.Routes
 
 @Composable
 fun TwoColumnCardGrid(
-    items: List<InfoCardData>,
+    items: List<Travel>,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -27,15 +31,30 @@ fun TwoColumnCardGrid(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 InfoCard(
-                    data = rowItems[0],
+                    travel = rowItems[0],
                     aspectRatio = 1f,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        navController.navigate(Routes.MyPlans.detailRoute(rowItems[0]._id))
+                    },
+                    buttonText = "聊天室",
+                    onButtonClick = {
+                        navController.navigate(Routes.MyPlans.chatRoute(rowItems[0]._id))
+                    }
                 )
+
                 if (rowItems.size > 1) {
                     InfoCard(
-                        data = rowItems[1],
+                        travel = rowItems[1],
                         aspectRatio = 1f,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            navController.navigate(Routes.MyPlans.detailRoute(rowItems[1]._id))
+                        },
+                        buttonText = "聊天室",
+                        onButtonClick = {
+                            navController.navigate(Routes.MyPlans.chatRoute(rowItems[1]._id))
+                        }
                     )
                 } else {
                     Spacer(modifier = Modifier.weight(1f))

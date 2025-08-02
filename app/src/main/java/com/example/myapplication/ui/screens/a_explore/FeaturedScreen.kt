@@ -15,7 +15,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.components.SectionWithHeader
 import com.example.myapplication.ui.components.TwoColumnCardGrid
-import com.example.myapplication.ui.components.toInfoCardData
 import com.example.myapplication.viewmodel.explore.TripsViewModel
 
 @Composable
@@ -37,9 +36,8 @@ fun FeaturedScreen(
                 isLoading -> CircularProgressIndicator(modifier = Modifier.padding(16.dp))
                 error != null -> Text("發生錯誤：$error", color = Color.Red, modifier = Modifier.padding(16.dp))
                 trips.isEmpty() -> Text("目前沒有推薦行程", modifier = Modifier.padding(16.dp))
-                else -> TwoColumnCardGrid(
-                    items = trips.map { it.toInfoCardData(navController) }
-                )
+                else -> TwoColumnCardGrid(items = trips, navController = navController)
+
             }
         }
     }

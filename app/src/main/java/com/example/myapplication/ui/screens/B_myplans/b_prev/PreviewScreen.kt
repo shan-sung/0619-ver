@@ -1,9 +1,5 @@
-@file:Suppress("DEPRECATION")
-
 package com.example.myapplication.ui.screens.b_myplans.b_prev
 
-import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,26 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.myapplication.data.model.Attraction
@@ -44,7 +32,7 @@ import com.example.myapplication.data.model.ItineraryDay
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.ui.components.AppExtendedFab
-import com.example.myapplication.ui.components.AttractionInfoCardVertical
+import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
 
 fun ScheduleItem.toAttraction(): Attraction {
     return Attraction(
@@ -197,51 +185,13 @@ fun DayScheduleCard(day: ItineraryDay) {
         Spacer(modifier = Modifier.height(8.dp))
 
         day.schedule.forEach { schedule ->
-            PlaceItemCard(schedule)
+            PlaceItem(
+                attraction = schedule.toAttraction(),
+                onClick = { /* 你想點擊後做什麼？留空也可以 */ },
+                onRemove = {} // 如果不需要刪除功能，就給空實作
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
-}
-
-@Composable
-fun PlaceItemCard(item: ScheduleItem) {
-    val context = LocalContext.current
-    var showDialog by remember { mutableStateOf(false) }
-
-    AttractionInfoCardVertical(
-        attraction = item.toAttraction(),
-        context = context,
-        onItemClick = { showDialog = true },
-        modifier = Modifier.fillMaxWidth() // ✅ 加這個
-    )
-
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(text = item.placeName ?: item.placeName) },
-            text = {
-                Column {
-                    item.placeId?.let { placeId ->
-                        val gmapUrl = "https://www.google.com/maps/place/?q=place_id=$placeId"
-                        ClickableText(
-                            text = AnnotatedString("🔗 查看 Google 地圖"),
-                            onClick = { openMapUrl(gmapUrl, context) }
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("關閉")
-                }
-            }
-        )
-    }
-}
-
-fun openMapUrl(url: String, context: Context) {
-    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
-    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    context.startActivity(intent)
 }

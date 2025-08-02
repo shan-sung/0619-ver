@@ -36,50 +36,25 @@ import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import java.util.Locale
 
-data class InfoCardData(
-    val id: String? = null,
-    val title: String,
-    val subtitle: String = "",
-    val location: String = "",
-    val imageUrl: String? = null,
-    val mapSearchQuery: String? = null,
-    val onClick: (() -> Unit)? = null,
-    val buttonText: String? = null, // 新增可選按鈕文字
-    val onButtonClick: (() -> Unit)? = null // 新增按鈕點擊事件
-)
-
-fun Travel.toInfoCardData(navController: NavController, showButton: Boolean = false): InfoCardData {
-    val subtitleParts = listOfNotNull(
-        "${members.size} people",
-        "$days days",
-        budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
-    )
-
-    return InfoCardData(
-        id = _id,
-        title = title ?: "未命名行程",
-        subtitle = subtitleParts.joinToString("・"),
-        location = "$startDate 至 $endDate",
-        imageUrl = imageUrl,
-        onClick = {
-            navController.navigate(Routes.MyPlans.detailRoute(_id ?: ""))
-        },
-        buttonText = if (showButton) "聊天室" else null,
-        onButtonClick = if (showButton) {
-            { navController.navigate(Routes.MyPlans.chatRoute(_id.orEmpty())) }
-        } else null
-    )
-}
-
 @Composable
 fun InfoCardVertical(
-    data: InfoCardData,
+    travel: Travel,
+    navController: NavController,
+    showButton: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val subtitleParts = listOfNotNull(
+        "${travel.members.size} people",
+        "${travel.days} days",
+        travel.budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
+    )
+    val subtitle = subtitleParts.joinToString("・")
+    val dateRange = "${travel.startDate} 至 ${travel.endDate}"
+
     Row(
         modifier = modifier
-            .clickable(enabled = data.onClick != null) {
-                data.onClick?.invoke()
+            .clickable {
+                navController.navigate(Routes.MyPlans.detailRoute(travel._id))
             }
             .fillMaxWidth()
             .height(72.dp)
@@ -89,7 +64,7 @@ fun InfoCardVertical(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = data.imageUrl?.takeIf { it.isNotBlank() }
+            model = travel.imageUrl?.takeIf { it.isNotBlank() }
                 ?: "https://source.unsplash.com/280x160/?nature",
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -104,29 +79,40 @@ fun InfoCardVertical(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                data.title,
+                text = travel.title ?: "未命名行程",
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                data.subtitle,
+                text = subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
+
+        if (showButton) {
+            TextButton(onClick = {
+                navController.navigate(Routes.MyPlans.chatRoute(travel._id))
+            }) {
+                Text("聊天室")
+            }
+        }
     }
 }
 
 @Composable
 fun InfoCard(
-    data: InfoCardData,
+    travel: Travel,
     modifier: Modifier = Modifier,
     width: Dp? = null,
     height: Dp? = null,
     aspectRatio: Float? = null,
+    onClick: (() -> Unit)? = null,
+    buttonText: String? = null,
+    onButtonClick: (() -> Unit)? = null
 ) {
     val sizeModifier = when {
         width != null && height != null -> modifier.width(width).height(height)
@@ -136,16 +122,22 @@ fun InfoCard(
         else -> modifier
     }
 
-    val imageUrl = data.imageUrl?.takeIf { it.isNotBlank() }
+    val imageUrl = travel.imageUrl?.takeIf { it.isNotBlank() }
         ?: "https://source.unsplash.com/280x160/?nature"
 
+    val subtitleParts = listOfNotNull(
+        "${travel.members.size} people",
+        "${travel.days} days",
+        travel.budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
+    )
+    val subtitle = subtitleParts.joinToString("・")
+
     Card(
-        onClick = { data.onClick?.invoke() },
+        onClick = { onClick?.invoke() },
         shape = RoundedCornerShape(16.dp),
         modifier = sizeModifier
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-
             AsyncImage(
                 model = imageUrl,
                 contentDescription = null,
@@ -159,7 +151,6 @@ fun InfoCard(
                     .background(Color.Black.copy(alpha = 0.2f))
             )
 
-            // 底部 Row 排版：左側是文字，右側是按鈕（可選）
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -168,11 +159,9 @@ fun InfoCard(
                 verticalAlignment = Alignment.Bottom,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = data.title,
+                        text = travel.title ?: "未命名行程",
                         style = MaterialTheme.typography.bodyLarge.copy(
                             color = Color.White,
                             fontWeight = FontWeight.SemiBold
@@ -181,17 +170,15 @@ fun InfoCard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = data.subtitle,
+                        text = subtitle,
                         style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
 
-                data.buttonText?.let { text ->
-                    TextButton(
-                        onClick = { data.onButtonClick?.invoke() }
-                    ) {
+                buttonText?.let { text ->
+                    TextButton(onClick = { onButtonClick?.invoke() }) {
                         Text(text = text, color = Color.White)
                     }
                 }
