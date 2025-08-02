@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.ui.components.AttractionInfoCardVertical
+import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
 
 fun LazyListScope.nearbyAttractionsSection(
     attractions: List<Attraction>,
@@ -26,10 +26,10 @@ fun LazyListScope.nearbyAttractionsSection(
     }
 
     items(attractions) { a ->
-        AttractionInfoCardVertical(
+        PlaceItem(
             attraction = a,
-            context = context,
-            onItemClick = onItemClick
+            onClick = { onItemClick(a) },
+            onRemove = {} // 如果這裡不支援刪除，就傳空 lambda
         )
     }
 }

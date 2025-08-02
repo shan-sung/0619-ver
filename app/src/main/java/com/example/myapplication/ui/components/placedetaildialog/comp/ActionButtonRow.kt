@@ -17,7 +17,8 @@ import com.example.myapplication.data.model.Attraction
 
 enum class PlaceActionMode {
     ADD_TO_ITINERARY,
-    ADD_TO_FAVORITE
+    ADD_TO_FAVORITE,
+    REMOVE_FROM_FAVORITE
 }
 
 @Composable
@@ -53,4 +54,3 @@ fun ActionButtonsRow(
         }
     }
 }
-

@@ -15,7 +15,7 @@ fun AttractionList(
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(attractions) { attraction ->
-            SavedPlaceItem(
+            PlaceItem(
                 attraction = attraction,
                 onClick = { onClick(attraction) },
                 onRemove = onRemove

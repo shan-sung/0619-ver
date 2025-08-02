@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,7 +21,7 @@ import coil.compose.AsyncImage
 import com.example.myapplication.data.model.Attraction
 
 @Composable
-fun SavedPlaceItem(
+fun PlaceItem(
     attraction: Attraction,
     onClick: () -> Unit,
     onRemove: (Attraction) -> Unit
@@ -71,14 +67,6 @@ fun SavedPlaceItem(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-
-        IconButton(onClick = { onRemove(attraction) }) {
-            Icon(
-                imageVector = Icons.Default.Favorite,
-                contentDescription = "Unsave",
-                tint = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }

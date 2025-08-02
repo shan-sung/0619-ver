@@ -43,7 +43,7 @@ fun SavedScreen(
     if (showDialog && attractionDetail != null) {
         PlaceDetailDialog(
             attraction = attractionDetail,
-            mode = PlaceActionMode.ADD_TO_ITINERARY,
+            mode = PlaceActionMode.REMOVE_FROM_FAVORITE,
             onDismiss = { showDialog = false },
             onAddToItinerary = { onAddToItinerary(attractionDetail) }
         )

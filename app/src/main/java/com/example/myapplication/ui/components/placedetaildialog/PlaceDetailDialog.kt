@@ -33,6 +33,7 @@ fun PlaceDetailDialog(
     mode: PlaceActionMode,
     onDismiss: () -> Unit,
     onAddToItinerary: () -> Unit = {},
+    onRemoveFromFavorite: () -> Unit = {},
     onAddToFavorite: () -> Unit = {}
 ) {
     Dialog(onDismissRequest = onDismiss) {
@@ -80,11 +81,13 @@ fun PlaceDetailDialog(
                         rightButtonLabel = when (mode) {
                             PlaceActionMode.ADD_TO_ITINERARY -> "加入行程"
                             PlaceActionMode.ADD_TO_FAVORITE -> "加入最愛"
+                            PlaceActionMode.REMOVE_FROM_FAVORITE -> "移除最愛"
                         },
                         onRightButtonClick = {
                             when (mode) {
                                 PlaceActionMode.ADD_TO_ITINERARY -> onAddToItinerary()
                                 PlaceActionMode.ADD_TO_FAVORITE -> onAddToFavorite()
+                                PlaceActionMode.REMOVE_FROM_FAVORITE -> onRemoveFromFavorite()
                             }
                         }
                     )

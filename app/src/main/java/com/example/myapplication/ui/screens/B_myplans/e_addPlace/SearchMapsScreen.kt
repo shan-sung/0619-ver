@@ -26,8 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.SavedPlaceItem
 import com.example.myapplication.viewmodel.saved.SavedViewModel
+import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
 
 @Composable
 fun SearchMapsWrapper(
@@ -95,7 +95,7 @@ fun SearchMapsScreen(
             )
             LazyColumn {
                 items(recentSearches.reversed()) { attraction ->
-                    SavedPlaceItem(
+                    PlaceItem(
                         attraction = attraction,
                         onClick = {
                             onSelect(attraction)
@@ -108,7 +108,7 @@ fun SearchMapsScreen(
         } else {
             LazyColumn {
                 items(filtered) { attraction ->
-                    SavedPlaceItem(
+                    PlaceItem(
                         attraction = attraction,
                         onClick = {
                             if (!recentSearches.contains(attraction)) {

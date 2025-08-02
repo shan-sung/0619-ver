@@ -1,9 +1,5 @@
 package com.example.myapplication.ui.components
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,10 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import java.util.Locale
@@ -74,30 +68,6 @@ fun Travel.toInfoCardData(navController: NavController, showButton: Boolean = fa
         onButtonClick = if (showButton) {
             { navController.navigate(Routes.MyPlans.chatRoute(_id.orEmpty())) }
         } else null
-    )
-}
-
-fun Attraction.toInfoCardData(context: Context): InfoCardData {
-    return InfoCardData(
-        title = name,
-        subtitle = "${rating ?: 0.0} / 5",
-        location = city,
-        imageUrl = imageUrl,
-        mapSearchQuery = name,
-        onClick = {
-            val query = Uri.encode(name)
-            val gmmIntentUri = "geo:0,0?q=$query".toUri()
-            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
-                setPackage("com.google.android.apps.maps")
-            }
-            if (mapIntent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(mapIntent)
-            } else {
-                val webUri = "https://www.google.com/maps/search/?api=1&query=$query".toUri()
-                val webIntent = Intent(Intent.ACTION_VIEW, webUri)
-                context.startActivity(webIntent)
-            }
-        }
     )
 }
 
@@ -149,25 +119,6 @@ fun InfoCardVertical(
         }
     }
 }
-
-@Composable
-fun AttractionInfoCardVertical(
-    attraction: Attraction,
-    context: Context,
-    onItemClick: (Attraction) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    InfoCardVertical(
-        data = attraction.toInfoCardData(context).copy(
-            onClick = {
-                Log.d("CLICK_ATTRACTION", "Clicked: ${attraction.name}")
-                onItemClick(attraction)
-            }
-        ),
-        modifier = modifier // ✅ 傳入外部指定的寬度
-    )
-}
-
 
 @Composable
 fun InfoCard(

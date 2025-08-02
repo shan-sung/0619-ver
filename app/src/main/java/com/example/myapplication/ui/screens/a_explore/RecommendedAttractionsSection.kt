@@ -7,7 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.ui.components.AttractionInfoCardVertical
+import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
+
 
 fun LazyListScope.recommendedAttractionsSection(
     attractions: List<Attraction>,
@@ -25,11 +26,10 @@ fun LazyListScope.recommendedAttractionsSection(
     }
 
     items(attractions) { a ->
-        AttractionInfoCardVertical(
+        PlaceItem(
             attraction = a,
-            context = context,
-            onItemClick = onItemClick
+            onClick = { onItemClick(a) },
+            onRemove = {}
         )
     }
-
 }
