@@ -21,8 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.myapplication.model.ChatMessage
-import com.example.myapplication.model.CurrentUser
+import com.example.myapplication.data.model.ChatMessage
+import com.example.myapplication.data.model.CurrentUser
 
 @Composable
 fun MessageBubble(message: ChatMessage) {

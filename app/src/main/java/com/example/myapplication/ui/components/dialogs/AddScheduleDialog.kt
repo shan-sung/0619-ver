@@ -23,9 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.model.Attraction
-import com.example.myapplication.model.ScheduleItem
-import com.example.myapplication.model.ScheduleTime
+import com.example.myapplication.data.model.Attraction
+import com.example.myapplication.data.model.ScheduleItem
+import com.example.myapplication.data.model.ScheduleTime
 import com.example.myapplication.ui.components.AppExtendedFab
 import com.example.myapplication.ui.components.fields.DateSelectorFieldWithOverlay
 import com.example.myapplication.ui.components.fields.TimeSelectorFieldWithOverlay

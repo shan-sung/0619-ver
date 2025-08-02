@@ -30,7 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.model.ScheduleItem
+import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.ui.components.dialogs.EditScheduleDialog
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import java.time.LocalDate

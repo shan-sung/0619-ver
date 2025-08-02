@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.places.PlacesRepository
-import com.example.myapplication.model.Attraction
-import com.example.myapplication.model.buildPhotoUrl
+import com.example.myapplication.data.repo.PlacesRepository
+import com.example.myapplication.data.model.Attraction
+import com.example.myapplication.data.model.buildPhotoUrl
 import com.example.myapplication.util.LocationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -3,9 +3,9 @@ package com.example.myapplication.viewmodel.myplans.trip
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.ChatRepository
-import com.example.myapplication.model.ChatMessage
-import com.example.myapplication.model.CurrentUser
+import com.example.myapplication.data.api.ChatRepository
+import com.example.myapplication.data.model.ChatMessage
+import com.example.myapplication.data.model.CurrentUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

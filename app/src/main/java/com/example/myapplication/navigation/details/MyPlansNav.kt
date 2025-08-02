@@ -18,17 +18,17 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.myapplication.model.Travel
+import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.ui.screens.myplans.CreatedTripsScreen
-import com.example.myapplication.ui.screens.myplans.ParticipatingTripsScreen
-import com.example.myapplication.ui.screens.myplans.PreviewScreen
-import com.example.myapplication.ui.screens.myplans.TripTab
-import com.example.myapplication.ui.screens.myplans.creation.CreateTripWizardScreen
-import com.example.myapplication.ui.screens.myplans.trip.ChatRoomScreen
-import com.example.myapplication.ui.screens.myplans.trip.SearchMapsWrapper
-import com.example.myapplication.ui.screens.myplans.trip.SelectFromSavedListScreen
-import com.example.myapplication.ui.screens.myplans.trip.details.TripScreen
+import com.example.myapplication.ui.screens.b_myplans._comp.CreatedTripsScreen
+import com.example.myapplication.ui.screens.b_myplans._comp.ParticipatingTripsScreen
+import com.example.myapplication.ui.screens.b_myplans._comp.TripTab
+import com.example.myapplication.ui.screens.b_myplans.b_prev.CreateTripWizardScreen
+import com.example.myapplication.ui.screens.b_myplans.b_prev.PreviewScreen
+import com.example.myapplication.ui.screens.b_myplans.c_itinerary.TripScreen
+import com.example.myapplication.ui.screens.b_myplans.d_features.ChatRoomScreen
+import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
+import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
 import com.example.myapplication.viewmodel.myplans.PreviewViewModel
 import com.example.myapplication.viewmodel.myplans.TripCreationViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
@@ -97,7 +97,6 @@ fun NavGraphBuilder.previewNav(navController: NavController) {
                     previewViewModel.confirmTrip(
                         travel = travel,
                         onSuccess = { confirmedTrip ->
-                            // ✅ 轉跳到行程詳細頁（假設路由為 /myplans/detail/{tripId}）
                             navController.navigate(Routes.MyPlans.detailRoute(confirmedTrip._id))
                         },
                         onError = { msg ->
@@ -132,15 +131,18 @@ fun NavGraphBuilder.previewNav(navController: NavController) {
     }
 }
 
-fun NavGraphBuilder.selectFromSavedNav(navController: NavController) {
+fun NavGraphBuilder.selectFromMapNav(navController: NavController) {
     composable(Routes.MyPlans.SELECT_FROM_SAVED) {
-        SelectFromSavedListScreen(
+        SelectFromMapScreen(
             navController = navController,
             onSelect = { selectedAttraction ->
                 navController.previousBackStackEntry
                     ?.savedStateHandle
                     ?.set("selected_attraction", selectedAttraction)
                 navController.popBackStack()
+            },
+            onAddToItinerary = { selectedAttraction ->
+                // TODO
             }
         )
     }

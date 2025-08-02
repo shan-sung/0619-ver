@@ -3,9 +3,9 @@ package com.example.myapplication.viewmodel.myplans
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.trips.TripRepository
-import com.example.myapplication.model.CurrentUser
-import com.example.myapplication.model.Travel
+import com.example.myapplication.data.repo.TripRepository
+import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.Travel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

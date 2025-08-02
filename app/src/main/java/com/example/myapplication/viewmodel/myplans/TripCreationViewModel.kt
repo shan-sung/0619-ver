@@ -3,10 +3,10 @@ package com.example.myapplication.viewmodel.myplans
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.trips.TripsApiService
-import com.example.myapplication.model.CurrentUser
-import com.example.myapplication.model.Travel
-import com.example.myapplication.model.TripCreationInfo
+import com.example.myapplication.data.api.TripsApiService
+import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.Travel
+import com.example.myapplication.data.model.TripCreationInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

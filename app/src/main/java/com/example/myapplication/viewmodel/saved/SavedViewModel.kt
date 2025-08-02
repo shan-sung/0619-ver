@@ -3,9 +3,9 @@ package com.example.myapplication.viewmodel.saved
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.saved.SavedRepository
-import com.example.myapplication.model.Attraction
-import com.example.myapplication.model.CurrentUser
+import com.example.myapplication.data.repo.SavedRepository
+import com.example.myapplication.data.model.Attraction
+import com.example.myapplication.data.model.CurrentUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -3,10 +3,10 @@ package com.example.myapplication.viewmodel.friend
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.friends.FriendRepository
-import com.example.myapplication.model.CurrentUser
-import com.example.myapplication.model.FriendRequest
-import com.example.myapplication.model.UserSummary
+import com.example.myapplication.data.repo.FriendRepository
+import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.FriendRequest
+import com.example.myapplication.data.model.UserSummary
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

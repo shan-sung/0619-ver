@@ -49,6 +49,7 @@ object Routes {
         const val SELECT_FROM_SAVED = "select_from_saved"
         const val PREVIEW = "preview"
         const val SEARCH = "search_screen"
+        const val ADD_SCHEDULE = "add_schedule"
 
         fun detailRoute(id: String) = "trip_detail/$id"
         fun chatRoute(id: String) = "trip_detail/$id/chat"

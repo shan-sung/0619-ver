@@ -8,7 +8,7 @@ import com.example.myapplication.navigation.details.chatNav
 import com.example.myapplication.navigation.details.createNav
 import com.example.myapplication.navigation.details.featuredNav
 import com.example.myapplication.navigation.details.previewNav
-import com.example.myapplication.navigation.details.selectFromSavedNav
+import com.example.myapplication.navigation.details.selectFromMapNav
 import com.example.myapplication.navigation.details.tripDetailNav
 import com.example.myapplication.navigation.routes.Routes
 
@@ -27,7 +27,7 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier,
         tripDetailNav(navController)
         savedNav(navController)
         featuredNav(navController)
-        selectFromSavedNav(navController)
+        selectFromMapNav(navController)
         previewNav(navController)
         friendNav(navController, refreshKey)
     }

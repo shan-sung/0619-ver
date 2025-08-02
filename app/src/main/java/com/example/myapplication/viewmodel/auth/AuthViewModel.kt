@@ -3,10 +3,10 @@ package com.example.myapplication.viewmodel.auth
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.api.AuthApiService
-import com.example.myapplication.model.CurrentUser
-import com.example.myapplication.model.LoginRequest
-import com.example.myapplication.model.User
+import com.example.myapplication.data.api.AuthApiService
+import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.LoginRequest
+import com.example.myapplication.data.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

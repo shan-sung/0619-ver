@@ -33,8 +33,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.model.ScheduleItem
-import com.example.myapplication.model.ScheduleTime
+import com.example.myapplication.data.model.ScheduleItem
+import com.example.myapplication.data.model.ScheduleTime
 import com.example.myapplication.ui.components.fields.DateSelectorFieldWithOverlay
 import com.example.myapplication.ui.components.fields.TimeSelectorFieldWithOverlay
 import com.example.myapplication.ui.components.picker.showTimePickerDialog

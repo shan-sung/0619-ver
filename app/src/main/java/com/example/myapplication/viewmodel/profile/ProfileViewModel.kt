@@ -2,8 +2,8 @@ package com.example.myapplication.viewmodel.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.model.CurrentUser
-import com.example.myapplication.model.User
+import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
