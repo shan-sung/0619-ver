@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,73 +38,6 @@ import com.example.myapplication.navigation.routes.Routes
 import java.util.Locale
 
 @Composable
-fun TripItem(
-    travel: Travel,
-    navController: NavController,
-    showButton: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    val subtitleParts = listOfNotNull(
-        "${travel.members.size} people",
-        "${travel.days} days",
-        travel.budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
-    )
-    val subtitle = subtitleParts.joinToString("・")
-    val dateRange = "${travel.startDate} 至 ${travel.endDate}"
-
-    Row(
-        modifier = modifier
-            .clickable {
-                navController.navigate(Routes.MyPlans.detailRoute(travel._id))
-            }
-            .fillMaxWidth()
-            .height(72.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = travel.imageUrl?.takeIf { it.isNotBlank() }
-                ?: "https://source.unsplash.com/280x160/?nature",
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(56.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
-            error = painterResource(id = android.R.drawable.ic_menu_gallery)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = travel.title ?: "未命名行程",
-                style = MaterialTheme.typography.bodyLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        if (showButton) {
-            TextButton(onClick = {
-                navController.navigate(Routes.MyPlans.chatRoute(travel._id))
-            }) {
-                Text("聊天室")
-            }
-        }
-    }
-}
-
-@Composable
 fun InfoCard(
     travel: Travel,
     modifier: Modifier = Modifier,
@@ -114,23 +48,9 @@ fun InfoCard(
     buttonText: String? = null,
     onButtonClick: (() -> Unit)? = null
 ) {
-    val sizeModifier = when {
-        width != null && height != null -> modifier.width(width).height(height)
-        width != null -> modifier.width(width)
-        height != null -> modifier.height(height)
-        aspectRatio != null -> modifier.aspectRatio(aspectRatio)
-        else -> modifier
-    }
-
-    val imageUrl = travel.imageUrl?.takeIf { it.isNotBlank() }
-        ?: "https://source.unsplash.com/280x160/?nature"
-
-    val subtitleParts = listOfNotNull(
-        "${travel.members.size} 人",
-        "${travel.days} 天",
-        travel.budget?.let { "預算 $${String.format(Locale.US, "%,d", it)}" }
-    )
-    val subtitle = subtitleParts.joinToString("・")
+    val sizeModifier = modifier.buildSize(width, height, aspectRatio)
+    val imageUrl = travel.getImageUrl()
+    val subtitle = travel.getSubtitle()
 
     Card(
         onClick = { onClick?.invoke() },
@@ -138,49 +58,108 @@ fun InfoCard(
         modifier = sizeModifier
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize()
+            BackgroundImage(imageUrl)
+            BlackOverlay()
+            InfoContent(
+                title = travel.title ?: "未命名行程",
+                subtitle = subtitle,
+                buttonText = buttonText,
+                onButtonClick = onButtonClick
             )
+        }
+    }
+}
 
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(Color.Black.copy(alpha = 0.2f))
-            )
+@Composable
+private fun Modifier.buildSize(
+    width: Dp? = null,
+    height: Dp? = null,
+    aspectRatio: Float? = null
+): Modifier = when {
+    width != null && height != null -> this.width(width).height(height)
+    width != null -> this.width(width)
+    height != null -> this.height(height)
+    aspectRatio != null -> this.aspectRatio(aspectRatio)
+    else -> this
+}
 
-            Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = travel.title ?: "未命名行程",
-                        style = MaterialTheme.typography.bodyLarge.copy(
-                            color = Color.White,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        maxLines = 2
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = subtitle,
-                        style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
 
-                buttonText?.let { text ->
-                    TextButton(onClick = { onButtonClick?.invoke() }) {
-                        Text(text = text, color = Color.White)
-                    }
+fun Travel.getImageUrl(): String {
+    return imageUrl?.takeIf { it.isNotBlank() }
+        ?: "https://source.unsplash.com/280x160/?nature"
+}
+
+fun Travel.getSubtitle(): String {
+    val parts = listOfNotNull(
+        "${members.size} 人",
+        "$days 天",
+        budget?.let { "預算 $${String.format(Locale.US, "%,d", it)}" }
+    )
+    return parts.joinToString("・")
+}
+
+@Composable
+private fun BackgroundImage(imageUrl: String) {
+    Box{
+        AsyncImage(
+            model = imageUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
+    }
+}
+
+@Composable
+private fun BoxScope.BlackOverlay() {
+    Box(
+        modifier = Modifier
+            .matchParentSize()
+            .background(Color.Black.copy(alpha = 0.2f))
+    )
+}
+
+@Composable
+private fun InfoContent(
+    title: String,
+    subtitle: String,
+    buttonText: String?,
+    onButtonClick: (() -> Unit)?
+) {
+    Box( // 新增一層 Box 讓 align 合法
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    maxLines = 2
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            buttonText?.let {
+                TextButton(onClick = { onButtonClick?.invoke() }) {
+                    Text(text = it, color = Color.White)
                 }
             }
         }
