@@ -45,7 +45,12 @@ fun SavedScreen(
             attraction = attractionDetail,
             mode = PlaceActionMode.REMOVE_FROM_FAVORITE,
             onDismiss = { showDialog = false },
-            onAddToItinerary = { onAddToItinerary(attractionDetail) }
+            onAddToItinerary = { onAddToItinerary(attractionDetail) },
+            onRemoveFromFavorite = {
+                viewModel.removeFromSaved(attractionDetail)
+                showDialog = false
+            }
         )
     }
+
 }

@@ -20,25 +20,42 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.viewmodel.saved.SavedViewModel
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
+import com.example.myapplication.viewmodel.ForYouViewModel
+import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 @Composable
 fun SearchMapsWrapper(
     navController: NavController,
-    viewModel: SavedViewModel
+    savedViewModel: SavedViewModel = hiltViewModel(),
+    forYouViewModel: ForYouViewModel = hiltViewModel()
 ) {
-    val saved by viewModel.savedAttractions.collectAsState()
-    val forYou by viewModel.forYouAttractions.collectAsState()
+    val saved by savedViewModel.savedAttractions.collectAsState()
+    val forYou by forYouViewModel.forYouAttractions.collectAsState()
 
     val allAttractions = saved + forYou
-    val recentSearches = remember { mutableStateListOf<Attraction>() }
+
+    val recentSearches: SnapshotStateList<Attraction> = rememberSaveable(
+        saver = listSaver(
+            save = { it.map { it.id } },
+            restore = { savedIds ->
+                allAttractions.filter { attraction -> attraction.id in savedIds }
+                    .toMutableStateList()  // 確保是 SnapshotStateList
+            }
+        )
+    ) {
+        mutableStateListOf()
+    }
 
     SearchMapsScreen(
         navController = navController,

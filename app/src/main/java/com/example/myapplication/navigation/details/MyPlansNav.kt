@@ -29,6 +29,7 @@ import com.example.myapplication.ui.screens.b_myplans.c_itinerary.TripScreen
 import com.example.myapplication.ui.screens.b_myplans.d_features.ChatRoomScreen
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
+import com.example.myapplication.viewmodel.ForYouViewModel
 import com.example.myapplication.viewmodel.myplans.PreviewViewModel
 import com.example.myapplication.viewmodel.myplans.TripCreationViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
@@ -80,57 +81,6 @@ fun NavGraphBuilder.chatNav() {
     }
 }
 
-fun NavGraphBuilder.previewNav(navController: NavController) {
-    composable(Routes.MyPlans.PREVIEW) {
-        val context = LocalContext.current
-        val previewViewModel: PreviewViewModel = hiltViewModel()
-        val creationViewModel: TripCreationViewModel = hiltViewModel()
-
-        val travel = navController.previousBackStackEntry
-            ?.savedStateHandle
-            ?.get<Travel>("travel")
-
-        if (travel != null) {
-            PreviewScreen(
-                travel = travel,
-                onConfirm = {
-                    previewViewModel.confirmTrip(
-                        travel = travel,
-                        onSuccess = { confirmedTrip ->
-                            navController.navigate(Routes.MyPlans.detailRoute(confirmedTrip._id))
-                        },
-                        onError = { msg ->
-                            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                },
-                onRegenerate = {
-                    creationViewModel.submitTrip { regenerated ->
-                        // ✅ 將新的行程放入 savedStateHandle 並取代當前畫面
-                        navController.currentBackStackEntry
-                            ?.savedStateHandle
-                            ?.set("travel", regenerated)
-
-                        navController.navigate(Routes.MyPlans.PREVIEW) {
-                            popUpTo(Routes.MyPlans.PREVIEW) { inclusive = true }
-                        }
-                    }
-                }
-            )
-        } else {
-            // 如果找不到行程，提示使用者
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("請重新建立行程")
-            }
-        }
-    }
-}
-
 fun NavGraphBuilder.selectFromMapNav(navController: NavController) {
     composable(Routes.MyPlans.SELECT_FROM_SAVED) {
         SelectFromMapScreen(
@@ -142,13 +92,19 @@ fun NavGraphBuilder.selectFromMapNav(navController: NavController) {
                 navController.popBackStack()
             },
             onAddToItinerary = { selectedAttraction ->
-                // TODO
+                // TODO: 可寫入 Draft 行程中
             }
         )
     }
 
     composable(Routes.MyPlans.SEARCH) {
-        val viewModel: SavedViewModel = hiltViewModel()
-        SearchMapsWrapper(navController = navController, viewModel = viewModel)
+        val savedViewModel: SavedViewModel = hiltViewModel()
+        val forYouViewModel: ForYouViewModel = hiltViewModel()
+
+        SearchMapsWrapper(
+            navController = navController,
+            savedViewModel = savedViewModel,
+            forYouViewModel = forYouViewModel
+        )
     }
 }

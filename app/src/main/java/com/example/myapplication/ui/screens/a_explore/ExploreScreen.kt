@@ -17,8 +17,8 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.ui.components.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.placedetaildialog.comp.PlaceActionMode
+import com.example.myapplication.viewmodel.ForYouViewModel
 import com.example.myapplication.viewmodel.explore.AttractionsViewModel
-import com.example.myapplication.viewmodel.explore.RecommendationViewModel
 import com.example.myapplication.viewmodel.explore.TripsViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
 
@@ -28,12 +28,13 @@ fun ExploreScreen(
     tripsViewModel: TripsViewModel = hiltViewModel(),
     attractionsViewModel: AttractionsViewModel = hiltViewModel(),
     savedViewModel: SavedViewModel = hiltViewModel(),
-    recommendationViewModel: RecommendationViewModel = hiltViewModel()
+    forYouViewModel: ForYouViewModel = hiltViewModel() // ⬅️ 加這行
 ) {
+
     val travels by tripsViewModel.trips.collectAsState()
     val attractions by attractionsViewModel.attractions.collectAsState()
     val savedAttractions by savedViewModel.savedAttractions.collectAsState()
-    val recommendations by recommendationViewModel.recommendations.collectAsState()
+//    val recommendations by recommendationViewModel.recommendations.collectAsState()
 
     val context = LocalContext.current
     var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
@@ -45,11 +46,11 @@ fun ExploreScreen(
         savedViewModel.fetchSavedAttractions()
     }
 
-    LaunchedEffect(savedAttractions, attractions) {
-        if (savedAttractions.isNotEmpty() && attractions.isNotEmpty()) {
-            recommendationViewModel.updateRecommendations(savedAttractions, attractions)
-        }
-    }
+//    LaunchedEffect(savedAttractions, attractions) {
+//        if (savedAttractions.isNotEmpty() && attractions.isNotEmpty()) {
+//            recommendationViewModel.updateRecommendations(savedAttractions, attractions)
+//        }
+//    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
@@ -57,16 +58,16 @@ fun ExploreScreen(
                 popularTripsSection(travels, navController)
             }
 
-            if (recommendations.isNotEmpty()) {
-                recommendedAttractionsSection(
-                    attractions = recommendations,
-                    onShuffle = {
-                        recommendationViewModel.shuffleRecommendations(savedAttractions, attractions)
-                    },
-                    context = context,
-                    onItemClick = { selectedAttraction = it }
-                )
-            }
+//            if (recommendations.isNotEmpty()) {
+//                recommendedAttractionsSection(
+//                    attractions = recommendations,
+//                    onShuffle = {
+//                        recommendationViewModel.shuffleRecommendations(savedAttractions, attractions)
+//                    },
+//                    context = context,
+//                    onItemClick = { selectedAttraction = it }
+//                )
+//            }
 
             if (attractions.isNotEmpty()) {
                 nearbyAttractionsSection(
@@ -83,7 +84,10 @@ fun ExploreScreen(
                 attraction = attraction,
                 mode = PlaceActionMode.ADD_TO_FAVORITE,
                 onDismiss = { selectedAttraction = null },
-                onAddToFavorite = { /* 加入最愛處理邏輯 */ }
+                onAddToFavorite = {
+                    forYouViewModel.addToSaved(attraction) // ✅ 正確的呼叫
+                    selectedAttraction = null
+                }
             )
         }
     }

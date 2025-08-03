@@ -1,26 +1,21 @@
 package com.example.myapplication.data.repo
 
 import com.example.myapplication.BuildConfig
+import com.example.myapplication.data.api.ForYouApiService
 import com.example.myapplication.data.api.PlacesApiService
 import com.example.myapplication.data.api.SavedApiService
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.Comment
-import com.example.myapplication.data.model.TextSearchPlace
+import jakarta.inject.Inject
 import java.util.UUID
-import javax.inject.Inject
 
-class SavedRepository @Inject constructor(
-    private val savedApi: SavedApiService,
-    private val placesApi: PlacesApiService
+class ForYouRepository @Inject constructor(
+    private val forYouApi: ForYouApiService,
+    private val placesApi: PlacesApiService,
+    private val savedApi: SavedApiService  // ⬅️ 新增
 ) {
-    suspend fun getSavedAttractions(userId: String): List<Attraction> =
-        savedApi.getSavedAttractions(userId)
-
-    suspend fun addToSaved(userId: String, attraction: Attraction) =
-        savedApi.addToSaved(userId, attraction)
-
-    suspend fun removeFromSaved(userId: String, attractionId: String) =
-        savedApi.removeFromSaved(userId, attractionId)
+    suspend fun getRecommendations(userId: String): List<Attraction> =
+        forYouApi.getRecommendations(userId)
 
     suspend fun getPlaceDetails(placeId: String): Attraction {
         val detail = placesApi.getPlaceDetails(placeId).result
@@ -48,4 +43,7 @@ class SavedRepository @Inject constructor(
             imageUrl = imageUrl
         )
     }
+
+    suspend fun addToSaved(userId: String, attraction: Attraction) =
+        savedApi.addToSaved(userId, attraction) // ⬅️ 加入最愛
 }

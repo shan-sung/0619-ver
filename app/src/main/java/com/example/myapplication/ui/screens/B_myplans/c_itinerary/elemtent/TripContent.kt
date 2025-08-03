@@ -177,7 +177,6 @@ fun TripContent(
                         .fillMaxWidth()
                         .padding(24.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(16.dp))
                     Text("Add New Itinerary", style = MaterialTheme.typography.titleLarge)
                     Spacer(modifier = Modifier.height(16.dp))
 

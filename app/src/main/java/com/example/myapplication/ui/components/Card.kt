@@ -37,7 +37,7 @@ import com.example.myapplication.navigation.routes.Routes
 import java.util.Locale
 
 @Composable
-fun InfoCardVertical(
+fun TripItem(
     travel: Travel,
     navController: NavController,
     showButton: Boolean = false,
@@ -126,9 +126,9 @@ fun InfoCard(
         ?: "https://source.unsplash.com/280x160/?nature"
 
     val subtitleParts = listOfNotNull(
-        "${travel.members.size} people",
-        "${travel.days} days",
-        travel.budget?.let { "Budget $${String.format(Locale.US, "%,d", it)}" }
+        "${travel.members.size} 人",
+        "${travel.days} 天",
+        travel.budget?.let { "預算 $${String.format(Locale.US, "%,d", it)}" }
     )
     val subtitle = subtitleParts.joinToString("・")
 

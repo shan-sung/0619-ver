@@ -18,7 +18,6 @@ import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.InfoCard
 import com.example.myapplication.ui.components.RoundedIconButton
-import com.example.myapplication.ui.components.toInfoCardData
 
 @Composable
 fun TripInfoCard(
@@ -26,17 +25,20 @@ fun TripInfoCard(
     travel: Travel,
     showButton: Boolean
 ) {
-    val cardData = travel.toInfoCardData(navController, showButton = showButton)
-
     Box {
         InfoCard(
-            data = cardData.copy(
-                buttonText = null,
-                onButtonClick = null
-            ),
-            width = 360.dp,
-            height = 200.dp
+            travel = travel,
+            width = 240.dp,
+            height = 160.dp,
+            onClick = {
+                navController.navigate(Routes.MyPlans.detailRoute(travel._id))
+            },
+            buttonText = "聊天室",
+            onButtonClick = {
+                navController.navigate(Routes.MyPlans.chatRoute(travel._id))
+            }
         )
+
 
         if (showButton) {
             Row(
