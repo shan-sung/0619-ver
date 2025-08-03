@@ -38,6 +38,20 @@ class SavedViewModel @Inject constructor(
         }
     }
 
+    fun addToSaved(attraction: Attraction) {
+        val userId = CurrentUser.user?.id ?: return
+        viewModelScope.launch {
+            try {
+                repository.addToSaved(userId, attraction)
+                // 立即更新列表
+                _savedAttractions.value = _savedAttractions.value + attraction
+            } catch (e: Exception) {
+                Log.e("SavedViewModel", "Error adding to saved", e)
+            }
+        }
+    }
+
+
     fun removeFromSaved(attraction: Attraction) {
         val userId = CurrentUser.user?.id ?: return
         viewModelScope.launch {

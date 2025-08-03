@@ -47,15 +47,4 @@ class ForYouViewModel @Inject constructor(
             }
         }
     }
-
-    fun addToSaved(attraction: Attraction) {
-        val userId = CurrentUser.user?.id ?: return
-        viewModelScope.launch {
-            try {
-                forYouRepo.addToSaved(userId, attraction)
-            } catch (e: Exception) {
-                Log.e("ForYouViewModel", "Error adding to saved", e)
-            }
-        }
-    }
 }

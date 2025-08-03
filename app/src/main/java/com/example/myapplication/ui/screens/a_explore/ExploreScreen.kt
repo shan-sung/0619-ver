@@ -17,7 +17,6 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.ui.components.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.placedetaildialog.comp.PlaceActionMode
-import com.example.myapplication.viewmodel.ForYouViewModel
 import com.example.myapplication.viewmodel.explore.AttractionsViewModel
 import com.example.myapplication.viewmodel.explore.TripsViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
@@ -28,7 +27,6 @@ fun ExploreScreen(
     tripsViewModel: TripsViewModel = hiltViewModel(),
     attractionsViewModel: AttractionsViewModel = hiltViewModel(),
     savedViewModel: SavedViewModel = hiltViewModel(),
-    forYouViewModel: ForYouViewModel = hiltViewModel() // ⬅️ 加這行
 ) {
 
     val travels by tripsViewModel.trips.collectAsState()
@@ -85,7 +83,7 @@ fun ExploreScreen(
                 mode = PlaceActionMode.ADD_TO_FAVORITE,
                 onDismiss = { selectedAttraction = null },
                 onAddToFavorite = {
-                    forYouViewModel.addToSaved(attraction) // ✅ 正確的呼叫
+                    savedViewModel.addToSaved(attraction) // ✅ 正確的呼叫
                     selectedAttraction = null
                 }
             )
