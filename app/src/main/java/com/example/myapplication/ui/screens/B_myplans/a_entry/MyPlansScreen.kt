@@ -19,8 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.navigation.details.TripNavHost
 import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.navigation.subgraph.TripTabHost
 import com.example.myapplication.ui.components.AppFab
 import com.example.myapplication.ui.screens.b_myplans._comp.TripTab
 
@@ -55,13 +55,12 @@ fun TripsScreen(
                 }
             }
 
-            TripNavHost(
+            TripTabHost(
                 navController = tabNavController,
                 startDestination = startDestination,
                 parentNavController = navController,
                 modifier = Modifier.fillMaxSize()
             )
-
         }
     }
 }

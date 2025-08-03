@@ -1,0 +1,37 @@
+package com.example.myapplication.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.navigation.subgraph.chatNavGraph
+import com.example.myapplication.navigation.subgraph.createTripNavGraph
+import com.example.myapplication.navigation.subgraph.exploreNavGraph
+import com.example.myapplication.navigation.subgraph.featuredNav
+import com.example.myapplication.navigation.subgraph.friendNavGraph
+import com.example.myapplication.navigation.subgraph.profileNavGraph
+import com.example.myapplication.navigation.subgraph.savedNavGraph
+import com.example.myapplication.navigation.subgraph.selectFromMapNavGraph
+import com.example.myapplication.navigation.subgraph.tripDetailNavGraph
+import com.example.myapplication.navigation.subgraph.tripNavGraph
+
+@Composable
+fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier, refreshKey: Int) {
+    NavHost(
+        navController = navController,
+        startDestination = Routes.App.EXPLORE,
+        modifier = modifier
+    ) {
+        exploreNavGraph(navController)
+        tripNavGraph(navController)
+        chatNavGraph()
+        profileNavGraph(navController)
+        createTripNavGraph(navController)
+        tripDetailNavGraph(navController)
+        savedNavGraph(navController)
+        featuredNav(navController)
+        selectFromMapNavGraph(navController)
+        friendNavGraph(navController, refreshKey)
+    }
+}

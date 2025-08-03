@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
-import com.example.myapplication.navigation.main.RootNavGraph
+import com.example.myapplication.navigation.RootNavGraph
 import com.example.myapplication.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 

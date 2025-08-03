@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.navigation.main.AppNavGraph
+import com.example.myapplication.navigation.AppNavGraph
 import com.example.myapplication.navigation.routes.Routes
 
 @Composable

@@ -1,4 +1,4 @@
-package com.example.myapplication.navigation.main
+package com.example.myapplication.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
@@ -10,6 +10,10 @@ import com.example.myapplication.data.model.CurrentUser
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.bar.MainScreen
 import com.example.myapplication.ui.screens._auth.LoginScreen
+
+// 管理登入流程與主流程的切換，決定進入 App 的「起始頁面」。
+// 判斷導向 Login 或 Main
+
 @Composable
 fun RootNavGraph() {
     val navController = rememberNavController()
