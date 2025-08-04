@@ -1,6 +1,8 @@
 package com.example.myapplication.ui.screens.b_myplans.e_addPlace
 
 import android.app.TimePickerDialog
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.Button
@@ -35,8 +35,13 @@ import com.example.myapplication.data.model.Travel
 import com.example.myapplication.ui.components.bar.OverlayScreenWithCloseIcon
 import com.example.myapplication.ui.components.placedetaildialog.comp.ImgSection
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.google.android.material.datepicker.MaterialDatePicker
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @Composable
 fun AddScheduleScreen(
@@ -45,9 +50,13 @@ fun AddScheduleScreen(
     attraction: Attraction?,
     viewModel: TripDetailViewModel = hiltViewModel()
 ) {
-    var selectedDay by remember { mutableStateOf<Int?>(null) }
+    var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var arrivalTime by remember { mutableStateOf<LocalTime?>(null) }
     var departureTime by remember { mutableStateOf<LocalTime?>(null) }
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val startDate = LocalDate.parse(currentTrip.startDate, formatter)
+    val endDate = LocalDate.parse(currentTrip.endDate, formatter)
+
 
     OverlayScreenWithCloseIcon(
         onClose = { navController.popBackStack() },
@@ -75,11 +84,14 @@ fun AddScheduleScreen(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
 
-            DaySelector(
-                totalDays = currentTrip.days,
-                selectedDay = selectedDay,
-                onDaySelected = { selectedDay = it }
+            DateSelector(
+                label = "選擇日期",
+                selectedDate = selectedDate,
+                startDate = startDate,
+                endDate = endDate,
+                onDateSelected = { selectedDate = it }
             )
+
 
             TimeSelector(
                 label = "Arrival Time",
@@ -96,9 +108,11 @@ fun AddScheduleScreen(
             // ➕ 行程加入按鈕
             Button(
                 onClick = {
-                    if (selectedDay != null && arrivalTime != null && departureTime != null) {
+                    if (selectedDate != null && arrivalTime != null && departureTime != null) {
+                        val dayIndex = ChronoUnit.DAYS.between(startDate, selectedDate).toInt() + 1
+
                         val scheduleItem = ScheduleItem(
-                            day = selectedDay!!,
+                            day = dayIndex,
                             time = ScheduleTime(
                                 start = arrivalTime!!.format(DateTimeFormatter.ofPattern("HH:mm")),
                                 end = departureTime!!.format(DateTimeFormatter.ofPattern("HH:mm"))
@@ -120,7 +134,7 @@ fun AddScheduleScreen(
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = selectedDay != null && arrivalTime != null && departureTime != null
+                enabled = selectedDate != null && arrivalTime != null && departureTime != null
             ) {
                 Icon(Icons.Default.Place, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
@@ -132,12 +146,14 @@ fun AddScheduleScreen(
 
 
 @Composable
-fun DaySelector(
-    totalDays: Int,
-    selectedDay: Int?,
-    onDaySelected: (Int) -> Unit
+fun DateSelector(
+    label: String,
+    selectedDate: LocalDate?,
+    startDate: LocalDate,
+    endDate: LocalDate,
+    onDateSelected: (LocalDate) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -147,30 +163,38 @@ fun DaySelector(
                 shape = MaterialTheme.shapes.medium
             )
             .padding(horizontal = 16.dp, vertical = 14.dp)
-            .clickable { expanded = true }
+            .clickable {
+                val datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText(label)
+                    .setSelection(
+                        (selectedDate?.toEpochDay()?.times(24 * 60 * 60 * 1000))
+                            ?: (startDate.toEpochDay() * 24 * 60 * 60 * 1000)
+                    )
+                    .build()
+
+                datePicker.addOnPositiveButtonClickListener { timeInMillis ->
+                    val pickedDate = Instant.ofEpochMilli(timeInMillis)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+
+                    if (!pickedDate.isBefore(startDate) && !pickedDate.isAfter(endDate)) {
+                        onDateSelected(pickedDate)
+                    } else {
+                        Toast.makeText(context, "只能選擇旅程期間的日期", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                datePicker.show((context as AppCompatActivity).supportFragmentManager, "DatePicker")
+            }
     ) {
         Text(
-            text = selectedDay?.let { "Day $it" } ?: "Select Day",
+            text = selectedDate?.toString() ?: label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            for (day in 1..totalDays) {
-                DropdownMenuItem(
-                    text = { Text("Day $day") },
-                    onClick = {
-                        onDaySelected(day)
-                        expanded = false
-                    }
-                )
-            }
-        }
     }
 }
+
 
 @Composable
 fun TimeSelector(
