@@ -1,10 +1,15 @@
 package com.example.myapplication.ui.components.dialogs
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.AlertDialog
@@ -13,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,12 +29,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.PlaceInfo
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.ScheduleTime
 import com.example.myapplication.data.model.SourceType
+import com.example.myapplication.data.model.Travel
+import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.AppExtendedFab
+import com.example.myapplication.ui.components.DateSelector
+import com.example.myapplication.ui.components.TimeSelector
 import com.example.myapplication.ui.components.fields.DateSelectorFieldWithOverlay
 import com.example.myapplication.ui.components.fields.TimeSelectorFieldWithOverlay
 import com.example.myapplication.ui.components.picker.showDatePicker
@@ -40,166 +51,124 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
 @Composable
-fun AddScheduleDialog(
-    travelId: String,
-    tripStartDate: LocalDate,
-    tripEndDate: LocalDate,
-    onDismiss: () -> Unit,
-    onScheduleAdded: (ScheduleItem) -> Unit,
-    initialLocation: String = "",
-    viewModel: TripDetailViewModel = hiltViewModel()
+fun AddPlaceDialog(
+    currentTrip: Travel,
+    navController: NavController,
+    viewModel: TripDetailViewModel = hiltViewModel(),
+    onDismiss: () -> Unit
 ) {
-    val context = LocalContext.current
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
+    var name by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
-    var location by remember { mutableStateOf(initialLocation) }
-    var transportation by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var startTime by remember { mutableStateOf<LocalTime?>(null) }
-    var endTime by remember { mutableStateOf<LocalTime?>(null) }
-    var isSaving by remember { mutableStateOf(false) }
+    var arrivalTime by remember { mutableStateOf<LocalTime?>(null) }
+    var departureTime by remember { mutableStateOf<LocalTime?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
 
-    var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
-
-    LaunchedEffect(initialLocation) {
-        if (initialLocation.isNotBlank()) {
-            selectedAttraction = Attraction(id = "", name = initialLocation)  // 至少保住 name
-        }
-    }
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val startDate = LocalDate.parse(currentTrip.startDate, formatter)
+    val endDate = LocalDate.parse(currentTrip.endDate, formatter)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("新增行程") },
+        title = { Text("新增自訂地點") },
         text = {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    value = location,
-                    onValueChange = {
-                        location = it
-                        selectedAttraction = null // 若手動修改地點就清掉 selectedAttraction
-                    },
-                    label = { Text("地點") },
-                    modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            // 可以在這裡開啟 SelectFromSavedList 畫面
-                            Toast.makeText(context, "請使用下方新增選項選取地點", Toast.LENGTH_SHORT).show()
-                        }) {
-                            Icon(Icons.Default.Place, contentDescription = "Select")
-                        }
-                    }
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("地點名稱") },
+                    singleLine = true
                 )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                DateSelectorFieldWithOverlay(
-                    label = "選擇日期",
-                    date = selectedDate,
-                    formatter = dateFormatter,
-                    onClick = {
-                        showDatePicker(context, tripStartDate, tripEndDate) {
-                            selectedDate = it
-                        }
-                    },
-                    isEditing = true
-                )
-
-                TimeSelectorFieldWithOverlay(
-                    label = "開始時間",
-                    time = startTime,
-                    formatter = timeFormatter,
-                    onClick = {
-                        showTimePickerDialog(context, startTime) { startTime = it }
-                    },
-                    isEditing = true
-                )
-
-                TimeSelectorFieldWithOverlay(
-                    label = "結束時間",
-                    time = endTime,
-                    formatter = timeFormatter,
-                    onClick = {
-                        showTimePickerDialog(context, endTime) { endTime = it }
-                    },
-                    isEditing = true
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
                 OutlinedTextField(
-                    value = transportation,
-                    onValueChange = { transportation = it },
-                    label = { Text("交通方式") },
-                    modifier = Modifier.fillMaxWidth()
+                    value = address,
+                    onValueChange = { address = it },
+                    label = { Text("地址") },
+                    singleLine = true
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = note,
-                    onValueChange = { note = it },
-                    label = { Text("備註") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                selectedAttraction?.let {
+                // 日期選擇
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.medium)
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                        .clickable { showDatePicker = true }
+                ) {
                     Text(
-                        text = "✅ 已選擇景點 ID：${it.id}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.outline
+                        text = selectedDate?.toString() ?: "選擇日期",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
+                if (showDatePicker) {
+                    DateSelector(
+                        selectedDate = selectedDate,
+                        startDate = startDate,
+                        endDate = endDate,
+                        onDateSelected = {
+                            selectedDate = it
+                            showDatePicker = false
+                        },
+                        onDismiss = { showDatePicker = false }
+                    )
+                }
+
+                TimeSelector(
+                    label = "抵達時間",
+                    selectedTime = arrivalTime,
+                    onTimeSelected = { arrivalTime = it }
+                )
+
+                TimeSelector(
+                    label = "離開時間",
+                    selectedTime = departureTime,
+                    onTimeSelected = { departureTime = it }
+                )
             }
         },
         confirmButton = {
-            AppExtendedFab(
+            val isValid = name.isNotBlank() && selectedDate != null && arrivalTime != null && departureTime != null
+            TextButton(
                 onClick = {
-                    val isValid = location.isNotBlank() && selectedDate != null && startTime != null && endTime != null
-                    if (!isValid || isSaving) {
-                        Toast.makeText(context, "請填寫完整欄位", Toast.LENGTH_SHORT).show()
-                        return@AppExtendedFab
-                    }
+                    val dayIndex = ChronoUnit.DAYS.between(startDate, selectedDate).toInt() + 1
 
-                    isSaving = true
-
-                    val dayIndex = ChronoUnit.DAYS.between(tripStartDate, selectedDate).toInt() + 1
+                    val place = PlaceInfo(
+                        source = SourceType.CUSTOM,
+                        name = name,
+                        address = address.ifBlank { null }
+                    )
 
                     val scheduleItem = ScheduleItem(
                         day = dayIndex,
                         time = ScheduleTime(
-                            start = startTime!!.format(timeFormatter),
-                            end = endTime!!.format(timeFormatter)
+                            start = arrivalTime!!.format(DateTimeFormatter.ofPattern("HH:mm")),
+                            end = departureTime!!.format(DateTimeFormatter.ofPattern("HH:mm"))
                         ),
-                        transportation = transportation,
-                        note = note,
-                        place = PlaceInfo(
-                            source = SourceType.CUSTOM,
-                            name = location,
-                            address = null,
-                            lat = null,
-                            lng = null,
-                            imageUrl = null
-                        )
+                        transportation = "",
+                        note = "",
+                        place = place
                     )
 
-                    viewModel.submitScheduleItemSafely(travelId, scheduleItem) { success ->
-                        isSaving = false
-                        Toast.makeText(context, if (success) "新增成功！" else "新增失敗", Toast.LENGTH_SHORT).show()
-                        if (success) {
-                            onScheduleAdded(scheduleItem)
-                            onDismiss()
+                    viewModel.submitScheduleItemSafely(
+                        travelId = currentTrip._id,
+                        item = scheduleItem,
+                        onResult = {
+                            navController.navigate(Routes.MyPlans.detailRoute(currentTrip._id, dayIndex)) {
+                                popUpTo(Routes.MyPlans.MAIN)
+                            }
                         }
-                    }
+                    )
                 },
-                text = "Done"
-            )
+                enabled = isValid
+            ) {
+                Text("加入")
+            }
         },
         dismissButton = {
-            AppExtendedFab(onClick = onDismiss, text = "Cancel")
+            TextButton(onClick = onDismiss) {
+                Text("取消")
+            }
         }
     )
 }

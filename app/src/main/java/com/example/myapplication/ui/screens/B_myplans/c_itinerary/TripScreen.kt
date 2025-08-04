@@ -10,7 +10,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.ui.screens.b_myplans.c_itinerary.elemtent.TripContent
+import com.example.myapplication.ui.screens.b_myplans.c_itinerary.content.TripContent
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 
 @Composable

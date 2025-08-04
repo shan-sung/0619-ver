@@ -25,15 +25,15 @@ fun MainScreen() {
     val refreshKey = currentRoute?.let { refreshKeys[it] } ?: 0
 
     val showTopBar = currentRoute?.run {
-        startsWith("trip_detail/") || this in listOf(
+        startsWith("my_plans/detail") || this in listOf(
             Routes.MyPlans.MAIN,
             Routes.Saved.MAIN,
             Routes.Profile.MAIN,
             Routes.MyPlans.CREATE,
-            Routes.MyPlans.DETAIL,
             Routes.MyPlans.SELECT_FROM_SAVED_WITH_ID
         )
     } ?: false
+
 
     val showBottomBar = currentRoute in listOf(
         Routes.Explore.MAIN,
@@ -44,7 +44,7 @@ fun MainScreen() {
     )
 
     val topBarTitle = when {
-        currentRoute == Routes.MyPlans.DETAIL -> "My Trip"
+        currentRoute?.startsWith("my_plans/detail") == true -> "Trip"
         currentRoute == Routes.MyPlans.MAIN -> "Trips"
         currentRoute == Routes.Saved.MAIN -> "Saved"
         currentRoute == Routes.Profile.MAIN -> "Profile"
@@ -52,6 +52,7 @@ fun MainScreen() {
         currentRoute == Routes.MyPlans.SELECT_FROM_SAVED_WITH_ID -> "Select Attraction"
         else -> currentRoute?.replaceFirstChar { it.uppercase() } ?: ""
     }
+
 
     Scaffold(
         topBar = { if (showTopBar) TopBar(title = topBarTitle) },
