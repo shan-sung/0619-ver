@@ -31,6 +31,7 @@ import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.ScheduleTime
 import com.example.myapplication.data.model.SourceType
 import com.example.myapplication.data.model.Travel
+import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.DateSelector
 import com.example.myapplication.ui.components.TimeSelector
 import com.example.myapplication.ui.components.bar.OverlayScreenWithCloseIcon
@@ -139,7 +140,8 @@ fun AddScheduleScreen(
                             lng = attraction.lng,
                             imageUrl = attraction.imageUrl,
                             rating = attraction.rating,
-                            userRatingsTotal = attraction.userRatingsTotal
+                            userRatingsTotal = attraction.userRatingsTotal,
+                            openingHours = attraction.openingHours
                         )
 
                         val scheduleItem = ScheduleItem(
@@ -157,7 +159,9 @@ fun AddScheduleScreen(
                             travelId = currentTrip._id,
                             item = scheduleItem,
                             onResult = {
-                                navController.popBackStack()
+                                navController.navigate(Routes.MyPlans.detailRoute(currentTrip._id, dayIndex)) {
+                                    popUpTo(Routes.MyPlans.MAIN) // 可根據實際需求決定是否要清除堆疊
+                                }
                             }
                         )
                     }

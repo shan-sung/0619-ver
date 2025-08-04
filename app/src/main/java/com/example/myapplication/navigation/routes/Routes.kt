@@ -37,7 +37,12 @@ object Routes {
         const val ADD_SCHEDULE = "my_plans/add_schedule/{travelId}"
         fun addScheduleRoute(travelId: String) = "my_plans/add_schedule/$travelId"
 
-        fun detailRoute(id: String) = "my_plans/detail/$id"
+        fun detailRoute(id: String, scrollToDay: Int? = null): String {
+            return if (scrollToDay != null)
+                "my_plans/detail/$id?scrollToDay=$scrollToDay"
+            else
+                "my_plans/detail/$id"
+        }
         fun chatRoute(id: String) = "my_plans/detail/$id/chat"
 
         object Tab {
