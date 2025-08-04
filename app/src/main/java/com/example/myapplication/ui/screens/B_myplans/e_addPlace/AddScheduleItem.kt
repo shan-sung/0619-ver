@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens.b_myplans.e_addPlace
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,7 +59,6 @@ fun AddScheduleScreen(
 
     OverlayScreenWithCloseIcon(
         onClose = { navController.popBackStack() },
-        title = "新增行程點"
     ) {
         if (attraction == null) {
             Text("未提供景點資訊")
@@ -122,6 +122,8 @@ fun AddScheduleScreen(
                 onTimeSelected = { departureTime = it }
             )
 
+            Log.d("Check", "userRatingsTotal = ${attraction.userRatingsTotal}")
+
             // ➕ 行程加入按鈕
             Button(
                 onClick = {
@@ -133,9 +135,11 @@ fun AddScheduleScreen(
                             id = attraction.id,
                             name = attraction.name,
                             address = attraction.address,
-                            imageUrl = attraction.imageUrl,
                             lat = attraction.lat,
-                            lng = attraction.lng
+                            lng = attraction.lng,
+                            imageUrl = attraction.imageUrl,
+                            rating = attraction.rating,
+                            userRatingsTotal = attraction.userRatingsTotal
                         )
 
                         val scheduleItem = ScheduleItem(
@@ -168,4 +172,3 @@ fun AddScheduleScreen(
         }
     }
 }
-
