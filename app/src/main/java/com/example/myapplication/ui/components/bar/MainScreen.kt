@@ -31,7 +31,7 @@ fun MainScreen() {
             Routes.Profile.MAIN,
             Routes.MyPlans.CREATE,
             Routes.MyPlans.DETAIL,
-            Routes.MyPlans.SELECT_FROM_SAVED
+            Routes.MyPlans.SELECT_FROM_SAVED_WITH_ID
         )
     } ?: false
 
@@ -49,7 +49,7 @@ fun MainScreen() {
         currentRoute == Routes.Saved.MAIN -> "Saved"
         currentRoute == Routes.Profile.MAIN -> "Profile"
         currentRoute == Routes.MyPlans.CREATE -> "Create"
-        currentRoute == Routes.MyPlans.SELECT_FROM_SAVED -> "Select Attraction"
+        currentRoute == Routes.MyPlans.SELECT_FROM_SAVED_WITH_ID -> "Select Attraction"
         else -> currentRoute?.replaceFirstChar { it.uppercase() } ?: ""
     }
 

@@ -1,19 +1,30 @@
 package com.example.myapplication.navigation.subgraph
 
+import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.AddScheduleScreen
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
 import com.example.myapplication.viewmodel.ForYouViewModel
+import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
-    composable(Routes.MyPlans.SELECT_FROM_SAVED) {
+    composable(
+        Routes.MyPlans.SELECT_FROM_SAVED_WITH_ID,
+        arguments = listOf(navArgument("travelId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val travelId = backStackEntry.arguments?.getString("travelId") ?: ""
+
         SelectFromMapScreen(
             navController = navController,
             onSelect = { selectedAttraction ->
@@ -26,11 +37,13 @@ fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
                 navController.currentBackStackEntry
                     ?.savedStateHandle
                     ?.set("selected_attraction", selectedAttraction)
-                navController.navigate(Routes.MyPlans.ADD_SCHEDULE)
+
+                navController.navigate(Routes.MyPlans.addScheduleRoute(travelId))
             }
         )
     }
 
+    // 保留 Search 畫面
     composable(Routes.MyPlans.SEARCH) {
         val savedViewModel: SavedViewModel = hiltViewModel()
         val forYouViewModel: ForYouViewModel = hiltViewModel()
@@ -43,15 +56,35 @@ fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
     }
 }
 
+
 fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
-    composable(Routes.MyPlans.ADD_SCHEDULE) { backStackEntry ->
+    composable(
+        route = Routes.MyPlans.ADD_SCHEDULE,
+        arguments = listOf(navArgument("travelId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val travelId = backStackEntry.arguments?.getString("travelId")
+        val viewModel: TripDetailViewModel = hiltViewModel()
+        val currentTrip = viewModel.travel.collectAsState().value
+
+        // 第一次進入畫面觸發載入
+        LaunchedEffect(travelId) {
+            if (travelId != null && currentTrip == null) {
+                viewModel.fetchTravelById(travelId)
+            }
+        }
+
         val attraction = navController.previousBackStackEntry
             ?.savedStateHandle
             ?.get<Attraction>("selected_attraction")
 
-        AddScheduleScreen(
-            navController = navController,
-            attraction = attraction
-        )
+        if (currentTrip != null) {
+            AddScheduleScreen(
+                currentTrip = currentTrip,
+                navController = navController,
+                attraction = attraction
+            )
+        } else {
+            Text("載入行程中...")
+        }
     }
 }
