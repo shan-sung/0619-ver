@@ -7,7 +7,7 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.b_myplans.a_entry.TripsScreen
 
 fun NavGraphBuilder.tripNavGraph(navController: NavHostController) {
-    composable(Routes.App.MY_PLANS) {
+    composable(Routes.MyPlans.MAIN) {
         TripsScreen(navController = navController)
     }
 }

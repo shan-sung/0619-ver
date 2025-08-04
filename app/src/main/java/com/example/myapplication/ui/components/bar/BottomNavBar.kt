@@ -24,11 +24,11 @@ data class BottomNavItem(
 )
 
 val bottomNavItems = listOf(
-    BottomNavItem(Routes.App.EXPLORE, "Explore", Icons.Filled.Explore),
-    BottomNavItem(Routes.App.MY_PLANS, "My Plans", Icons.Filled.Map),
-    BottomNavItem(Routes.App.SAVED, "Saved", Icons.Filled.FavoriteBorder),
-    BottomNavItem(Routes.App.FRIEND, "Friend", Icons.Filled.People),
-    BottomNavItem(Routes.App.PROFILE, "Profile", Icons.Filled.Person)
+    BottomNavItem(Routes.Explore.MAIN, "Explore", Icons.Filled.Explore),
+    BottomNavItem(Routes.MyPlans.MAIN, "My Plans", Icons.Filled.Map),
+    BottomNavItem(Routes.Saved.MAIN, "Saved", Icons.Filled.FavoriteBorder),
+    BottomNavItem(Routes.Friend.MAIN, "Friend", Icons.Filled.People),
+    BottomNavItem(Routes.Profile.MAIN, "Profile", Icons.Filled.Person)
 )
 
 @Composable

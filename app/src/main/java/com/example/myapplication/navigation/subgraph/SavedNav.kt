@@ -9,7 +9,7 @@ import com.example.myapplication.ui.screens.c_saved.SavedScreen
 import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 fun NavGraphBuilder.savedNavGraph(navController: NavController) {
-    composable(Routes.App.SAVED) {
+    composable(Routes.Saved.MAIN) {
         val savedViewModel: SavedViewModel = hiltViewModel()
 
         SavedScreen(

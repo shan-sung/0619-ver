@@ -5,10 +5,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.navigation.subgraph.addScheduleNavGraph
 import com.example.myapplication.navigation.subgraph.chatNavGraph
 import com.example.myapplication.navigation.subgraph.createTripNavGraph
 import com.example.myapplication.navigation.subgraph.exploreNavGraph
-import com.example.myapplication.navigation.subgraph.featuredNav
 import com.example.myapplication.navigation.subgraph.friendNavGraph
 import com.example.myapplication.navigation.subgraph.profileNavGraph
 import com.example.myapplication.navigation.subgraph.savedNavGraph
@@ -20,7 +20,7 @@ import com.example.myapplication.navigation.subgraph.tripNavGraph
 fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier, refreshKey: Int) {
     NavHost(
         navController = navController,
-        startDestination = Routes.App.EXPLORE,
+        startDestination = Routes.AppTabs.EXPLORE,
         modifier = modifier
     ) {
         exploreNavGraph(navController)
@@ -30,8 +30,8 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier,
         createTripNavGraph(navController)
         tripDetailNavGraph(navController)
         savedNavGraph(navController)
-        featuredNav(navController)
         selectFromMapNavGraph(navController)
         friendNavGraph(navController, refreshKey)
+        addScheduleNavGraph(navController)
     }
 }

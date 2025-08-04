@@ -13,7 +13,7 @@ import com.example.myapplication.ui.screens.e_profile.ProfileScreen
 import com.example.myapplication.viewmodel.profile.ProfileViewModel
 
 fun NavGraphBuilder.profileNavGraph(navController: NavController) {
-    composable(route = Routes.App.PROFILE) {
+    composable(route = Routes.Profile.MAIN) {
         val viewModel: ProfileViewModel = hiltViewModel()
         val userState = viewModel.user.collectAsState()
 

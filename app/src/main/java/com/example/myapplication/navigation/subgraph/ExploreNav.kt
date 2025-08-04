@@ -8,9 +8,11 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.a_explore.ExploreScreen
 import com.example.myapplication.ui.screens.a_explore.FeaturedScreen
 
-fun NavGraphBuilder.exploreNavGraph(navController: NavController) {
+fun NavGraphBuilder.exploreNavGraph(navController: NavHostController) {
     composable(Routes.Explore.MAIN) {
-        ExploreScreen(navController = navController)
+        ExploreScreen(navController)
+    }
+    composable(Routes.Explore.FEATURED) {
+        FeaturedScreen(navController)
     }
 }
-

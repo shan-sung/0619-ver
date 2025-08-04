@@ -21,7 +21,7 @@ fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavC
         SectionHeader(
             title = "Hot Itineraries",
             actionText = "more",
-            onActionClick = { navController.navigate(Routes.Explore.Featured.MAIN) },
+            onActionClick = { navController.navigate(Routes.Explore.FEATURED) },
             modifier = Modifier.background(MaterialTheme.colorScheme.background)
         )
     }

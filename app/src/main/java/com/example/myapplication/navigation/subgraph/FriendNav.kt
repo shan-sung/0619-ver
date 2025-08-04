@@ -7,7 +7,7 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.d_friend.FriendScreen
 
 fun NavGraphBuilder.friendNavGraph(navController: NavController, refreshKey: Int) {
-    composable(Routes.App.FRIEND) {
+    composable(Routes.Friend.MAIN) {
         FriendScreen(navController = navController, refreshKey = refreshKey)
     }
 }

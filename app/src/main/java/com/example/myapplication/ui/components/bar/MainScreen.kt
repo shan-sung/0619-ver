@@ -30,20 +30,21 @@ fun MainScreen() {
             Routes.Saved.MAIN,
             Routes.Profile.MAIN,
             Routes.MyPlans.CREATE,
+            Routes.MyPlans.DETAIL,
             Routes.MyPlans.SELECT_FROM_SAVED
         )
     } ?: false
 
     val showBottomBar = currentRoute in listOf(
-        Routes.App.EXPLORE,
-        Routes.App.MY_PLANS,
-        Routes.App.SAVED,
-        Routes.App.FRIEND,
-        Routes.App.PROFILE
+        Routes.Explore.MAIN,
+        Routes.MyPlans.MAIN,
+        Routes.Saved.MAIN,
+        Routes.Friend.MAIN,
+        Routes.Profile.MAIN
     )
 
     val topBarTitle = when {
-        currentRoute?.startsWith("trip_detail/") == true -> "My Trip"
+        currentRoute == Routes.MyPlans.DETAIL -> "My Trip"
         currentRoute == Routes.MyPlans.MAIN -> "Trips"
         currentRoute == Routes.Saved.MAIN -> "Saved"
         currentRoute == Routes.Profile.MAIN -> "Profile"
