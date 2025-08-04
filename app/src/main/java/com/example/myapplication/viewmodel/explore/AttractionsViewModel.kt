@@ -16,11 +16,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AttractionsViewModel @Inject constructor(
-    private val placesRepository: PlacesRepository
+    private val repository: PlacesRepository
 ) : ViewModel() {
 
     private val _attractions = MutableStateFlow<List<Attraction>>(emptyList())
     val attractions: StateFlow<List<Attraction>> = _attractions
+    private val _selectedAttractionDetail = MutableStateFlow<Attraction?>(null)
+    val selectedAttractionDetail: StateFlow<Attraction?> = _selectedAttractionDetail
 
     fun fetchNearbyAttractions(context: Context) {
         LocationUtils.getCurrentLocation(context) { location ->
@@ -28,7 +30,7 @@ class AttractionsViewModel @Inject constructor(
                 viewModelScope.launch {
                     try {
                         val locationStr = "${location.latitude},${location.longitude}"
-                        val response = placesRepository.getNearbyAttractionsAndRestaurants(locationStr)
+                        val response = repository.getNearbyAttractionsAndRestaurants(locationStr)
                         _attractions.value = response.results.take(6).map {
                             val ref = it.photos?.firstOrNull()?.photo_reference
                             Attraction(
@@ -47,6 +49,15 @@ class AttractionsViewModel @Inject constructor(
                         Log.e("AttractionsViewModel", "Error: ${e.message}")
                     }
                 }
+            }
+        }
+    }
+    fun loadAttractionDetail(placeId: String) {
+        viewModelScope.launch {
+            try {
+                _selectedAttractionDetail.value = repository.getPlaceDetails(placeId)
+            } catch (e: Exception) {
+                Log.e("SavedViewModel", "Error loading attraction detail", e)
             }
         }
     }

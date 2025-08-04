@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.ui.components.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.viewmodel.explore.AttractionsViewModel
@@ -28,14 +27,11 @@ fun ExploreScreen(
     attractionsViewModel: AttractionsViewModel = hiltViewModel(),
     savedViewModel: SavedViewModel = hiltViewModel(),
 ) {
-
     val travels by tripsViewModel.trips.collectAsState()
     val attractions by attractionsViewModel.attractions.collectAsState()
-    val savedAttractions by savedViewModel.savedAttractions.collectAsState()
-//    val recommendations by recommendationViewModel.recommendations.collectAsState()
-
     val context = LocalContext.current
-    var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
+    val attractionDetail = attractionsViewModel.selectedAttractionDetail.collectAsState().value
+    var showDialog by remember { mutableStateOf(false) }
 
     // 初始化資料
     LaunchedEffect(Unit) {
@@ -44,47 +40,36 @@ fun ExploreScreen(
         savedViewModel.fetchSavedAttractions()
     }
 
-//    LaunchedEffect(savedAttractions, attractions) {
-//        if (savedAttractions.isNotEmpty() && attractions.isNotEmpty()) {
-//            recommendationViewModel.updateRecommendations(savedAttractions, attractions)
-//        }
-//    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
             if (travels.isNotEmpty()) {
                 popularTripsSection(travels, navController)
             }
 
-//            if (recommendations.isNotEmpty()) {
-//                recommendedAttractionsSection(
-//                    attractions = recommendations,
-//                    onShuffle = {
-//                        recommendationViewModel.shuffleRecommendations(savedAttractions, attractions)
-//                    },
-//                    context = context,
-//                    onItemClick = { selectedAttraction = it }
-//                )
-//            }
-
             if (attractions.isNotEmpty()) {
                 nearbyAttractionsSection(
                     attractions = attractions,
                     navController = navController,
                     context = context,
-                    onItemClick = { selectedAttraction = it }
+                    // ✅ 點擊時改為載入詳細資料
+                    onItemClick = {
+                        attractionsViewModel.loadAttractionDetail(it.id)
+                        showDialog = true
+                    }
                 )
             }
         }
 
-        selectedAttraction?.let { attraction ->
+        if (showDialog && attractionDetail != null) {
             PlaceDetailDialog(
-                attraction = attraction,
+                attraction = attractionDetail,
                 mode = PlaceActionMode.ADD_TO_FAVORITE,
-                onDismiss = { selectedAttraction = null },
+                onDismiss = {
+                    showDialog = false
+                },
                 onAddToFavorite = {
-                    savedViewModel.addToSaved(attraction) // ✅ 正確的呼叫
-                    selectedAttraction = null
+                    savedViewModel.addToSaved(attractionDetail)
+                    showDialog = false
                 }
             )
         }
