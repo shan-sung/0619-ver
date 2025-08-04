@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.ui.components.InfoCard
+import com.example.myapplication.ui.components.card.InfoCard
 
 @OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavController) {

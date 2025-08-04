@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.model.Travel
 import androidx.navigation.NavController
 import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.ui.components.card.InfoCard
 
 @Composable
 fun TwoColumnCardGrid(
