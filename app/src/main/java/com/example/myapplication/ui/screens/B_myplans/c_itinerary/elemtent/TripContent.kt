@@ -35,6 +35,7 @@ import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.AppFab
 import com.example.myapplication.ui.components.SheetItem
+import com.example.myapplication.ui.components.card.TripInfoHeader
 import com.example.myapplication.ui.components.dialogs.AddScheduleDialog
 import com.example.myapplication.ui.screens.b_myplans.d_features.ShareTripDialog
 import java.time.LocalDate
