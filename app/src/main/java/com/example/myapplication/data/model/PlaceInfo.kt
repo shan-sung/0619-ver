@@ -14,6 +14,7 @@ data class PlaceInfo(
     val lat: Double? = null,
     val lng: Double? = null,
     val imageUrl: String? = null,
+    val openingHours: List<String>? = null,
     val rating: Double? = null,
     val userRatingsTotal: Int? = null
 ) : Parcelable
