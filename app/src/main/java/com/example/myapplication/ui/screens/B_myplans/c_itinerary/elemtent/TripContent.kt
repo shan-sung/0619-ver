@@ -189,7 +189,7 @@ fun TripContent(
                     // Maps（從 Google Maps 搜尋與儲存過的景點）
                     SheetItem("From Maps") {
                         showBottomSheet = false
-                        navController.navigate(Routes.MyPlans.SELECT_FROM_SAVED)
+                        navController.navigate(Routes.MyPlans.selectFromSavedRoute(travel._id))
                     }
 
                     // 手動輸入（打開 AddScheduleDialog）
