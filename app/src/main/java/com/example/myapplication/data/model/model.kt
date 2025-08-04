@@ -74,15 +74,14 @@ data class ScheduleItem(
     val time: ScheduleTime,
     val transportation: String,
     val note: String? = "",
-    val placeId: String? = null,
-    val placeName: String,
-    val photoReference: String? = null // ✅ 新增：Google Places 的照片參照
+    val place: PlaceInfo  // ✅ 取代 placeId + placeName + photoReference
 ) : Parcelable {
     val startTime: LocalTime?
         get() = time.start.toLocalTimeOrNull()
     val endTime: LocalTime?
         get() = time.end.toLocalTimeOrNull()
 }
+
 
 @Parcelize
 data class ScheduleTime(

@@ -24,8 +24,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.data.model.Attraction
+import com.example.myapplication.data.model.PlaceInfo
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.ScheduleTime
+import com.example.myapplication.data.model.SourceType
 import com.example.myapplication.ui.components.AppExtendedFab
 import com.example.myapplication.ui.components.fields.DateSelectorFieldWithOverlay
 import com.example.myapplication.ui.components.fields.TimeSelectorFieldWithOverlay
@@ -172,13 +174,17 @@ fun AddScheduleDialog(
                             start = startTime!!.format(timeFormatter),
                             end = endTime!!.format(timeFormatter)
                         ),
-                        placeName = location,  // ✅ 用 location 取代 activity
                         transportation = transportation,
                         note = note,
-                        placeId = selectedAttraction?.id,
-                        photoReference = selectedAttraction?.imageUrl
+                        place = PlaceInfo(
+                            source = SourceType.CUSTOM,
+                            name = location,
+                            address = null,
+                            lat = null,
+                            lng = null,
+                            imageUrl = null
+                        )
                     )
-
 
                     viewModel.submitScheduleItemSafely(travelId, scheduleItem) { success ->
                         isSaving = false

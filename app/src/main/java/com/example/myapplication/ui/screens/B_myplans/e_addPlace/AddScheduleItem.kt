@@ -1,8 +1,5 @@
 package com.example.myapplication.ui.screens.b_myplans.e_addPlace
 
-import android.app.TimePickerDialog
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,22 +21,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
+import com.example.myapplication.data.model.PlaceInfo
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.ScheduleTime
+import com.example.myapplication.data.model.SourceType
 import com.example.myapplication.data.model.Travel
+import com.example.myapplication.ui.components.DateSelector
+import com.example.myapplication.ui.components.TimeSelector
 import com.example.myapplication.ui.components.bar.OverlayScreenWithCloseIcon
 import com.example.myapplication.ui.components.placedetaildialog.comp.ImgSection
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
-import com.google.android.material.datepicker.MaterialDatePicker
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 
@@ -53,10 +50,11 @@ fun AddScheduleScreen(
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var arrivalTime by remember { mutableStateOf<LocalTime?>(null) }
     var departureTime by remember { mutableStateOf<LocalTime?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val startDate = LocalDate.parse(currentTrip.startDate, formatter)
     val endDate = LocalDate.parse(currentTrip.endDate, formatter)
-
 
     OverlayScreenWithCloseIcon(
         onClose = { navController.popBackStack() },
@@ -84,14 +82,33 @@ fun AddScheduleScreen(
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
 
-            DateSelector(
-                label = "選擇日期",
-                selectedDate = selectedDate,
-                startDate = startDate,
-                endDate = endDate,
-                onDateSelected = { selectedDate = it }
-            )
+            // ✅ 日期選擇顯示元件
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.medium)
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+                    .clickable { showDatePicker = true }
+            ) {
+                Text(
+                    text = selectedDate?.toString() ?: "選擇日期",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
+            if (showDatePicker) {
+                DateSelector(
+                    selectedDate = selectedDate,
+                    startDate = startDate,
+                    endDate = endDate,
+                    onDateSelected = {
+                        selectedDate = it
+                        showDatePicker = false
+                    },
+                    onDismiss = { showDatePicker = false }
+                )
+            }
 
             TimeSelector(
                 label = "Arrival Time",
@@ -111,6 +128,16 @@ fun AddScheduleScreen(
                     if (selectedDate != null && arrivalTime != null && departureTime != null) {
                         val dayIndex = ChronoUnit.DAYS.between(startDate, selectedDate).toInt() + 1
 
+                        val place = PlaceInfo(
+                            source = SourceType.GOOGLE,
+                            id = attraction.id,
+                            name = attraction.name,
+                            address = attraction.address,
+                            imageUrl = attraction.imageUrl,
+                            lat = attraction.lat,
+                            lng = attraction.lng
+                        )
+
                         val scheduleItem = ScheduleItem(
                             day = dayIndex,
                             time = ScheduleTime(
@@ -119,9 +146,7 @@ fun AddScheduleScreen(
                             ),
                             transportation = "",
                             note = "",
-                            placeId = attraction.id,
-                            placeName = attraction.name,
-                            photoReference = attraction.imageUrl
+                            place = place
                         )
 
                         viewModel.submitScheduleItemSafely(
@@ -144,93 +169,3 @@ fun AddScheduleScreen(
     }
 }
 
-
-@Composable
-fun DateSelector(
-    label: String,
-    selectedDate: LocalDate?,
-    startDate: LocalDate,
-    endDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit
-) {
-    val context = LocalContext.current
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-            .clickable {
-                val datePicker = MaterialDatePicker.Builder.datePicker()
-                    .setTitleText(label)
-                    .setSelection(
-                        (selectedDate?.toEpochDay()?.times(24 * 60 * 60 * 1000))
-                            ?: (startDate.toEpochDay() * 24 * 60 * 60 * 1000)
-                    )
-                    .build()
-
-                datePicker.addOnPositiveButtonClickListener { timeInMillis ->
-                    val pickedDate = Instant.ofEpochMilli(timeInMillis)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
-
-                    if (!pickedDate.isBefore(startDate) && !pickedDate.isAfter(endDate)) {
-                        onDateSelected(pickedDate)
-                    } else {
-                        Toast.makeText(context, "只能選擇旅程期間的日期", Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                datePicker.show((context as AppCompatActivity).supportFragmentManager, "DatePicker")
-            }
-    ) {
-        Text(
-            text = selectedDate?.toString() ?: label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-
-@Composable
-fun TimeSelector(
-    label: String,
-    selectedTime: LocalTime?,
-    onTimeSelected: (LocalTime) -> Unit
-) {
-    val context = LocalContext.current
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium
-            )
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-            .clickable {
-                val now = LocalTime.now()
-                val dialog = TimePickerDialog(
-                    context,
-                    { _, hour, minute ->
-                        onTimeSelected(LocalTime.of(hour, minute))
-                    },
-                    selectedTime?.hour ?: now.hour,
-                    selectedTime?.minute ?: now.minute,
-                    true
-                )
-                dialog.show()
-            }
-    ) {
-        Text(
-            text = selectedTime?.format(timeFormatter) ?: label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}

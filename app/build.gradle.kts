@@ -1,11 +1,10 @@
 plugins {
-    kotlin("plugin.serialization") version "1.9.0" // 例如 "1.9.10"
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
+    id("dagger.hilt.android.plugin")
     id("kotlin-kapt")
-    id ("dagger.hilt.android.plugin")
-    id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
     id("kotlin-parcelize")
 }
 
@@ -59,7 +58,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    implementation(libs.androidx.material3)
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.foundation:foundation:1.8.3")
     implementation("androidx.compose.material:material:1.8.3")
@@ -93,7 +92,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // 或更新版
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

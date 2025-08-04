@@ -89,7 +89,7 @@ class TripDetailViewModel @Inject constructor(
         item: ScheduleItem,
         onResult: (Boolean) -> Unit
     ) {
-        if (_isLoading.value) return  // 🛡️ 防止重複點擊
+        if (_isLoading.value) return
         _isLoading.value = true
 
         viewModelScope.launch {
@@ -101,21 +101,19 @@ class TripDetailViewModel @Inject constructor(
                         _travel.value = updatedTrip
                         onResult(true)
                     } else {
-                        Log.e("TripVM", "新增成功但找不到行程")
                         onResult(false)
                     }
                 } else {
-                    Log.e("TripVM", "新增失敗: code=${response.code()}, errorBody=${response.errorBody()?.string()}")
                     onResult(false)
                 }
             } catch (e: Exception) {
-                Log.e("TripVM", "新增發生錯誤", e)
                 onResult(false)
             } finally {
                 _isLoading.value = false
             }
         }
     }
+
 
     fun inviteFriends(tripId: String, friendIds: List<String>, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {

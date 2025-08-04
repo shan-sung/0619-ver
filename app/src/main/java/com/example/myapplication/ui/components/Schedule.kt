@@ -30,8 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.ScheduleItem
-import com.example.myapplication.ui.components.dialogs.EditScheduleDialog
+import com.example.myapplication.data.model.SourceType
+import com.example.myapplication.ui.components.placedetaildialog.PlaceDetailDialog
+import com.example.myapplication.ui.components.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -49,7 +52,7 @@ fun ScheduleTimeline(
     val tripEndDate = travel?.endDate?.let { LocalDate.parse(it, formatter) } ?: LocalDate.now()
 
     val travelId = travel?._id ?: ""
-
+    var selectedAttraction by remember { mutableStateOf<Attraction?>(null) }
     var selectedItem by remember { mutableStateOf<ScheduleItem?>(null) }
     var scheduleState by remember { mutableStateOf(schedule) }
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
@@ -76,25 +79,27 @@ fun ScheduleTimeline(
     }
 
     selectedItem?.let { item ->
-        EditScheduleDialog(
-            originalItem = item,
-            tripStartDate = tripStartDate,
-            tripEndDate = tripEndDate,
-            travelId = travelId,
-            scheduleIndex = selectedIndex ?: 0, // 👈 傳入 index
-            onDismiss = {
-                selectedItem = null
-                selectedIndex = null
-            },
-            onScheduleEdited = { updatedItem ->
-                scheduleState = scheduleState.map {
-                    if (it == item) updatedItem else it
-                }
-                selectedItem = null
-                selectedIndex = null
-            }
-        )
+        if (item.place.source == SourceType.GOOGLE && item.place.id != null) {
+            val attraction = Attraction(
+                id = item.place.id,
+                name = item.place.name,
+                address = item.place.address,
+                lat = item.place.lat,
+                lng = item.place.lng,
+                imageUrl = item.place.imageUrl
+            )
+            PlaceDetailDialog(
+                attraction = attraction,
+                mode = PlaceActionMode.ADD_TO_ITINERARY,
+                onDismiss = {
+                    selectedItem = null
+                    selectedIndex = null
+                },
+                onAddToItinerary = { /* handle */ }
+            )
+        }
     }
+
 }
 
 @Composable
@@ -126,11 +131,9 @@ fun ScheduleItemCard(
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = item.placeName,
+                text = item.place.name,
                 style = MaterialTheme.typography.titleMedium
             )
             Text(

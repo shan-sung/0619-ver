@@ -128,10 +128,17 @@ fun TripContent(
                 navController = navController
             )
 
-
             if (days > 0) {
-                // 顯示 Day1、Day2… 的可點擊 Tab
-                TripDayTabs(days = days, pagerState = pagerState, coroutineScope = coroutineScope)
+
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    TripDayTabs(
+                        days = days,
+                        pagerState = pagerState,
+                        coroutineScope = coroutineScope,
+                        startDate = tripStartDate,
+                        endDate = tripEndDate
+                    )
+                }
 
                 // 對應顯示每日行程頁面
                 TripPager(
@@ -142,6 +149,7 @@ fun TripContent(
                     modifier = Modifier.weight(1f)
                 )
             }
+
         }
 
         // 若使用者為主揪，顯示右下角「新增」FAB
