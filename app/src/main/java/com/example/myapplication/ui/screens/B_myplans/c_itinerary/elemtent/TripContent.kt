@@ -47,6 +47,7 @@ fun TripContent(
     travel: Travel,                          // 當前行程資料
     selectedAttraction: Attraction?,         // 從 Saved 地圖頁面傳回的景點（可用來預設地點）
     currentUserId: String = CurrentUser.user?.id.orEmpty(),  // 目前使用者 ID（預設取自全域登入資訊）
+    scrollToDay: Int?,
     onScheduleAdded: (ScheduleItem) -> Unit  // 當成功新增行程項目時的 callback
 ) {
     // 行程天數（用來決定有幾頁 DayTab + Pager）
@@ -57,6 +58,12 @@ fun TripContent(
 
     // 協程作用域，用於點擊 Tab 時控制 Pager 捲動動畫
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(scrollToDay) {
+        scrollToDay?.let { day ->
+            pagerState.scrollToPage(day - 1)
+        }
+    }
 
     // 控制底部 Modal Bottom Sheet 的狀態
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
