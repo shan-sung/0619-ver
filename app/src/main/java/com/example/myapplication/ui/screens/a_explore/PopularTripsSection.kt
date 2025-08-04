@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.screens.a_explore
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +15,7 @@ import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.InfoCard
 
+@OptIn(ExperimentalFoundationApi::class)
 fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavController) {
     stickyHeader {
         SectionHeader(
@@ -37,7 +39,6 @@ fun LazyListScope.popularTripsSection(travels: List<Travel>, navController: NavC
                     onClick = {
                         navController.navigate(Routes.MyPlans.detailRoute(travel._id))
                     },
-                    buttonText = "聊天室",
                     onButtonClick = {
                         navController.navigate(Routes.MyPlans.chatRoute(travel._id))
                     }

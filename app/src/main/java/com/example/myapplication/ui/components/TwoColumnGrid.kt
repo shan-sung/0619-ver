@@ -37,7 +37,6 @@ fun TwoColumnCardGrid(
                     onClick = {
                         navController.navigate(Routes.MyPlans.detailRoute(rowItems[0]._id))
                     },
-                    buttonText = "聊天室",
                     onButtonClick = {
                         navController.navigate(Routes.MyPlans.chatRoute(rowItems[0]._id))
                     }
@@ -51,7 +50,6 @@ fun TwoColumnCardGrid(
                         onClick = {
                             navController.navigate(Routes.MyPlans.detailRoute(rowItems[1]._id))
                         },
-                        buttonText = "聊天室",
                         onButtonClick = {
                             navController.navigate(Routes.MyPlans.chatRoute(rowItems[1]._id))
                         }
