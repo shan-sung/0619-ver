@@ -121,7 +121,12 @@ fun TripContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 顯示行程卡片與右上角功能按鈕（預算、聊天室、分享）
-            TripInfoCard(navController = navController, travel = travel, showButton = isIn)
+            TripInfoHeader(
+                travel = travel,
+                isInTrip = isIn,
+                navController = navController
+            )
+
 
             if (days > 0) {
                 // 顯示 Day1、Day2… 的可點擊 Tab

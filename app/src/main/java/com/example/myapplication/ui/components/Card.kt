@@ -12,9 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -29,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.example.myapplication.data.model.Travel
 import java.util.Locale
 
@@ -65,24 +71,22 @@ fun InfoCard(
     }
 }
 
-@Composable
-private fun Modifier.buildSize(
+fun Modifier.buildSize(
     width: Dp? = null,
     height: Dp? = null,
     aspectRatio: Float? = null
-): Modifier = when {
-    width != null && height != null -> this.width(width).height(height)
-    width != null -> this.width(width)
-    height != null -> this.height(height)
-    aspectRatio != null -> this.aspectRatio(aspectRatio)
-    else -> this
+): Modifier {
+    var result = this
+    if (width != null) result = result.then(Modifier.width(width))
+    if (height != null) result = result.then(Modifier.height(height))
+    if (aspectRatio != null) result = result.then(Modifier.aspectRatio(aspectRatio))
+    return result
 }
 
 
-fun Travel.getImageUrl(): String {
-    return imageUrl?.takeIf { it.isNotBlank() }
-        ?: "https://source.unsplash.com/280x160/?nature"
-}
+
+const val DEFAULT_TRAVEL_IMAGE_URL = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+fun Travel.getImageUrl(): String = imageUrl?.takeIf { it.isNotBlank() } ?: DEFAULT_TRAVEL_IMAGE_URL
 
 fun Travel.getSubtitle(): String {
     val parts = listOfNotNull(
@@ -95,22 +99,43 @@ fun Travel.getSubtitle(): String {
 
 @Composable
 private fun BackgroundImage(imageUrl: String) {
-    Box{
-        AsyncImage(
+    Box {
+        SubcomposeAsyncImage(
             model = imageUrl,
-            contentDescription = null,
+            contentDescription = "Trip cover image",
             contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize()
+            modifier = Modifier.matchParentSize(),
+            loading = {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                }
+            },
+            error = {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Gray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.BrokenImage, contentDescription = null, tint = Color.White)
+                }
+            }
         )
     }
 }
 
+
 @Composable
-private fun BoxScope.BlackOverlay() {
+private fun BoxScope.BlackOverlay(alpha: Float = 0.2f) {
     Box(
         modifier = Modifier
             .matchParentSize()
-            .background(Color.Black.copy(alpha = 0.2f))
+            .background(Color.Black.copy(alpha = alpha))
     )
 }
 
@@ -130,7 +155,7 @@ private fun InfoContent(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(8.dp),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -159,30 +184,4 @@ private fun InfoContent(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewInfoCard() {
-    val dummyTravel = Travel(
-        _id = "t1",
-        userId = "u1",
-        chatRoomId = "c1",
-        members = listOf("u1", "u2"),
-        created = true,
-        title = "台北冒險之旅",
-        startDate = "2025-08-15",
-        endDate = "2025-08-17",
-        budget = 3000,
-        description = "這是一趟探索城市文化與美食的旅程。",
-        imageUrl = "https://picsum.photos/600/400",
-        itinerary = null
-    )
-
-    InfoCard(
-        travel = dummyTravel,
-        width = 300.dp,
-        aspectRatio = 4f / 3f,
-        onButtonClick = {}
-    )
 }
