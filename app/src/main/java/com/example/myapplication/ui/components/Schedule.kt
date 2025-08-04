@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -63,6 +64,7 @@ fun ScheduleTimeline(
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
+
         val sortedSchedule = scheduleState.sortedBy { it.startTime }
 
         itemsIndexed(sortedSchedule) { index, item ->
@@ -79,15 +81,21 @@ fun ScheduleTimeline(
     }
 
     selectedItem?.let { item ->
+        Log.d("DEBUG", "PlaceInfo rating = ${item.place.rating}, total = ${item.place.userRatingsTotal}")
+
         if (item.place.source == SourceType.GOOGLE && item.place.id != null) {
             val attraction = Attraction(
-                id = item.place.id,
+                id = item.place.id ?: "",
                 name = item.place.name,
                 address = item.place.address,
                 lat = item.place.lat,
                 lng = item.place.lng,
-                imageUrl = item.place.imageUrl
+                imageUrl = item.place.imageUrl,
+                rating = item.place.rating, // ✅ 補上
+                userRatingsTotal = item.place.userRatingsTotal // ✅ 補上
             )
+            Log.d("DEBUG", "Attraction rating = ${attraction.rating}, total = ${attraction.userRatingsTotal}")
+
             PlaceDetailDialog(
                 attraction = attraction,
                 mode = PlaceActionMode.ADD_TO_ITINERARY,
