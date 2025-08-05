@@ -32,14 +32,16 @@ import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDe
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
 import com.example.myapplication.viewmodel.SearchViewModel
+import com.example.myapplication.viewmodel.explore.AttractionsViewModel
 
 @Composable
 fun SearchMapsWrapper(
     navController: NavController,
     travelId: String,
-    viewModel: SearchViewModel = hiltViewModel()
+    searchViewModel: SearchViewModel = hiltViewModel(),
+    attractionsViewModel: AttractionsViewModel = hiltViewModel()
 ) {
-    val uiState = viewModel.searchResult.collectAsState().value
+    val uiState = searchViewModel.searchResult.collectAsState().value
     val searchResults = uiState.data.orEmpty()
 
     val recentSearchIds = rememberSaveable { mutableStateOf(listOf<String>()) }
@@ -48,19 +50,22 @@ fun SearchMapsWrapper(
         searchResults.filter { it.id in recentSearchIds.value }
     }
 
+    val selectedAttraction = attractionsViewModel.selectedAttractionDetail.collectAsState().value
+
     SearchMapsScreen(
         navController = navController,
         searchResults = searchResults,
         recentSearches = recentSearches,
-        onSearchQueryChanged = { query -> viewModel.debouncedSearch(query) },
+        onSearchQueryChanged = { query -> searchViewModel.debouncedSearch(query) },
         onSelect = { selected ->
             if (selected.id !in recentSearchIds.value) {
                 recentSearchIds.value = recentSearchIds.value + selected.id
             }
-            viewModel.setSelectedAttraction(selected)
+            // ✅ 補充完整詳細資料
+            attractionsViewModel.loadAttractionDetail(selected.id)
         },
-        selectedAttraction = viewModel.selectedAttraction.collectAsState().value,
-        onDismissDialog = { viewModel.clearSelectedAttraction() },
+        selectedAttraction = selectedAttraction,
+        onDismissDialog = { attractionsViewModel.clearSelectedAttraction() },
         onAddToItinerary = { attraction ->
             navController.currentBackStackEntry
                 ?.savedStateHandle
@@ -72,6 +77,7 @@ fun SearchMapsWrapper(
         }
     )
 }
+
 
 @Composable
 fun SearchMapsScreen(
