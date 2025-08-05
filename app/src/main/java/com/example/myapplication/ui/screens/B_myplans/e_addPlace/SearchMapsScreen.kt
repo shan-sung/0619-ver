@@ -31,8 +31,8 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
+import com.example.myapplication.viewmodel.AttractionsViewModel
 import com.example.myapplication.viewmodel.SearchViewModel
-import com.example.myapplication.viewmodel.explore.AttractionsViewModel
 
 @Composable
 fun SearchMapsWrapper(
@@ -41,7 +41,7 @@ fun SearchMapsWrapper(
     searchViewModel: SearchViewModel = hiltViewModel(),
     attractionsViewModel: AttractionsViewModel = hiltViewModel()
 ) {
-    val uiState = searchViewModel.searchResult.collectAsState().value
+    val uiState = searchViewModel.uiState.collectAsState().value
     val searchResults = uiState.data.orEmpty()
 
     val recentSearchIds = rememberSaveable { mutableStateOf(listOf<String>()) }

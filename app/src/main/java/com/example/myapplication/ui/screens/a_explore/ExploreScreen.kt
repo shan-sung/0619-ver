@@ -16,45 +16,43 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
-import com.example.myapplication.viewmodel.explore.AttractionsViewModel
-import com.example.myapplication.viewmodel.explore.TripsViewModel
-import com.example.myapplication.viewmodel.saved.SavedViewModel
+import com.example.myapplication.viewmodel.AttractionsViewModel
+import com.example.myapplication.viewmodel.TripsViewModel
+import com.example.myapplication.viewmodel.SavedViewModel
 
 @Composable
 fun ExploreScreen(
     navController: NavController,
     tripsViewModel: TripsViewModel = hiltViewModel(),
     attractionsViewModel: AttractionsViewModel = hiltViewModel(),
-    savedViewModel: SavedViewModel = hiltViewModel() // 共用 from saved_graph
+    savedViewModel: SavedViewModel = hiltViewModel()
 ) {
-    // ⏳ 狀態觀察
-    val travels by tripsViewModel.trips.collectAsState()
-    val attractions by attractionsViewModel.attractions.collectAsState()
+    val tripsUiState by tripsViewModel.uiState.collectAsState()
+    val attractionsUiState by attractionsViewModel.uiState.collectAsState()
     val selectedAttraction = attractionsViewModel.selectedAttractionDetail.collectAsState().value
 
-    // 📍 其他狀態
     val context = LocalContext.current
     var showDialog by rememberSaveable { mutableStateOf(false) }
 
-    // ⏱️ 初始化
     LaunchedEffect(Unit) {
-        tripsViewModel.fetchAllTrips()                 // 來自 trips 模組
-        attractionsViewModel.fetchNearbyAttractions(context) // 來自 explore 模組
-        savedViewModel.fetchSavedAttractions()         // 來自 saved_graph 共用
+        tripsViewModel.fetchAllTrips()
+        attractionsViewModel.loadNearbyAttractions(context)
+        savedViewModel.loadSavedAttractions()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
-            if (travels.isNotEmpty()) {
+            // ✅ 正確使用 tripsUiState.data
+            if (tripsUiState.data.orEmpty().isNotEmpty()) {
                 popularTripsSection(
-                    travels = travels,
+                    travels = tripsUiState.data.orEmpty(),
                     navController = navController
                 )
             }
 
-            if (attractions.isNotEmpty()) {
+            if (attractionsUiState.data.orEmpty().isNotEmpty()) {
                 nearbyAttractionsSection(
-                    attractions = attractions,
+                    attractions = attractionsUiState.data.orEmpty(),
                     navController = navController,
                     context = context,
                     onItemClick = { attraction ->
@@ -65,7 +63,6 @@ fun ExploreScreen(
             }
         }
 
-        // 📍 景點詳情 Dialog
         if (showDialog && selectedAttraction != null) {
             PlaceDetailDialog(
                 attraction = selectedAttraction,

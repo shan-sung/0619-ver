@@ -6,7 +6,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.c_saved.SavedScreen
-import com.example.myapplication.viewmodel.saved.SavedViewModel
+import com.example.myapplication.viewmodel.SavedViewModel
 
 fun NavGraphBuilder.savedNavGraph(navController: NavController) {
     composable(Routes.Saved.MAIN) {

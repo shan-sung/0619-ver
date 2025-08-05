@@ -1,5 +1,6 @@
 package com.example.myapplication.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.model.Attraction
@@ -18,11 +19,36 @@ class SearchViewModel @Inject constructor(
     private val placesRepository: PlacesRepository
 ) : ViewModel() {
 
-    private val _searchResult = MutableStateFlow(UiState<List<Attraction>>())
-    val searchResult: StateFlow<UiState<List<Attraction>>> = _searchResult
+    private val _uiState = MutableStateFlow(UiState<List<Attraction>>())
+    val uiState: StateFlow<UiState<List<Attraction>>> = _uiState
 
     private val _selectedAttraction = MutableStateFlow<Attraction?>(null)
     val selectedAttraction: StateFlow<Attraction?> = _selectedAttraction
+
+    private var searchJob: Job? = null
+
+    fun debouncedSearch(query: String) {
+        searchJob?.cancel()
+
+        if (query.isBlank()) {
+            _uiState.value = UiState(data = emptyList())
+            return
+        }
+
+        searchJob = viewModelScope.launch {
+            delay(400)
+            _uiState.value = UiState(isLoading = true)
+
+            runCatching {
+                placesRepository.searchPlaces(query)
+            }.onSuccess { results ->
+                _uiState.value = UiState(data = results)
+            }.onFailure { e ->
+                _uiState.value = UiState(error = e.message ?: "搜尋失敗")
+                logError("debouncedSearch", e)
+            }
+        }
+    }
 
     fun setSelectedAttraction(attraction: Attraction) {
         _selectedAttraction.value = attraction
@@ -32,24 +58,7 @@ class SearchViewModel @Inject constructor(
         _selectedAttraction.value = null
     }
 
-    private var searchJob: Job? = null
-
-    fun debouncedSearch(query: String) {
-        searchJob?.cancel()
-        if (query.isBlank()) {
-            _searchResult.value = UiState(data = emptyList())
-            return
-        }
-
-        searchJob = viewModelScope.launch {
-            delay(400)
-            _searchResult.value = UiState(isLoading = true)
-            try {
-                val results = placesRepository.searchPlaces(query)
-                _searchResult.value = UiState(data = results)
-            } catch (e: Exception) {
-                _searchResult.value = UiState(error = e.message)
-            }
-        }
+    private fun logError(tag: String, throwable: Throwable) {
+        Log.e("SearchViewModel", "[$tag] ${throwable.message}", throwable)
     }
 }

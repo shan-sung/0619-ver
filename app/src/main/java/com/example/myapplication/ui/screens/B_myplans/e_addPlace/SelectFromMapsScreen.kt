@@ -19,7 +19,7 @@ import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.Attract
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.SearchBar
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.TabRowSection
 import com.example.myapplication.viewmodel.ForYouViewModel
-import com.example.myapplication.viewmodel.saved.SavedViewModel
+import com.example.myapplication.viewmodel.SavedViewModel
 
 @Composable
 fun SelectFromMapScreen(
@@ -34,12 +34,12 @@ fun SelectFromMapScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
 
     val forYouState = forYouViewModel.recommendState.collectAsState().value
-    val savedState = savedViewModel.savedState.collectAsState().value
+    val savedState = savedViewModel.uiState.collectAsState().value
     val currentList = if (selectedTab == 0) forYouState.data.orEmpty() else savedState.data.orEmpty()
 
     val attractionDetail =
         if (selectedTab == 0) forYouViewModel.selectedAttraction.collectAsState().value
-        else savedViewModel.selectedAttraction.collectAsState().value
+        else savedViewModel.selectedAttractionDetail.collectAsState().value
 
     var showDialog by remember { mutableStateOf(false) }
 

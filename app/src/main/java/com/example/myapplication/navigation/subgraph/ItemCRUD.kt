@@ -15,7 +15,7 @@ import com.example.myapplication.ui.screens.b_myplans.e_addPlace.AddScheduleScre
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
 import com.example.myapplication.viewmodel.SearchViewModel
-import com.example.myapplication.viewmodel.explore.AttractionsViewModel
+import com.example.myapplication.viewmodel.AttractionsViewModel
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 
 fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {

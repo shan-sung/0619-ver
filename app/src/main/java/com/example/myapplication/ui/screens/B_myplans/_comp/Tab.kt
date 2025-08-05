@@ -11,27 +11,26 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.components.TripItem
-import com.example.myapplication.viewmodel.explore.TripsViewModel
+import com.example.myapplication.viewmodel.TripsViewModel
 
 @Composable
 fun CreatedTripsScreen(
     navController: NavController,
     viewModel: TripsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val createdTrips by viewModel.myCreatedTrips.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchAllTrips()
     }
 
     when {
-        isLoading -> {
+        uiState.isLoading -> {
             CircularProgressIndicator()
         }
-        errorMessage != null -> {
-            Text("錯誤：$errorMessage")
+        uiState.error != null -> {
+            Text("錯誤：${uiState.error}")
         }
         else -> {
             LazyColumn {
@@ -43,25 +42,25 @@ fun CreatedTripsScreen(
     }
 }
 
+
 @Composable
 fun ParticipatingTripsScreen(
     navController: NavController,
     viewModel: TripsViewModel = hiltViewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val joinedTrips by viewModel.myJoinedTrips.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchAllTrips()
     }
 
     when {
-        isLoading -> {
+        uiState.isLoading -> {
             CircularProgressIndicator()
         }
-        errorMessage != null -> {
-            Text("錯誤：$errorMessage")
+        uiState.error != null -> {
+            Text("錯誤：${uiState.error}")
         }
         else -> {
             LazyColumn {

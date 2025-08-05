@@ -21,7 +21,7 @@ import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.AttractionList
-import com.example.myapplication.viewmodel.saved.SavedViewModel
+import com.example.myapplication.viewmodel.SavedViewModel
 
 @Composable
 fun SavedScreen(
@@ -30,12 +30,12 @@ fun SavedScreen(
     onSelect: (Attraction) -> Unit,
     onAddToItinerary: (Attraction) -> Unit
 ) {
-    val uiState = viewModel.savedState.collectAsState().value
+    val uiState = viewModel.uiState.collectAsState().value
     val savedList = uiState.data.orEmpty()
     val isLoading = uiState.isLoading
     val errorMessage = uiState.error
 
-    val attractionDetail = viewModel.selectedAttraction.collectAsState().value
+    val attractionDetail = viewModel.selectedAttractionDetail.collectAsState().value
     var showDialog by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.fillMaxSize()) {

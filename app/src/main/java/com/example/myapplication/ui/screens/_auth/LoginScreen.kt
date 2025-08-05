@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.viewmodel.auth.AuthViewModel
+import com.example.myapplication.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(

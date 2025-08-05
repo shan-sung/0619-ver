@@ -15,16 +15,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.ui.components.SectionWithHeader
 import com.example.myapplication.ui.components.TwoColumnCardGrid
-import com.example.myapplication.viewmodel.explore.TripsViewModel
+import com.example.myapplication.viewmodel.TripsViewModel
 
 @Composable
 fun FeaturedScreen(
     navController: NavController,
     viewModel: TripsViewModel = hiltViewModel()
 ) {
-    val trips by viewModel.trips.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.errorMessage.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val trips = uiState.data.orEmpty()
 
     LaunchedEffect(Unit) {
         viewModel.fetchAllTrips()
@@ -33,11 +32,22 @@ fun FeaturedScreen(
     Column {
         SectionWithHeader(title = "Featured") {
             when {
-                isLoading -> CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-                error != null -> Text("發生錯誤：$error", color = Color.Red, modifier = Modifier.padding(16.dp))
-                trips.isEmpty() -> Text("目前沒有推薦行程", modifier = Modifier.padding(16.dp))
-                else -> TwoColumnCardGrid(items = trips, navController = navController)
-
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                }
+                uiState.error != null -> {
+                    Text(
+                        text = "發生錯誤：${uiState.error}",
+                        color = Color.Red,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                trips.isEmpty() -> {
+                    Text("目前沒有推薦行程", modifier = Modifier.padding(16.dp))
+                }
+                else -> {
+                    TwoColumnCardGrid(items = trips, navController = navController)
+                }
             }
         }
     }
