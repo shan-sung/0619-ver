@@ -1,6 +1,5 @@
 package com.example.myapplication.ui.screens.d_friend
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -35,7 +34,7 @@ import com.example.myapplication.ui.screens.d_friend.component.FriendProfileDial
 import com.example.myapplication.ui.screens.d_friend.component.PendingFriendRequestCard
 import com.example.myapplication.ui.screens.d_friend.component.SearchSection
 import com.example.myapplication.util.formatRelativeTime
-import com.example.myapplication.viewmodel.friend.FriendViewModel
+import com.example.myapplication.viewmodel.FriendViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,19 +44,21 @@ fun FriendScreen(
 ) {
     val viewModel: FriendViewModel = hiltViewModel()
 
-    val friendList by viewModel.friendList.collectAsState()
-    val searchResult by viewModel.searchResult.collectAsState()
-    val pendingRequests by viewModel.pendingRequests.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    // ✅ 統一 ViewModel 狀態觀察
+    val friendListState by viewModel.friendListState.collectAsState()
+    val searchResultState by viewModel.searchResult.collectAsState()
+    val pendingState by viewModel.pendingRequestsState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val sentRequests by viewModel.sentRequests.collectAsState()
+
+    val friendList = friendListState.data.orEmpty()
+    val pendingRequests = pendingState.data.orEmpty()
 
     var showFriendList by remember { mutableStateOf(false) }
     var selectedFriend by remember { mutableStateOf<UserSummary?>(null) }
     var query by remember { mutableStateOf("") }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
     val friendIdSet = remember(friendList) { friendList.map { it.id }.toSet() }
 
     // 顯示個人檔案 Dialog
@@ -72,9 +73,7 @@ fun FriendScreen(
         )
     }
 
-    // 螢幕進入或 refresh 時載入好友資料
     LaunchedEffect(refreshKey) {
-        Log.d("FriendScreen", "LaunchedEffect triggered with refreshKey = $refreshKey")
         viewModel.loadFriendData()
         viewModel.clearSearch()
         query = ""
@@ -86,11 +85,7 @@ fun FriendScreen(
             onDismissRequest = { showFriendList = false },
             sheetState = sheetState
         ) {
-            Log.d("FriendScreen", "Current friendList size = ${friendList.size}")
-            Text(
-                text = "好友",
-                style = MaterialTheme.typography.titleLarge
-            )
+            Text(text = "好友", style = MaterialTheme.typography.titleLarge)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxHeight(0.8f)
@@ -107,7 +102,6 @@ fun FriendScreen(
                     }
                 } else {
                     items(friendList) { friend ->
-                        Log.d("FriendScreen", "Friend item: ${friend.username} (${friend.id})")
                         FriendListItem(
                             friend = friend,
                             modifier = Modifier.fillMaxWidth(),
@@ -119,7 +113,7 @@ fun FriendScreen(
         }
     }
 
-    // 畫面主內容
+    // 🧾 畫面主內容
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -146,7 +140,7 @@ fun FriendScreen(
             )
         }
 
-        // ⏳ 等待回應列表
+        // ⏳ 等待回應清單
         if (pendingRequests.isNotEmpty()) {
             item {
                 SectionHeader("Pending Requests", modifier = Modifier.padding(vertical = 8.dp))
@@ -162,9 +156,9 @@ fun FriendScreen(
             }
         }
 
-        // 🔍 搜尋結果區塊
+        // 🔍 搜尋結果
         if (searchQuery.isNotBlank()) {
-            if (isLoading) {
+            if (searchResultState.isLoading) {
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -174,7 +168,7 @@ fun FriendScreen(
                     }
                 }
             } else {
-                searchResult?.let { result ->
+                searchResultState.data?.let { result ->
                     item {
                         SectionHeader("Search Result", modifier = Modifier.padding(vertical = 8.dp))
                     }
