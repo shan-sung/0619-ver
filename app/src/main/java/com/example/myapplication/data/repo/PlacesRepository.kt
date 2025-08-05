@@ -36,17 +36,17 @@ class PlacesRepository @Inject constructor(
 
         return Attraction(
             id = placeId,
-            name = detail.name ?: "",
-            address = detail.formatted_address,
+            name = detail.name ?: "未知名稱",
+            address = detail.formatted_address ?: "",
             rating = detail.rating,
             userRatingsTotal = detail.user_ratings_total,
             openingHours = detail.opening_hours?.weekday_text,
             comments = detail.reviews?.map {
                 Comment(
                     id = UUID.randomUUID().toString(),
-                    user = it.author_name,
+                    user = it.author_name.orEmpty(), // 防止 null
                     rating = it.rating,
-                    text = it.text
+                    text = it.text.orEmpty()
                 )
             },
             imageUrl = imageUrl

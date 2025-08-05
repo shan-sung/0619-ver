@@ -19,6 +19,8 @@ class AttractionsViewModel @Inject constructor(
     private val repository: PlacesRepository
 ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
     private val _attractions = MutableStateFlow<List<Attraction>>(emptyList())
     val attractions: StateFlow<List<Attraction>> = _attractions
     private val _selectedAttractionDetail = MutableStateFlow<Attraction?>(null)
@@ -55,9 +57,11 @@ class AttractionsViewModel @Inject constructor(
     fun loadAttractionDetail(placeId: String) {
         viewModelScope.launch {
             try {
-                _selectedAttractionDetail.value = repository.getPlaceDetails(placeId)
+                val detail = repository.getPlaceDetails(placeId)
+                _selectedAttractionDetail.value = detail
             } catch (e: Exception) {
-                Log.e("SavedViewModel", "Error loading attraction detail", e)
+                Log.e("AttractionsViewModel", "載入詳細資料失敗", e)
+                _selectedAttractionDetail.value = null
             }
         }
     }
