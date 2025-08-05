@@ -15,6 +15,7 @@ import com.example.myapplication.ui.screens.b_myplans.e_addPlace.AddScheduleScre
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
 import com.example.myapplication.viewmodel.SearchViewModel
+import com.example.myapplication.viewmodel.explore.AttractionsViewModel
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 
 fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
@@ -49,11 +50,13 @@ fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
     ) { backStackEntry ->
         val travelId = backStackEntry.arguments?.getString("travelId") ?: return@composable
         val searchViewModel: SearchViewModel = hiltViewModel()
+        val attractionsViewModel: AttractionsViewModel = hiltViewModel()
 
         SearchMapsWrapper(
             navController = navController,
             travelId = travelId,
-            viewModel = searchViewModel
+            searchViewModel = searchViewModel,
+            attractionsViewModel = attractionsViewModel
         )
     }
 }

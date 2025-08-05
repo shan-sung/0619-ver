@@ -65,4 +65,8 @@ class AttractionsViewModel @Inject constructor(
             }
         }
     }
+    fun clearSelectedAttraction() {
+        _selectedAttractionDetail.value = null
+    }
+
 }
