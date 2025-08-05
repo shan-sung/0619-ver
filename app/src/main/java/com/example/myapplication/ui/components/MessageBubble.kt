@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,34 +27,27 @@ import com.example.myapplication.data.model.CurrentUser
 
 @Composable
 fun MessageBubble(message: ChatMessage) {
-    val isOwnMessage = message.senderId == CurrentUser.user?.id
+    val isMe = message.senderId == CurrentUser.user?.id
 
-    Column(
+    Row(
         modifier = Modifier
-            .fillMaxWidth(),
-        horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = if (isMe) Arrangement.End else Arrangement.Start
     ) {
-        if (!isOwnMessage) {
-            Text(
-                text = message.sender,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier.padding(start = 8.dp, bottom = 2.dp)
-            )
-        }
-
         Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = if (isOwnMessage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-            modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
+            color = if (isMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            shape = MaterialTheme.shapes.medium
         ) {
             Text(
                 text = message.message,
-                modifier = Modifier.padding(10.dp),
-                color = if (isOwnMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                modifier = Modifier.padding(12.dp),
+                color = if (isMe) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
+
 
 @Composable
 fun MessageInput(onSend: (String) -> Unit) {

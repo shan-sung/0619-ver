@@ -1,4 +1,4 @@
-package com.example.myapplication.viewmodel.myplans.trip
+package com.example.myapplication.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.api.ChatRepository
 import com.example.myapplication.data.model.ChatMessage
 import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,20 +21,22 @@ class ChatViewModel @Inject constructor(
     private val repository: ChatRepository
 ) : ViewModel() {
 
-    private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
-    val messages: StateFlow<List<ChatMessage>> = _messages
+    private val _uiState = MutableStateFlow(UiState<List<ChatMessage>>())
+    val uiState: StateFlow<UiState<List<ChatMessage>>> = _uiState
 
     private var tripId: String? = null
 
     fun connectToChatroom(tripId: String) {
         this.tripId = tripId
+        _uiState.value = UiState(isLoading = true)
+
         viewModelScope.launch {
-            try {
-                val msgs = repository.loadMessages(tripId)
-                Log.d("ChatViewModel", "載入訊息共 ${msgs.size} 筆")
-                _messages.value = msgs
-            } catch (e: Exception) {
-                Log.e("ChatViewModel", "載入訊息失敗", e)
+            runCatching {
+                repository.loadMessages(tripId)
+            }.onSuccess {
+                _uiState.value = UiState(data = it)
+            }.onFailure {
+                _uiState.value = UiState(error = it.message)
             }
         }
     }
@@ -50,15 +53,15 @@ class ChatViewModel @Inject constructor(
             timestamp = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
         )
 
-        // 本地先加入訊息（立即顯示）
-        _messages.value = _messages.value + newMessage
+        _uiState.value = _uiState.value.copy(
+            data = _uiState.value.data.orEmpty() + newMessage
+        )
 
-        // 傳送到後端儲存
         viewModelScope.launch {
-            try {
+            runCatching {
                 repository.sendMessage(roomId, newMessage)
-            } catch (e: Exception) {
-                // TODO: 處理錯誤，可考慮從本地移除該筆訊息
+            }.onFailure {
+                Log.e("ChatViewModel", "送出訊息失敗", it)
             }
         }
     }
