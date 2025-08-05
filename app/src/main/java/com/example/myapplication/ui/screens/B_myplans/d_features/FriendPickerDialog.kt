@@ -1,8 +1,10 @@
 package com.example.myapplication.ui.screens.b_myplans.d_features
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -10,6 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,7 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.viewmodel.friend.FriendViewModel
+import com.example.myapplication.viewmodel.FriendViewModel
 
 @Composable
 fun FriendPickerDialog(
@@ -31,7 +35,11 @@ fun FriendPickerDialog(
     existingMemberIds: List<String>,
     viewModel: FriendViewModel = hiltViewModel()
 ) {
-    val friends by viewModel.friendList.collectAsState()
+    val friendListState by viewModel.friendListState.collectAsState()
+    val friends = friendListState.data.orEmpty()
+    val isLoading = friendListState.isLoading
+    val errorMessage = friendListState.error
+
     val selectedIds = remember {
         mutableStateListOf<String>().apply {
             addAll(existingMemberIds)
@@ -46,34 +54,69 @@ fun FriendPickerDialog(
                 Modifier
                     .fillMaxWidth()
                     .height(300.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
-                friends.forEach { friend ->
-                    val isAlreadyInTrip = existingMemberIds.contains(friend.id)
-                    val isSelected = selectedIds.contains(friend.id)
+                when {
+                    isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .then(
-                                if (!isAlreadyInTrip) Modifier.clickable {
-                                    if (isSelected) selectedIds.remove(friend.id)
-                                    else selectedIds.add(friend.id)
-                                } else Modifier
+                    errorMessage != null -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = errorMessage ?: "載入失敗",
+                                color = MaterialTheme.colorScheme.error
                             )
-                            .padding(8.dp)
-                    ) {
-                        Checkbox(
-                            checked = isSelected,
-                            onCheckedChange = null,
-                            enabled = !isAlreadyInTrip
-                        )
-                        Text(
-                            text = friend.username + if (isAlreadyInTrip) "（已加入）" else "",
-                            modifier = Modifier.padding(start = 8.dp),
-                            color = if (isAlreadyInTrip) Color.Gray else Color.Unspecified
-                        )
+                        }
+                    }
+
+                    friends.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("目前尚未有好友")
+                        }
+                    }
+
+                    else -> {
+                        Column(Modifier.verticalScroll(rememberScrollState())) {
+                            friends.forEach { friend ->
+                                val isAlreadyInTrip = existingMemberIds.contains(friend.id)
+                                val isSelected = selectedIds.contains(friend.id)
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .then(
+                                            if (!isAlreadyInTrip) Modifier.clickable {
+                                                if (isSelected) selectedIds.remove(friend.id)
+                                                else selectedIds.add(friend.id)
+                                            } else Modifier
+                                        )
+                                        .padding(8.dp)
+                                ) {
+                                    Checkbox(
+                                        checked = isSelected,
+                                        onCheckedChange = null,
+                                        enabled = !isAlreadyInTrip
+                                    )
+                                    Text(
+                                        text = friend.username + if (isAlreadyInTrip) "（已加入）" else "",
+                                        modifier = Modifier.padding(start = 8.dp),
+                                        color = if (isAlreadyInTrip) Color.Gray else Color.Unspecified
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
