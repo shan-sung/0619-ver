@@ -15,57 +15,60 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
+import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
-import com.example.myapplication.viewmodel.ForYouViewModel
-import com.example.myapplication.viewmodel.saved.SavedViewModel
+import com.example.myapplication.viewmodel.SearchViewModel
 
 @Composable
 fun SearchMapsWrapper(
     navController: NavController,
-    savedViewModel: SavedViewModel = hiltViewModel(),
-    forYouViewModel: ForYouViewModel = hiltViewModel()
+    travelId: String,
+    viewModel: SearchViewModel = hiltViewModel()
 ) {
-    val saved by savedViewModel.savedAttractions.collectAsState()
-    val forYou by forYouViewModel.forYouAttractions.collectAsState()
+    val uiState = viewModel.searchResult.collectAsState().value
+    val searchResults = uiState.data.orEmpty()
 
-    val allAttractions = saved + forYou
+    val recentSearchIds = rememberSaveable { mutableStateOf(listOf<String>()) }
 
-    val recentSearches: SnapshotStateList<Attraction> = rememberSaveable(
-        saver = listSaver(
-            save = { it.map { it.id } },
-            restore = { savedIds ->
-                allAttractions.filter { attraction -> attraction.id in savedIds }
-                    .toMutableStateList()  // 確保是 SnapshotStateList
-            }
-        )
-    ) {
-        mutableStateListOf()
+    val recentSearches = remember(searchResults, recentSearchIds.value) {
+        searchResults.filter { it.id in recentSearchIds.value }
     }
 
     SearchMapsScreen(
         navController = navController,
-        allAttractions = allAttractions,
+        searchResults = searchResults,
         recentSearches = recentSearches,
-        onSelect = { selectedAttraction ->
-            navController.previousBackStackEntry
+        onSearchQueryChanged = { query -> viewModel.debouncedSearch(query) },
+        onSelect = { selected ->
+            if (selected.id !in recentSearchIds.value) {
+                recentSearchIds.value = recentSearchIds.value + selected.id
+            }
+            viewModel.setSelectedAttraction(selected)
+        },
+        selectedAttraction = viewModel.selectedAttraction.collectAsState().value,
+        onDismissDialog = { viewModel.clearSelectedAttraction() },
+        onAddToItinerary = { attraction ->
+            navController.currentBackStackEntry
                 ?.savedStateHandle
-                ?.set("selected_attraction", selectedAttraction)
-            navController.popBackStack()
+                ?.set("selected_attraction", attraction)
+
+            navController.navigate(Routes.MyPlans.addScheduleRoute(travelId)) {
+                popUpTo(Routes.MyPlans.SEARCH) { inclusive = true }
+            }
         }
     )
 }
@@ -73,20 +76,21 @@ fun SearchMapsWrapper(
 @Composable
 fun SearchMapsScreen(
     navController: NavController,
-    allAttractions: List<Attraction>,
+    searchResults: List<Attraction>,
+    recentSearches: List<Attraction>,
+    onSearchQueryChanged: (String) -> Unit,
     onSelect: (Attraction) -> Unit,
-    recentSearches: SnapshotStateList<Attraction>
+    selectedAttraction: Attraction?,
+    onDismissDialog: () -> Unit,
+    onAddToItinerary: (Attraction) -> Unit
 ) {
     var searchText by remember { mutableStateOf("") }
 
-    val filtered = remember(searchText) {
-        allAttractions.filter {
-            it.name.contains(searchText, true) || (it.address?.contains(searchText, true) ?: false)
-        }
+    LaunchedEffect(searchText) {
+        if (searchText.isNotBlank()) onSearchQueryChanged(searchText)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 🔍 搜尋欄
         OutlinedTextField(
             value = searchText,
             onValueChange = { searchText = it },
@@ -114,30 +118,29 @@ fun SearchMapsScreen(
                 items(recentSearches.reversed()) { attraction ->
                     PlaceItem(
                         attraction = attraction,
-                        onClick = {
-                            onSelect(attraction)
-                            navController.popBackStack()
-                        },
+                        onClick = { onSelect(attraction) },
                         onRemove = {}
                     )
                 }
             }
         } else {
             LazyColumn {
-                items(filtered) { attraction ->
-                    PlaceItem(
-                        attraction = attraction,
-                        onClick = {
-                            if (!recentSearches.contains(attraction)) {
-                                recentSearches.add(attraction)
-                            }
-                            onSelect(attraction)
-                            navController.popBackStack()
-                        },
-                        onRemove = {}
-                    )
+                items(searchResults) { attraction ->
+                    PlaceItem(attraction, onClick = { onSelect(attraction) }, onRemove = {})
                 }
             }
         }
+    }
+
+    if (selectedAttraction != null) {
+        PlaceDetailDialog(
+            attraction = selectedAttraction,
+            mode = PlaceActionMode.ADD_TO_ITINERARY,
+            onDismiss = onDismissDialog,
+            onAddToItinerary = {
+                onAddToItinerary(selectedAttraction)
+                onDismissDialog()
+            }
+        )
     }
 }

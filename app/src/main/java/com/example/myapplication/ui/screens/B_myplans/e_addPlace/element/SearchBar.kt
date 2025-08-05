@@ -19,11 +19,13 @@ import androidx.navigation.NavController
 import com.example.myapplication.navigation.routes.Routes
 
 @Composable
-fun SearchBar(navController: NavController) {
+fun SearchBar(navController: NavController, travelId: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate(Routes.MyPlans.SEARCH) }
+            .clickable {
+                navController.navigate(Routes.MyPlans.searchRoute(travelId))
+            }
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
