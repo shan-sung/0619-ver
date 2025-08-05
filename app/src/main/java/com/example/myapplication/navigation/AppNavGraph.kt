@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.navigation
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.navigation.subgraph.addScheduleNavGraph
 import com.example.myapplication.navigation.subgraph.chatNavGraph
@@ -23,13 +24,20 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier,
         startDestination = Routes.AppTabs.EXPLORE,
         modifier = modifier
     ) {
-        exploreNavGraph(navController)
+        navigation(
+            startDestination = Routes.Explore.MAIN,
+            route = Routes.Saved.GRAPH // e.g., "saved_graph"
+        ) {
+            exploreNavGraph(navController)
+            savedNavGraph(navController)
+        }
+
+        // 其他功能獨立存在
         tripNavGraph(navController)
         chatNavGraph()
         profileNavGraph(navController)
         createTripNavGraph(navController)
         tripDetailNavGraph(navController)
-        savedNavGraph(navController)
         selectFromMapNavGraph(navController)
         friendNavGraph(navController, refreshKey)
         addScheduleNavGraph(navController)

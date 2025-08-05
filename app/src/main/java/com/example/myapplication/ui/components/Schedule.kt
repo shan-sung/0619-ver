@@ -21,8 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.SourceType
-import com.example.myapplication.ui.components.placedetaildialog.PlaceDetailDialog
-import com.example.myapplication.ui.components.placedetaildialog.comp.PlaceActionMode
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import java.time.format.DateTimeFormatter
 

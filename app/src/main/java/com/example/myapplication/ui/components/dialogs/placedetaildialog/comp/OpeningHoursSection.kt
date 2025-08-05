@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components.placedetaildialog.comp
+package com.example.myapplication.ui.components.dialogs.placedetaildialog.comp
 
 import android.util.Log
 import androidx.compose.foundation.clickable

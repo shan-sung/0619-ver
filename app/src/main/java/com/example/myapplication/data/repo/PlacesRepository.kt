@@ -5,12 +5,20 @@ import com.example.myapplication.data.api.PlacesApiService
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.Comment
 import com.example.myapplication.data.model.NearbyPlacesResponse
+import com.example.myapplication.data.model.toAttraction
 import java.util.UUID
 import javax.inject.Inject
 
 class PlacesRepository @Inject constructor(
     private val api: PlacesApiService
 ) {
+
+    suspend fun searchPlaces(query: String): List<Attraction> {
+        val response = api.searchPlacesByKeyword(query)
+        return response.results.map { it.toAttraction() }
+    }
+
+
     suspend fun getNearbyAttractionsAndRestaurants(location: String): NearbyPlacesResponse {
         val attractions = api.getNearbyPlaces(location, type = "tourist_attraction").results
         val restaurants = api.getNearbyPlaces(location, type = "restaurant").results

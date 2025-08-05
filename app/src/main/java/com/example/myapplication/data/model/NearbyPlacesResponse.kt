@@ -33,3 +33,15 @@ data class TextSearchPlace(
     val types: List<String>?,
     val photos: List<Photo>?
 )
+
+fun TextSearchPlace.toAttraction(): Attraction {
+    return Attraction(
+        id = place_id,
+        name = name,
+        address = formatted_address,
+        rating = rating ?: 0.0,
+        tags = types.orEmpty(),
+        description = formatted_address,
+        imageUrl = photos?.firstOrNull()?.photo_reference?.let { buildPhotoUrl(it) }
+    )
+}

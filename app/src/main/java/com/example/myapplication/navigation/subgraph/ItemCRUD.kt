@@ -14,9 +14,8 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.AddScheduleScreen
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
-import com.example.myapplication.viewmodel.ForYouViewModel
+import com.example.myapplication.viewmodel.SearchViewModel
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
-import com.example.myapplication.viewmodel.saved.SavedViewModel
 
 fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
     composable(
@@ -27,6 +26,7 @@ fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
 
         SelectFromMapScreen(
             navController = navController,
+            travelId = travelId, // ✅ 傳入
             onSelect = { selectedAttraction ->
                 navController.previousBackStackEntry
                     ?.savedStateHandle
@@ -43,19 +43,20 @@ fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
         )
     }
 
-    // 保留 Search 畫面
-    composable(Routes.MyPlans.SEARCH) {
-        val savedViewModel: SavedViewModel = hiltViewModel()
-        val forYouViewModel: ForYouViewModel = hiltViewModel()
+    composable(
+        route = Routes.MyPlans.SEARCH + "/{travelId}",
+        arguments = listOf(navArgument("travelId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val travelId = backStackEntry.arguments?.getString("travelId") ?: return@composable
+        val searchViewModel: SearchViewModel = hiltViewModel()
 
         SearchMapsWrapper(
             navController = navController,
-            savedViewModel = savedViewModel,
-            forYouViewModel = forYouViewModel
+            travelId = travelId,
+            viewModel = searchViewModel
         )
     }
 }
-
 
 fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
     composable(
@@ -66,7 +67,6 @@ fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
         val viewModel: TripDetailViewModel = hiltViewModel()
         val currentTrip = viewModel.travel.collectAsState().value
 
-        // 第一次進入畫面觸發載入
         LaunchedEffect(travelId) {
             if (travelId != null && currentTrip == null) {
                 viewModel.fetchTravelById(travelId)

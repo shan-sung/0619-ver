@@ -36,7 +36,10 @@ fun TripBottomSheetSection(
                     .fillMaxWidth()
                     .padding(24.dp)
             ) {
-                Text("Add New Itinerary", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    text = "Add New Itinerary",
+                    style = MaterialTheme.typography.titleLarge
+                )
                 Spacer(modifier = Modifier.height(16.dp))
 
                 SheetItem("From Maps", onClick = onFromMap)

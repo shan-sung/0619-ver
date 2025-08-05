@@ -9,7 +9,7 @@ object Routes {
 
     // Tab 名稱（僅作為選擇狀態識別，不參與 navigation）
     object AppTabs {
-        const val EXPLORE = "explore"
+        const val EXPLORE = Saved.GRAPH
         const val MY_PLANS = "my_plans"
         const val SAVED = "saved"
         const val PROFILE = "profile"
@@ -34,6 +34,8 @@ object Routes {
         fun selectFromSavedRoute(travelId: String) = "my_plans/select_from_saved/$travelId"
         const val PREVIEW = "my_plans/preview"
         const val SEARCH = "my_plans/search"
+        fun searchRoute(travelId: String) = "my_plans/search/$travelId"
+
         const val ADD_SCHEDULE = "my_plans/add_schedule/{travelId}"
         fun addScheduleRoute(travelId: String) = "my_plans/add_schedule/$travelId"
 
@@ -54,6 +56,7 @@ object Routes {
     // Saved 模組
     object Saved {
         const val MAIN = "saved"
+        const val GRAPH = "saved_graph" // ✅ 新增這行
     }
 
     // Friend 模組

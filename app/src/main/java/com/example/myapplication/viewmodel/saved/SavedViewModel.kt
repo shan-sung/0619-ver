@@ -6,22 +6,24 @@ import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.repo.SavedRepository
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// 重構後：SavedViewModel
 @HiltViewModel
 class SavedViewModel @Inject constructor(
     private val repository: SavedRepository
 ) : ViewModel() {
 
-    private val _savedAttractions = MutableStateFlow<List<Attraction>>(emptyList())
-    val savedAttractions: StateFlow<List<Attraction>> = _savedAttractions
+    private val _savedState = MutableStateFlow(UiState<List<Attraction>>())
+    val savedState: StateFlow<UiState<List<Attraction>>> = _savedState
 
-    private val _selectedAttractionDetail = MutableStateFlow<Attraction?>(null)
-    val selectedAttractionDetail: StateFlow<Attraction?> = _selectedAttractionDetail
+    private val _selectedAttraction = MutableStateFlow<Attraction?>(null)
+    val selectedAttraction: StateFlow<Attraction?> = _selectedAttraction
 
     init {
         fetchSavedAttractions()
@@ -30,10 +32,12 @@ class SavedViewModel @Inject constructor(
     fun fetchSavedAttractions() {
         val userId = CurrentUser.user?.id ?: return
         viewModelScope.launch {
+            _savedState.value = UiState(isLoading = true)
             try {
-                _savedAttractions.value = repository.getSavedAttractions(userId)
+                val data = repository.getSavedAttractions(userId)
+                _savedState.value = UiState(data = data)
             } catch (e: Exception) {
-                Log.e("SavedViewModel", "Error fetching saved attractions", e)
+                _savedState.value = UiState(error = e.message)
             }
         }
     }
@@ -43,14 +47,13 @@ class SavedViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.addToSaved(userId, attraction)
-                // 立即更新列表
-                _savedAttractions.value = _savedAttractions.value + attraction
+                val updated = _savedState.value.data.orEmpty() + attraction
+                _savedState.value = UiState(data = updated)
             } catch (e: Exception) {
                 Log.e("SavedViewModel", "Error adding to saved", e)
             }
         }
     }
-
 
     fun removeFromSaved(attraction: Attraction) {
         val userId = CurrentUser.user?.id ?: return
@@ -59,7 +62,7 @@ class SavedViewModel @Inject constructor(
                 repository.removeFromSaved(userId, attraction.id)
                 fetchSavedAttractions()
             } catch (e: Exception) {
-                Log.e("SavedViewModel", "Error removing attraction", e)
+                Log.e("SavedViewModel", "Error removing", e)
             }
         }
     }
@@ -67,9 +70,9 @@ class SavedViewModel @Inject constructor(
     fun loadAttractionDetail(placeId: String) {
         viewModelScope.launch {
             try {
-                _selectedAttractionDetail.value = repository.getPlaceDetails(placeId)
+                _selectedAttraction.value = repository.getPlaceDetails(placeId)
             } catch (e: Exception) {
-                Log.e("SavedViewModel", "Error loading attraction detail", e)
+                Log.e("SavedViewModel", "Detail load error", e)
             }
         }
     }

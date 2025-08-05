@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.data.model.CurrentUser
+import com.example.myapplication.data.model.UiState
 import com.example.myapplication.data.repo.ForYouRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -17,11 +18,11 @@ class ForYouViewModel @Inject constructor(
     private val forYouRepo: ForYouRepository
 ) : ViewModel() {
 
-    private val _forYouAttractions = MutableStateFlow<List<Attraction>>(emptyList())
-    val forYouAttractions: StateFlow<List<Attraction>> = _forYouAttractions
+    private val _recommendState = MutableStateFlow(UiState<List<Attraction>>())
+    val recommendState: StateFlow<UiState<List<Attraction>>> = _recommendState
 
-    private val _selectedAttractionDetail = MutableStateFlow<Attraction?>(null)
-    val selectedAttractionDetail: StateFlow<Attraction?> = _selectedAttractionDetail
+    private val _selectedAttraction = MutableStateFlow<Attraction?>(null)
+    val selectedAttraction: StateFlow<Attraction?> = _selectedAttraction
 
     init {
         fetchForYouAttractions()
@@ -30,10 +31,12 @@ class ForYouViewModel @Inject constructor(
     fun fetchForYouAttractions() {
         val userId = CurrentUser.user?.id ?: return
         viewModelScope.launch {
+            _recommendState.value = UiState(isLoading = true)
             try {
-                _forYouAttractions.value = forYouRepo.getRecommendations(userId)
+                val data = forYouRepo.getRecommendations(userId)
+                _recommendState.value = UiState(data = data)
             } catch (e: Exception) {
-                Log.e("ForYouViewModel", "Error fetching recommendations", e)
+                _recommendState.value = UiState(error = e.message)
             }
         }
     }
@@ -41,7 +44,7 @@ class ForYouViewModel @Inject constructor(
     fun loadAttractionDetail(placeId: String) {
         viewModelScope.launch {
             try {
-                _selectedAttractionDetail.value = forYouRepo.getPlaceDetails(placeId)
+                _selectedAttraction.value = forYouRepo.getPlaceDetails(placeId)
             } catch (e: Exception) {
                 Log.e("ForYouViewModel", "Error loading detail", e)
             }

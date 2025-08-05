@@ -32,10 +32,10 @@ import com.example.myapplication.data.model.ScheduleTime
 import com.example.myapplication.data.model.SourceType
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.ui.components.DateSelector
+import com.example.myapplication.ui.components.inputfield.DateSelector
 import com.example.myapplication.ui.components.TimeSelector
 import com.example.myapplication.ui.components.bar.OverlayScreenWithCloseIcon
-import com.example.myapplication.ui.components.placedetaildialog.comp.ImgSection
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.ImgSection
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 import java.time.LocalDate
 import java.time.LocalTime

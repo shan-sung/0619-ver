@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components
+package com.example.myapplication.ui.components.inputfield
 
 import android.widget.Toast
 import androidx.compose.material3.DatePicker

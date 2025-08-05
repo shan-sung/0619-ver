@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.UserSummary
+import com.example.myapplication.ui.components.FriendListItem
 import com.example.myapplication.ui.components.SectionHeader
-import com.example.myapplication.ui.screens.d_friend.component.FriendListItem
 import com.example.myapplication.ui.screens.d_friend.component.FriendProfileDialog
 import com.example.myapplication.ui.screens.d_friend.component.PendingFriendRequestCard
 import com.example.myapplication.ui.screens.d_friend.component.SearchSection
@@ -88,9 +88,8 @@ fun FriendScreen(
         ) {
             Log.d("FriendScreen", "Current friendList size = ${friendList.size}")
             Text(
-                text = "All Friends",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(16.dp)
+                text = "好友",
+                style = MaterialTheme.typography.titleLarge
             )
             LazyColumn(
                 modifier = Modifier

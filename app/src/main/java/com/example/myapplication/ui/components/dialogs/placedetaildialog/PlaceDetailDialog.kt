@@ -1,4 +1,4 @@
-package com.example.myapplication.ui.components.placedetaildialog
+package com.example.myapplication.ui.components.dialogs.placedetaildialog
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
@@ -22,12 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.ui.components.placedetaildialog.comp.ActionButtonsRow
-import com.example.myapplication.ui.components.placedetaildialog.comp.ImgSection
-import com.example.myapplication.ui.components.placedetaildialog.comp.MapSection
-import com.example.myapplication.ui.components.placedetaildialog.comp.OpeningHoursSection
-import com.example.myapplication.ui.components.placedetaildialog.comp.PlaceActionMode
-import com.example.myapplication.ui.components.placedetaildialog.comp.RatingSection
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.ActionButtonsRow
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.ImgSection
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.MapSection
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.OpeningHoursSection
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
+import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.RatingSection
 
 @Composable
 fun PlaceDetailDialog(
