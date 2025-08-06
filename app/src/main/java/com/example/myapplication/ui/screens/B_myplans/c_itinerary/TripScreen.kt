@@ -17,11 +17,13 @@ import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
 fun TripScreen(
     navController: NavController,
     travelId: String,
-    scrollToDay: Int?, // 👈 直接當參數接收
+    scrollToDay: Int?,
     viewModel: TripDetailViewModel = hiltViewModel()
 ) {
-    val travel by viewModel.travel.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val travel = uiState.data
+    val isLoading = uiState.isLoading
+    val error = uiState.error
 
     val currentBackStackEntry = navController.currentBackStackEntryAsState().value
     val savedStateHandle = currentBackStackEntry?.savedStateHandle
@@ -31,7 +33,9 @@ fun TripScreen(
         ?.collectAsState()?.value
 
     LaunchedEffect(travelId) {
-        viewModel.fetchTravelById(travelId)
+        if (travel == null) {
+            viewModel.fetchTravelById(travelId)
+        }
     }
 
     when {
@@ -39,14 +43,18 @@ fun TripScreen(
             CircularProgressIndicator()
         }
 
+        error != null -> {
+            Text("錯誤：$error")
+        }
+
         travel != null -> {
             TripContent(
                 navController = navController,
-                travel = travel!!,
+                travel = travel,
                 selectedAttraction = selectedAttraction,
                 scrollToDay = scrollToDay,
                 onScheduleAdded = {
-                    // TODO
+                    // TODO：如需重新整理資料可呼叫 viewModel.fetchTravelById()
                 }
             )
         }

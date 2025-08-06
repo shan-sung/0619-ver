@@ -18,7 +18,7 @@ import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapp
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
 import com.example.myapplication.viewmodel.SearchViewModel
 import com.example.myapplication.viewmodel.AttractionsViewModel
-import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 
 fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
     composable(
