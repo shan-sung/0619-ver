@@ -13,12 +13,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.ui.screens.b_myplans.e_addPlace.AddScheduleScreen
-import com.example.myapplication.ui.screens.b_myplans.e_addPlace.EditScheduleScreen
+import com.example.myapplication.ui.components.dialogs.AddGooglePlaceDialog
+import com.example.myapplication.ui.components.dialogs.EditScheduleDialog
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
-import com.example.myapplication.viewmodel.SearchViewModel
 import com.example.myapplication.viewmodel.AttractionsViewModel
+import com.example.myapplication.viewmodel.SearchViewModel
 import com.example.myapplication.viewmodel.TripDetailViewModel
 
 fun NavGraphBuilder.selectFromMapNavGraph(navController: NavController) {
@@ -94,10 +94,11 @@ fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
         when {
             isLoading -> CircularProgressIndicator()
             error != null -> Text("錯誤：$error")
-            travel != null && attraction != null -> AddScheduleScreen(
+            travel != null && attraction != null -> AddGooglePlaceDialog(
                 currentTrip = travel,
+                attraction = attraction,
                 navController = navController,
-                attraction = attraction
+                onDismiss = { navController.popBackStack() }
             )
             travel != null && attraction == null -> Text("未選擇景點")
             else -> Text("未知錯誤，請重試")
@@ -105,61 +106,3 @@ fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
     }
 }
 
-fun NavGraphBuilder.editScheduleNavGraph(navController: NavController) {
-    composable(
-        route = Routes.MyPlans.EDIT_SCHEDULE,
-        arguments = listOf(
-            navArgument("travelId") { type = NavType.StringType },
-            navArgument("day") { type = NavType.IntType },
-            navArgument("index") { type = NavType.IntType }
-        )
-    ) { backStackEntry ->
-        val travelId = backStackEntry.arguments?.getString("travelId")
-        val day = backStackEntry.arguments?.getInt("day")
-        val index = backStackEntry.arguments?.getInt("index")
-
-        if (travelId.isNullOrBlank() || day == null || index == null) {
-            Text("無效的編輯參數")
-            return@composable
-        }
-
-        val viewModel: TripDetailViewModel = hiltViewModel()
-        val uiState by viewModel.uiState.collectAsState()
-        val travel = uiState.data
-        val isLoading = uiState.isLoading
-        val error = uiState.error
-
-        // ⏬ 確保正確資料載入
-        LaunchedEffect(travelId) {
-            if (travel == null || travel._id != travelId) {
-                viewModel.fetchTravelById(travelId)
-            }
-        }
-
-        when {
-            isLoading -> CircularProgressIndicator()
-            error != null -> Text("錯誤：$error")
-            travel != null -> {
-                val scheduleItem = travel.itinerary
-                    ?.find { it.day == day }
-                    ?.schedule
-                    ?.getOrNull(index)
-
-                if (scheduleItem != null) {
-                    EditScheduleScreen(
-                        currentTrip = travel,
-                        navController = navController,
-                        scheduleItem = scheduleItem,
-                        itemIndex = index
-                    )
-                } else {
-                    Text("找不到要編輯的行程點")
-                }
-            }
-
-            else -> {
-                Text("未知錯誤")
-            }
-        }
-    }
-}

@@ -39,11 +39,6 @@ object Routes {
         const val ADD_SCHEDULE = "my_plans/add_schedule/{travelId}"
         fun addScheduleRoute(travelId: String) = "my_plans/add_schedule/$travelId"
 
-        // ✅ 補上 Edit Schedule
-        const val EDIT_SCHEDULE = "my_plans/edit_schedule/{travelId}/{day}/{index}"
-        fun editScheduleRoute(travelId: String, day: Int, index: Int) =
-            "my_plans/edit_schedule/$travelId/$day/$index"
-
         fun detailRoute(id: String, scrollToDay: Int? = null): String {
             return if (scrollToDay != null)
                 "my_plans/detail/$id?scrollToDay=$scrollToDay"

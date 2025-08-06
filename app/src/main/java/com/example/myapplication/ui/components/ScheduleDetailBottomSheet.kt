@@ -1,5 +1,8 @@
 package com.example.myapplication.ui.components
 
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,13 +40,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.ui.components.dialogs.EditScheduleDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.OpeningHoursSection
 import com.example.myapplication.viewmodel.TripDetailViewModel
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -53,7 +60,11 @@ fun ScheduleDetailBottomSheet(
     index: Int,
     onClose: () -> Unit
 ) {
-    val viewModel: TripDetailViewModel = hiltViewModel() // ✅ 加上這行
+    val viewModel: TripDetailViewModel = hiltViewModel()
+    var showEditDialog by remember { mutableStateOf(false) }
+
+    val uiState by viewModel.uiState.collectAsState()
+    val travel = uiState.data
 
     Box(
         modifier = Modifier
@@ -62,11 +73,11 @@ fun ScheduleDetailBottomSheet(
     ) {
         ScheduleHeader(
             item = item,
-            navController = navController,
             travelId = travelId,
             index = index,
             viewModel = viewModel,
-            onClose = onClose
+            onClose = onClose,
+            onEdit = { showEditDialog = true }
         )
 
         Column(
@@ -78,7 +89,18 @@ fun ScheduleDetailBottomSheet(
             ScheduleBasicInfo(item)
             TransportationOptions()
             AISuggestion()
-            BottomActionButtons()
+            BottomActionButtons(item)
+        }
+
+        // ✅ 安全判斷資料再顯示 Dialog
+        if (showEditDialog && travel != null) {
+            EditScheduleDialog(
+                currentTrip = travel,
+                scheduleItem = item,
+                itemIndex = index,
+                onDismiss = { showEditDialog = false },
+                viewModel = viewModel
+            )
         }
     }
 }
@@ -107,14 +129,15 @@ fun TransportOptionRow(title: String, subtitle: String, icon: ImageVector) {
 @Composable
 fun ScheduleHeader(
     item: ScheduleItem,
-    navController: NavController,
     travelId: String,
     index: Int,
-    viewModel: TripDetailViewModel = hiltViewModel(),
-    onClose: () -> Unit
+    viewModel: TripDetailViewModel,
+    onClose: () -> Unit,
+    onEdit: () -> Unit // ✅ 改成 callback 而非 navigate
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
@@ -128,12 +151,9 @@ fun ScheduleHeader(
                         day = item.day,
                         index = index,
                         onResult = { success ->
-                            if (success) {
-                                onClose() // ✅ 關掉 bottom sheet
-                            }
+                            if (success) onClose()
                         }
                     )
-
                 }) {
                     Text("刪除")
                 }
@@ -172,13 +192,7 @@ fun ScheduleHeader(
                     text = { Text("編輯") },
                     onClick = {
                         menuExpanded = false
-                        navController.navigate(
-                            Routes.MyPlans.editScheduleRoute(
-                                travelId = travelId,
-                                day = item.day,
-                                index = index
-                            )
-                        )
+                        onEdit() // ✅ 觸發 dialog 彈出
                     }
                 )
                 DropdownMenuItem(
@@ -245,24 +259,49 @@ fun AISuggestion() {
 }
 
 @Composable
-fun BottomActionButtons() {
+fun BottomActionButtons(item: ScheduleItem) {
+    val context = LocalContext.current
+    Log.d("ScheduleDebug", "lat=${item.place.lat}, lng=${item.place.lng}, name=${item.place.name}")
+
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
+        // ➤ 打開 Google Maps
         Button(
-            onClick = { /* TODO: Open in Maps */ },
+            onClick = {
+                val lat = item.place.lat
+                val lng = item.place.lng
+                val name = item.place.name
+                if (lat != null && lng != null) {
+                    val uri = Uri.parse("geo:$lat,$lng?q=${Uri.encode(name)}")
+                    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                        setPackage("com.google.android.apps.maps")
+                    }
+
+                    if (intent.resolveActivity(context.packageManager) != null) {
+                        context.startActivity(intent)
+                    } else {
+                        // 處理使用者未安裝 Google Maps 的情況
+                        android.widget.Toast.makeText(context, "請先安裝 Google Maps", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
             modifier = Modifier.weight(1f)
         ) {
             Text("Open in Maps")
         }
 
+        // 保留 Start 行程按鈕（未來你可實作打卡/導航）
         Button(
-            onClick = { /* TODO: Start */ },
+            onClick = {
+                // TODO: 實作開始行程的功能（ex. 打卡 or 導航）
+            },
             modifier = Modifier.weight(1f)
         ) {
             Text("Start")
         }
     }
+
     Spacer(modifier = Modifier.height(8.dp))
 }
