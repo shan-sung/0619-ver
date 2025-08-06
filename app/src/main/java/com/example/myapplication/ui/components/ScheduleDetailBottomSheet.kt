@@ -5,13 +5,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
 import androidx.compose.material.icons.filled.DirectionsBus
@@ -40,129 +41,25 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 fun ScheduleDetailBottomSheet(item: ScheduleItem) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .fillMaxHeight(0.6f)
     ) {
-        Row(
+        // Header + Menu（封裝在一起）
+        ScheduleHeader(item = item)
+
+        // Main content
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 56.dp, start = 24.dp, end = 24.dp, bottom = 16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Text(
-                item.place.name,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.weight(1f)
-            )
-            Box {
-                IconButton(onClick = { menuExpanded = !menuExpanded }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
-                }
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Option 1") },
-                        onClick = { /* Do something... */ }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Option 2") },
-                        onClick = { /* Do something... */ }
-                    )
-                }
-            }
-        }
-
-
-        // ✅ LazyColumn 放內容
-        LazyColumn(
-            modifier = Modifier
-                .padding(top = 56.dp, start = 24.dp, end = 24.dp, bottom = 16.dp) // 預留三個點空間
-        ) {
-            item { Spacer(modifier = Modifier.height(8.dp)) }
-
-            val formatter = DateTimeFormatter.ofPattern("h:mm a")
-            item.startTime?.let { start ->
-                item.endTime?.let { end ->
-                    val timeText = "預計時間：${start.format(formatter)} - ${end.format(formatter)}"
-                    item {
-                        Text(timeText, style = MaterialTheme.typography.bodyMedium)
-                    }
-                    item { Spacer(modifier = Modifier.height(4.dp)) }
-                }
-            }
-
-
-            item { Spacer(modifier = Modifier.height(4.dp)) }
-
-            item { Text(item.place.address ?: "", style = MaterialTheme.typography.bodyMedium) }
-            item { Spacer(modifier = Modifier.height(4.dp)) }
-            item.place.openingHours?.let { hours ->
-                if (hours.isNotEmpty()) {
-                    item { OpeningHoursSection(hours) }
-                }
-            }
-            item { Spacer(modifier = Modifier.height(12.dp)) }
-
-            item {
-                Text("Transportation Options", style = MaterialTheme.typography.titleLarge)
-            }
-
-            item { Spacer(modifier = Modifier.height(8.dp)) }
-
-            items(listOf(
-                Triple("Car", "Estimated time: 30 minutes", Icons.Default.DirectionsCar),
-                Triple("Bus", "Estimated time: 45 minutes", Icons.Default.DirectionsBus),
-                Triple("Bike", "Estimated time: 1 hour", Icons.AutoMirrored.Filled.DirectionsBike)
-            )) { (title, subtitle, icon) ->
-                TransportOptionRow(title, subtitle, icon)
-            }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item {
-                Text("AI Suggestion", style = MaterialTheme.typography.titleLarge)
-            }
-
-            item { Spacer(modifier = Modifier.height(8.dp)) }
-
-            item {
-                TransportOptionRow(
-                    "Car (Recommended)",
-                    "Fastest route, minimal traffic",
-                    Icons.Default.DirectionsCar
-                )
-            }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(
-                        onClick = { /* TODO: Open in Maps */ },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Open in Maps")
-                    }
-
-                    Button(
-                        onClick = { /* TODO: Start */ },
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Start")
-                    }
-                }
-            }
-
-            item { Spacer(modifier = Modifier.height(8.dp)) }
+            ScheduleBasicInfo(item)
+            TransportationOptions()
+            AISuggestion()
+            BottomActionButtons()
         }
     }
 }
@@ -185,4 +82,119 @@ fun TransportOptionRow(title: String, subtitle: String, icon: ImageVector) {
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
         }
     }
+}
+
+@Composable
+fun ScheduleHeader(item: ScheduleItem) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            item.place.name,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.weight(1f)
+        )
+
+        Box {
+            IconButton(onClick = { menuExpanded = !menuExpanded }) {
+                Icon(Icons.Default.MoreVert, contentDescription = "More options")
+            }
+
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                DropdownMenuItem(text = { Text("編輯") }, onClick = {
+                    menuExpanded = false
+                    // TODO
+                })
+                DropdownMenuItem(text = { Text("刪除") }, onClick = {
+                    menuExpanded = false
+                    // TODO
+                })
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun ScheduleBasicInfo(item: ScheduleItem) {
+    val formatter = DateTimeFormatter.ofPattern("h:mm a")
+    Column {
+        item.startTime?.let { start ->
+            item.endTime?.let { end ->
+                Text("預計時間：${start.format(formatter)} - ${end.format(formatter)}", style = MaterialTheme.typography.bodyMedium)
+                Spacer(Modifier.height(4.dp))
+            }
+        }
+        item.place.address?.let {
+            Text(it, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(4.dp))
+        }
+        item.place.openingHours?.takeIf { it.isNotEmpty() }?.let {
+            OpeningHoursSection(it)
+        }
+        Spacer(Modifier.height(12.dp))
+    }
+}
+
+@Composable
+fun TransportationOptions() {
+    Column {
+        Text("Transportation Options", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(8.dp))
+        listOf(
+            Triple("Car", "Estimated time: 30 minutes", Icons.Default.DirectionsCar),
+            Triple("Bus", "Estimated time: 45 minutes", Icons.Default.DirectionsBus),
+            Triple("Bike", "Estimated time: 1 hour", Icons.AutoMirrored.Filled.DirectionsBike)
+        ).forEach { (title, subtitle, icon) ->
+            TransportOptionRow(title, subtitle, icon)
+        }
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun AISuggestion() {
+    Column {
+        Text("AI Suggestion", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(8.dp))
+        TransportOptionRow(
+            "Car (Recommended)",
+            "Fastest route, minimal traffic",
+            Icons.Default.DirectionsCar
+        )
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+fun BottomActionButtons() {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Button(
+            onClick = { /* TODO: Open in Maps */ },
+            modifier = Modifier.weight(1f)
+        ) {
+            Text("Open in Maps")
+        }
+
+        Button(
+            onClick = { /* TODO: Start */ },
+            modifier = Modifier.weight(1f)
+        ) {
+            Text("Start")
+        }
+    }
+    Spacer(modifier = Modifier.height(8.dp))
 }

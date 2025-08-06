@@ -1,8 +1,10 @@
 package com.example.myapplication.navigation.subgraph
 
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
@@ -66,28 +68,46 @@ fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
         route = Routes.MyPlans.ADD_SCHEDULE,
         arguments = listOf(navArgument("travelId") { type = NavType.StringType })
     ) { backStackEntry ->
-        val travelId = backStackEntry.arguments?.getString("travelId")
+        val travelId = backStackEntry.arguments?.getString("travelId") ?: return@composable
         val viewModel: TripDetailViewModel = hiltViewModel()
-        val currentTrip = viewModel.travel.collectAsState().value
+        val uiState by viewModel.uiState.collectAsState()
+        val travel = uiState.data
+        val isLoading = uiState.isLoading
+        val error = uiState.error
 
+        // 🔁 初次載入行程資料
         LaunchedEffect(travelId) {
-            if (travelId != null && currentTrip == null) {
+            if (travel == null) {
                 viewModel.fetchTravelById(travelId)
             }
         }
 
+        // ⛳ 從上一頁帶入選取的景點
         val attraction = navController.previousBackStackEntry
             ?.savedStateHandle
             ?.get<Attraction>("selected_attraction")
 
-        if (currentTrip != null) {
-            AddScheduleScreen(
-                currentTrip = currentTrip,
-                navController = navController,
-                attraction = attraction
-            )
-        } else {
-            Text("載入行程中...")
+        // 🧾 根據 UI 狀態切換畫面
+        when {
+            isLoading -> {
+                CircularProgressIndicator()
+            }
+
+            error != null -> {
+                Text("錯誤：$error")
+            }
+
+            travel != null -> {
+                AddScheduleScreen(
+                    currentTrip = travel,
+                    navController = navController,
+                    attraction = attraction
+                )
+            }
+
+            else -> {
+                Text("未知錯誤，請重試")
+            }
         }
     }
 }
