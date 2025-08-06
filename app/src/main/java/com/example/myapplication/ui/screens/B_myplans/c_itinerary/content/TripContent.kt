@@ -24,7 +24,7 @@ import com.example.myapplication.data.model.CurrentUser
 import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)

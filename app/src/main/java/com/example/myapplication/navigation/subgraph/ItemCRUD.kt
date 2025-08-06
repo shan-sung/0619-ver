@@ -68,46 +68,38 @@ fun NavGraphBuilder.addScheduleNavGraph(navController: NavController) {
         route = Routes.MyPlans.ADD_SCHEDULE,
         arguments = listOf(navArgument("travelId") { type = NavType.StringType })
     ) { backStackEntry ->
-        val travelId = backStackEntry.arguments?.getString("travelId") ?: return@composable
+        val travelId = backStackEntry.arguments?.getString("travelId")
+        if (travelId.isNullOrBlank()) {
+            Text("無效的旅程 ID")
+            return@composable
+        }
+
         val viewModel: TripDetailViewModel = hiltViewModel()
         val uiState by viewModel.uiState.collectAsState()
         val travel = uiState.data
         val isLoading = uiState.isLoading
         val error = uiState.error
 
-        // 🔁 初次載入行程資料
         LaunchedEffect(travelId) {
-            if (travel == null) {
+            if (travel == null || travel._id != travelId) {
                 viewModel.fetchTravelById(travelId)
             }
         }
 
-        // ⛳ 從上一頁帶入選取的景點
         val attraction = navController.previousBackStackEntry
             ?.savedStateHandle
             ?.get<Attraction>("selected_attraction")
 
-        // 🧾 根據 UI 狀態切換畫面
         when {
-            isLoading -> {
-                CircularProgressIndicator()
-            }
-
-            error != null -> {
-                Text("錯誤：$error")
-            }
-
-            travel != null -> {
-                AddScheduleScreen(
-                    currentTrip = travel,
-                    navController = navController,
-                    attraction = attraction
-                )
-            }
-
-            else -> {
-                Text("未知錯誤，請重試")
-            }
+            isLoading -> CircularProgressIndicator()
+            error != null -> Text("錯誤：$error")
+            travel != null && attraction != null -> AddScheduleScreen(
+                currentTrip = travel,
+                navController = navController,
+                attraction = attraction
+            )
+            travel != null && attraction == null -> Text("未選擇景點")
+            else -> Text("未知錯誤，請重試")
         }
     }
 }

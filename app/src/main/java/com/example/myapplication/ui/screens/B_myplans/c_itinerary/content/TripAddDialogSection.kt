@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.ui.components.dialogs.AddPlaceDialog
-import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 
 @Composable
 fun TripAddDialogSection(

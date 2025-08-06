@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 
 @Composable
 fun ShareTripDialog(
