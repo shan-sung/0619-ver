@@ -30,6 +30,8 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
+import androidx.navigation.NavController
+
 
 @Composable
 fun TripDayTabs(
@@ -119,6 +121,8 @@ fun TripPager(
     days: Int,
     itinerary: List<ItineraryDay>,
     startDate: String,
+    travelId: String,                      // ✅ 新增
+    navController: NavController,         // ✅ 新增
     modifier: Modifier = Modifier
 ) {
     val inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -129,17 +133,19 @@ fun TripPager(
         state = pagerState,
         modifier = modifier
     ) { page ->
-        val item = itinerary.find { it.day == page + 1 }
-        val fullDate = tripStart.plusDays(page.toLong())
-        val computedDate = fullDate.format(outputFormatter)
+        val day = itinerary.find { it.day == page + 1 }
+        val formattedDate = tripStart.plusDays(page.toLong()).format(outputFormatter)
 
         DayContent(
-            dayIndex = page,
-            itineraryDay = item,
-            dateOverride = computedDate
+            dayIndex = page + 1,
+            itineraryDay = day,
+            dateOverride = formattedDate,
+            travelId = travelId,             // ✅ 傳入
+            navController = navController    // ✅ 傳入
         )
     }
 }
+
 
 
 fun getTodayIndex(startDate: LocalDate, endDate: LocalDate): Int? {

@@ -1,11 +1,12 @@
 package com.example.myapplication.ui.screens.b_myplans.c_itinerary.content
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import com.example.myapplication.data.model.ItineraryDay
+import com.example.myapplication.data.model.Travel
 import com.example.myapplication.ui.screens.b_myplans.c_itinerary.elemtent.TripDayTabs
 import com.example.myapplication.ui.screens.b_myplans.c_itinerary.elemtent.TripPager
 import kotlinx.coroutines.CoroutineScope
@@ -20,9 +21,11 @@ fun TripPagerSection(
     itinerary: List<ItineraryDay>,
     startDate: LocalDate,
     endDate: LocalDate,
-    modifier: Modifier = Modifier  // ✅ 新增
+    travel: Travel,                          // ✅ 加這行
+    navController: NavController,            // ✅ 加這行
+    modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {  // ✅ 包起來才能使用 weight
+    Column(modifier = modifier) {
         TripDayTabs(
             days = days,
             pagerState = pagerState,
@@ -33,10 +36,11 @@ fun TripPagerSection(
 
         TripPager(
             pagerState = pagerState,
-            days = days,
-            itinerary = itinerary,
-            startDate = startDate.toString(),
-            modifier = Modifier.fillMaxSize()
+            days = travel.days,
+            itinerary = travel.itinerary.orEmpty(),
+            startDate = travel.startDate,
+            travelId = travel._id,
+            navController = navController
         )
     }
 }

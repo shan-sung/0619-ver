@@ -13,12 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.myapplication.data.model.ItineraryDay
 import com.example.myapplication.ui.components.ScheduleTimeline
+import androidx.navigation.NavController
+
 
 @Composable
 fun DayContent(
     dayIndex: Int,
     itineraryDay: ItineraryDay?,
-    dateOverride: String
+    dateOverride: String,
+    travelId: String,
+    navController: NavController
 ) {
     Column(
         modifier = Modifier
@@ -35,7 +39,11 @@ fun DayContent(
         if (itineraryDay != null) {
             ScheduleTimeline(
                 schedule = itineraryDay.schedule,
-                modifier = Modifier.weight(1f, fill = false).padding(0.dp)
+                travelId = travelId,
+                navController = navController,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .padding(0.dp)
             )
         } else {
             Text("尚無行程資料")

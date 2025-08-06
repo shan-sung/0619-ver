@@ -225,12 +225,15 @@ fun EditScheduleScreen(
                     end = departureTime.format(DateTimeFormatter.ofPattern("HH:mm"))
                 )
             )
+            Log.d("SubmitEdit", "travelId=${currentTrip._id}")
+            Log.d("SubmitEdit", "day=${scheduleItem.day}, index=$itemIndex")
+            Log.d("SubmitEdit", "updatedItem=$updatedItem")
 
             viewModel.updateScheduleItemAndRefresh(
                 travelId = currentTrip._id ?: return@ScheduleForm,
-                day = scheduleItem.day,
-                index = itemIndex,
-                updatedItem = updatedItem,
+                day = scheduleItem.day,              // ✅ 傳原本 day（這是要刪的 day）
+                index = itemIndex,                   // ✅ 傳原本 index（這是要刪的 index）
+                updatedItem = updatedItem.copy(day = updatedDay),  // ✅ 新的 item 用新的 day
                 onResult = { success ->
                     if (success) {
                         navController.navigate(Routes.MyPlans.detailRoute(currentTrip._id!!, updatedDay)) {

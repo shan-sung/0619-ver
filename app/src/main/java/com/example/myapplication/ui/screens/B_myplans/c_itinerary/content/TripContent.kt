@@ -88,6 +88,8 @@ fun TripContent(
                     itinerary = travel.itinerary ?: emptyList(),
                     startDate = tripStartDate,
                     endDate = tripEndDate,
+                    travel = travel,                      // ✅ 傳入 travel
+                    navController = navController         // ✅ 傳入 navController
                 )
             }
         }
