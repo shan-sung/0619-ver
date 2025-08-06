@@ -29,7 +29,7 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.inputfield.DateSelector
 import com.example.myapplication.ui.components.inputfield.TextInputField
 import com.example.myapplication.ui.components.TimeSelector
-import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter

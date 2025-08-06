@@ -11,7 +11,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.ui.screens.b_myplans.c_itinerary.content.TripContent
-import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 
 @Composable
 fun TripScreen(
