@@ -14,7 +14,6 @@ import androidx.navigation.navArgument
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.dialogs.AddGooglePlaceDialog
-import com.example.myapplication.ui.components.dialogs.EditScheduleDialog
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SearchMapsWrapper
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.SelectFromMapScreen
 import com.example.myapplication.viewmodel.AttractionsViewModel
