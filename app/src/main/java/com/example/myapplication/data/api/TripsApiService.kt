@@ -6,6 +6,7 @@ import com.example.myapplication.data.model.Travel
 import com.example.myapplication.data.model.TripCreationInfo
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
@@ -46,4 +47,12 @@ interface TripsApiService {
         @Path("tripId") tripId: String,
         @Body body: AddMembersRequest
     ): Response<Unit>
+
+    @DELETE("trips/{travelId}/schedule/{day}/{index}")
+    suspend fun deleteScheduleItem(
+        @Path("travelId") travelId: String,
+        @Path("day") day: Int,
+        @Path("index") index: Int
+    ): Response<Unit>
+
 }

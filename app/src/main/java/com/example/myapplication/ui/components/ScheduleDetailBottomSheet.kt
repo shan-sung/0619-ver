@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.DirectionsBike
 import androidx.compose.material.icons.filled.DirectionsBus
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,21 +37,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.myapplication.data.model.ScheduleItem
+import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.OpeningHoursSection
+import com.example.myapplication.viewmodel.TripDetailViewModel
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun ScheduleDetailBottomSheet(item: ScheduleItem) {
+fun ScheduleDetailBottomSheet(
+    item: ScheduleItem,
+    navController: NavController,
+    travelId: String,
+    index: Int,
+    onClose: () -> Unit
+) {
+    val viewModel: TripDetailViewModel = hiltViewModel() // ✅ 加上這行
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(0.6f)
     ) {
-        // Header + Menu（封裝在一起）
-        ScheduleHeader(item = item)
+        ScheduleHeader(
+            item = item,
+            navController = navController,
+            travelId = travelId,
+            index = index,
+            viewModel = viewModel,
+            onClose = onClose
+        )
 
-        // Main content
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -63,6 +82,7 @@ fun ScheduleDetailBottomSheet(item: ScheduleItem) {
         }
     }
 }
+
 
 @Composable
 fun TransportOptionRow(title: String, subtitle: String, icon: ImageVector) {
@@ -85,8 +105,46 @@ fun TransportOptionRow(title: String, subtitle: String, icon: ImageVector) {
 }
 
 @Composable
-fun ScheduleHeader(item: ScheduleItem) {
+fun ScheduleHeader(
+    item: ScheduleItem,
+    navController: NavController,
+    travelId: String,
+    index: Int,
+    viewModel: TripDetailViewModel = hiltViewModel(),
+    onClose: () -> Unit
+) {
     var menuExpanded by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("確認刪除") },
+            text = { Text("你確定要刪除這個行程嗎？此操作無法復原。") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showDeleteConfirm = false
+                    viewModel.deleteScheduleItemAndRefresh(
+                        travelId = travelId,
+                        day = item.day,
+                        index = index,
+                        onResult = { success ->
+                            if (success) {
+                                onClose() // ✅ 關掉 bottom sheet
+                            }
+                        }
+                    )
+
+                }) {
+                    Text("刪除")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) {
+                    Text("取消")
+                }
+            }
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -110,20 +168,30 @@ fun ScheduleHeader(item: ScheduleItem) {
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
-                DropdownMenuItem(text = { Text("編輯") }, onClick = {
-                    menuExpanded = false
-                    // TODO
-                })
-                DropdownMenuItem(text = { Text("刪除") }, onClick = {
-                    menuExpanded = false
-                    // TODO
-                })
+                DropdownMenuItem(
+                    text = { Text("編輯") },
+                    onClick = {
+                        menuExpanded = false
+                        navController.navigate(
+                            Routes.MyPlans.editScheduleRoute(
+                                travelId = travelId,
+                                day = item.day,
+                                index = index
+                            )
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("刪除") },
+                    onClick = {
+                        menuExpanded = false
+                        showDeleteConfirm = true
+                    }
+                )
             }
         }
     }
 }
-
-
 
 @Composable
 fun ScheduleBasicInfo(item: ScheduleItem) {

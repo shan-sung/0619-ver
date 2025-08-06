@@ -32,6 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.myapplication.data.model.ScheduleItem
 import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
@@ -40,24 +41,27 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ScheduleTimeline(
     schedule: List<ScheduleItem>,
+    travelId: String,
+    navController: NavController,
     modifier: Modifier = Modifier
 ) {
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var selectedItem by remember { mutableStateOf<ScheduleItem?>(null) }
-
     val coroutineScope = rememberCoroutineScope()
-    val sortedSchedule = remember(schedule) { schedule.sortedBy { it.startTime } }
+
+    val sortedSchedule = remember(schedule) { schedule.sortedBy { it.startTime } } // ✅ 提到前面
+    var selectedItemIndex by remember { mutableStateOf<Int?>(null) }
+    val selectedItem = selectedItemIndex?.let { sortedSchedule.getOrNull(it) }
 
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
-        itemsIndexed(sortedSchedule) { _, item ->
+        itemsIndexed(sortedSchedule) { index, item ->
             ScheduleItemCard(
                 item = item,
                 onClick = {
-                    selectedItem = item
+                    selectedItemIndex = index
                     coroutineScope.launch {
                         bottomSheetState.show()
                     }
@@ -71,16 +75,27 @@ fun ScheduleTimeline(
         ModalBottomSheet(
             onDismissRequest = {
                 coroutineScope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                    selectedItem = null
+                    selectedItemIndex = null
                 }
             },
             sheetState = bottomSheetState
         ) {
-            ScheduleDetailBottomSheet(item)
+            ScheduleDetailBottomSheet(
+                item = item,
+                navController = navController,
+                travelId = travelId,
+                index = selectedItemIndex!!,
+                onClose = {
+                    coroutineScope.launch {
+                        bottomSheetState.hide()
+                    }.invokeOnCompletion {
+                        selectedItemIndex = null
+                    }
+                }
+            )
         }
     }
 }
-
 
 @Composable
 fun ScheduleItemCard(

@@ -100,6 +100,30 @@ class TripDetailViewModel @Inject constructor(
         }
     }
 
+    fun deleteScheduleItemAndRefresh(
+        travelId: String,
+        day: Int,
+        index: Int,
+        onResult: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            runCatching {
+                tripsApi.deleteScheduleItem(travelId, day, index)
+            }.onSuccess { response ->
+                if (response.isSuccessful) {
+                    refreshTravel(travelId, onResult)
+                } else {
+                    logError("deleteScheduleItem", Exception("code=${response.code()}"))
+                    onResult(false)
+                }
+            }.onFailure {
+                logError("deleteScheduleItem", it)
+                onResult(false)
+            }
+        }
+    }
+
+
     /**
      * 邀請好友加入行程
      */

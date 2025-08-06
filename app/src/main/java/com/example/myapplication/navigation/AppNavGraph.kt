@@ -9,6 +9,7 @@ import com.example.myapplication.navigation.routes.Routes
 import com.example.myapplication.navigation.subgraph.addScheduleNavGraph
 import com.example.myapplication.navigation.subgraph.chatNavGraph
 import com.example.myapplication.navigation.subgraph.createTripNavGraph
+import com.example.myapplication.navigation.subgraph.editScheduleNavGraph
 import com.example.myapplication.navigation.subgraph.exploreNavGraph
 import com.example.myapplication.navigation.subgraph.friendNavGraph
 import com.example.myapplication.navigation.subgraph.profileNavGraph
@@ -41,5 +42,6 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier,
         selectFromMapNavGraph(navController)
         friendNavGraph(navController, refreshKey)
         addScheduleNavGraph(navController)
+        editScheduleNavGraph(navController)
     }
 }
