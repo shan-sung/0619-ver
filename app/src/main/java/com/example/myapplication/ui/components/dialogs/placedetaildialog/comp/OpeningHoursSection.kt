@@ -115,7 +115,7 @@ fun OpeningHoursSection(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 2.dp, horizontal = 4.dp),
+                            .padding(vertical = 2.dp, horizontal = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
