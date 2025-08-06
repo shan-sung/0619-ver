@@ -277,11 +277,12 @@ fun EditScheduleDialog(
     val endDate = LocalDate.parse(currentTrip.endDate, formatter)
 
     val place = scheduleItem.place
-    if (place.id == null || place.name == null) {
-        Log.e("EditScheduleDialog", "Place id or name is null")
+    if (place.name.isBlank()) {
+        Log.e("EditScheduleDialog", "Place name is missing")
         onDismiss()
         return
     }
+
 
     val formatterTime = DateTimeFormatter.ofPattern("HH:mm")
     val initialDate = startDate.plusDays((scheduleItem.day - 1).toLong())
