@@ -102,16 +102,15 @@ fun ScheduleDetailBottomSheet(item: ScheduleItem) {
 
             item { Text(item.place.address ?: "", style = MaterialTheme.typography.bodyMedium) }
             item { Spacer(modifier = Modifier.height(4.dp)) }
-
             item.place.openingHours?.let { hours ->
                 if (hours.isNotEmpty()) {
                     item { OpeningHoursSection(hours) }
                 }
             }
-            item { Spacer(modifier = Modifier.height(4.dp)) }
+            item { Spacer(modifier = Modifier.height(12.dp)) }
 
             item {
-                Text("Transportation Options", style = MaterialTheme.typography.titleMedium)
+                Text("Transportation Options", style = MaterialTheme.typography.titleLarge)
             }
 
             item { Spacer(modifier = Modifier.height(8.dp)) }
@@ -127,7 +126,7 @@ fun ScheduleDetailBottomSheet(item: ScheduleItem) {
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item {
-                Text("AI Suggestion", style = MaterialTheme.typography.titleMedium)
+                Text("AI Suggestion", style = MaterialTheme.typography.titleLarge)
             }
 
             item { Spacer(modifier = Modifier.height(8.dp)) }
