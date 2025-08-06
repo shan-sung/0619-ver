@@ -45,11 +45,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.ScheduleItem
-import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.ui.components.dialogs.EditScheduleDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.OpeningHoursSection
+import com.example.myapplication.ui.screens.b_myplans.c_itinerary.crud.EditScheduleDialog
 import com.example.myapplication.viewmodel.TripDetailViewModel
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 @Composable

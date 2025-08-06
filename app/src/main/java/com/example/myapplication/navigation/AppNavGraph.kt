@@ -6,7 +6,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.navigation
 import com.example.myapplication.navigation.routes.Routes
-import com.example.myapplication.navigation.subgraph.addScheduleNavGraph
 import com.example.myapplication.navigation.subgraph.chatNavGraph
 import com.example.myapplication.navigation.subgraph.createTripNavGraph
 import com.example.myapplication.navigation.subgraph.exploreNavGraph
@@ -40,6 +39,5 @@ fun AppNavGraph(navController: NavHostController, modifier: Modifier = Modifier,
         tripDetailNavGraph(navController)
         selectFromMapNavGraph(navController)
         friendNavGraph(navController, refreshKey)
-        addScheduleNavGraph(navController)
     }
 }
