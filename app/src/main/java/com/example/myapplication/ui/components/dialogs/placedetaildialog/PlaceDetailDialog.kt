@@ -76,7 +76,7 @@ fun PlaceDetailDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 72.dp)
+                        .padding(bottom = 76.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
                     attraction.imageUrl?.let { ImgSection(it) }
@@ -88,11 +88,10 @@ fun PlaceDetailDialog(
                         Text(attraction.name, style = MaterialTheme.typography.headlineMedium)
                         Spacer(Modifier.height(4.dp))
                         Text(attraction.address ?: "", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(4.dp))
                         attraction.openingHours
                             ?.takeIf { it.isNotEmpty() }
                             ?.let { OpeningHoursSection(it) }
-                        Spacer(Modifier.height(16.dp))
                         attraction.rating?.let {
                             RatingSection(it, attraction.userRatingsTotal ?: 0)
                         }

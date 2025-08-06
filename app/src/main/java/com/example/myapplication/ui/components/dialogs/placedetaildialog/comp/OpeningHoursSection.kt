@@ -1,6 +1,8 @@
 package com.example.myapplication.ui.components.dialogs.placedetaildialog.comp
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -11,10 +13,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,8 +45,9 @@ fun OpeningHoursSection(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     val now = remember { LocalTime.now() }
+    val today = remember { LocalDate.now().dayOfWeek.name } // e.g. MONDAY
+    val colorScheme = MaterialTheme.colorScheme
 
     fun String.toChineseDay(): String = when (this.uppercase()) {
         "MONDAY" -> "星期一"
@@ -52,12 +60,14 @@ fun OpeningHoursSection(
         else -> this
     }
 
-    // ✅ 將狀態計算移出 Compose 運算流程，避免 crash
-    val colorScheme = MaterialTheme.colorScheme
     val status = remember(hours) { getOpeningStatusInfo(hours, now, colorScheme) }
 
-    Column(modifier = modifier) {
-        // ⏰ 營業狀態
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .animateContentSize()
+    ) {
+        // ⏰ 營業狀態列（點擊可展開）
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -68,27 +78,27 @@ fun OpeningHoursSection(
             Icon(
                 imageVector = Icons.Default.AccessTime,
                 contentDescription = null,
-                tint = Color(0xFF007B8F),
+                tint = colorScheme.primary,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(Modifier.width(8.dp))
             Text(
                 text = status.text,
                 color = status.color,
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
-                tint = Color.Gray
+                tint = colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(32.dp).padding(end = 8.dp)
             )
         }
 
-        // 📅 每日營業時間表
+        // 📅 展開營業時間
         if (expanded) {
-            Spacer(Modifier.height(4.dp))
-            Column {
+            Column(modifier = Modifier.padding(start = 4.dp, top = 4.dp)) {
                 hours.forEach { hour ->
                     val (dayEn, time) = try {
                         val parts = hour.split(":", limit = 2).map { it.trim() }
@@ -98,18 +108,24 @@ fun OpeningHoursSection(
                         "格式錯誤" to hour
                     }
 
+                    val isToday = dayEn.uppercase() == today
+                    val textColor = if (isToday) colorScheme.onSurface else colorScheme.onSurfaceVariant
+
                     Row(
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 2.dp),
+                            .padding(vertical = 2.dp, horizontal = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = dayEn.toChineseDay(),
+                            color = textColor,
                             style = MaterialTheme.typography.bodyMedium
                         )
                         Text(
                             text = time,
+                            color = textColor,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
@@ -118,6 +134,7 @@ fun OpeningHoursSection(
         }
     }
 }
+
 
 fun normalizeTimeRange(raw: String): String {
     return raw
@@ -190,7 +207,6 @@ fun getOpeningStatusInfo(
     val closeRaw = parts[1]
     val closeTime = parseTimeStringFlexible(closeRaw)
     val openRawFinal = if (!openRaw.contains("AM", true) && !openRaw.contains("PM", true)) {
-        // 從 closeRaw 末端取 AM 或 PM
         val suffix = closeRaw.takeLastWhile { it != ' ' }.uppercase()
         "$openRaw $suffix"
     } else {

@@ -9,9 +9,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,58 +27,54 @@ import com.example.myapplication.data.model.SourceType
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
 import com.example.myapplication.viewmodel.myplans.TripDetailViewModel
+import kotlinx.coroutines.launch
 import java.time.format.DateTimeFormatter
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleTimeline(
     schedule: List<ScheduleItem>,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: TripDetailViewModel = hiltViewModel()
-    val travel = viewModel.travel.collectAsState().value
-
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selectedItem by remember { mutableStateOf<ScheduleItem?>(null) }
+
+    val coroutineScope = rememberCoroutineScope()
+    val sortedSchedule = remember(schedule) { schedule.sortedBy { it.startTime } }
 
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp)
     ) {
-        val sortedSchedule = schedule.sortedBy { it.startTime }
-
         itemsIndexed(sortedSchedule) { _, item ->
             ScheduleItemCard(
                 item = item,
-                onClick = { selectedItem = item }
+                onClick = {
+                    selectedItem = item
+                    coroutineScope.launch {
+                        bottomSheetState.show()
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 
     selectedItem?.let { item ->
-        if (item.place.source == SourceType.GOOGLE && item.place.id != null) {
-            val attraction = Attraction(
-                id = item.place.id ?: "",
-                name = item.place.name,
-                address = item.place.address,
-                lat = item.place.lat,
-                lng = item.place.lng,
-                imageUrl = item.place.imageUrl,
-                rating = item.place.rating,
-                userRatingsTotal = item.place.userRatingsTotal,
-                openingHours = item.place.openingHours
-            )
-            Log.d("DEBUG", "Attraction rating = ${attraction.rating}, total = ${attraction.userRatingsTotal}")
-
-            PlaceDetailDialog(
-                attraction = attraction,
-                mode = PlaceActionMode.ADD_TO_ITINERARY,
-                onDismiss = { selectedItem = null },
-                onAddToItinerary = { /* handle */ }
-            )
+        ModalBottomSheet(
+            onDismissRequest = {
+                coroutineScope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+                    selectedItem = null
+                }
+            },
+            sheetState = bottomSheetState
+        ) {
+            ScheduleDetailBottomSheet(item)
         }
     }
 }
+
 
 @Composable
 fun ScheduleItemCard(
@@ -122,7 +121,6 @@ fun ScheduleItemCard(
 
 fun ScheduleItem.formatTimeRange(): String {
     val formatter = DateTimeFormatter.ofPattern("h:mm a")
-
     val start = this.startTime
     val end = this.endTime
 

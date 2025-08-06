@@ -55,7 +55,6 @@ fun OverlayScreenWithCloseIcon(
                     style = MaterialTheme.typography.headlineSmall
                 )
             }
-
             content()
         }
     }
