@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Event
@@ -43,6 +44,7 @@ fun ScheduleTimeline(
     schedule: List<ScheduleItem>,
     travelId: String,
     navController: NavController,
+    pagerState: PagerState, // 加這個
     modifier: Modifier = Modifier
 ) {
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -85,12 +87,10 @@ fun ScheduleTimeline(
                 navController = navController,
                 travelId = travelId,
                 index = selectedItemIndex!!,
+                pagerState = pagerState, // ✅ 明確傳入
                 onClose = {
-                    coroutineScope.launch {
-                        bottomSheetState.hide()
-                    }.invokeOnCompletion {
-                        selectedItemIndex = null
-                    }
+                    coroutineScope.launch { bottomSheetState.hide() }
+                        .invokeOnCompletion { selectedItemIndex = null }
                 }
             )
         }

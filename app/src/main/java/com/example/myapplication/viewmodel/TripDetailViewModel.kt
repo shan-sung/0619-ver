@@ -9,8 +9,10 @@ import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.data.model.Travel
 import com.example.myapplication.data.model.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,6 +20,14 @@ import javax.inject.Inject
 class TripDetailViewModel @Inject constructor(
     private val tripsApi: TripsApiService
 ) : ViewModel() {
+
+    sealed class TripUiEvent {
+        data class ScheduleUpdated(val dayIndex: Int) : TripUiEvent()
+        object CloseDialogAndBottomSheet : TripUiEvent()
+    }
+    private val _event = MutableSharedFlow<TripUiEvent>()
+    val event = _event.asSharedFlow()
+
 
     private val _uiState = MutableStateFlow(UiState<Travel>())
     val uiState: StateFlow<UiState<Travel>> = _uiState
@@ -51,25 +61,29 @@ class TripDetailViewModel @Inject constructor(
         travelId: String,
         day: Int,
         index: Int,
-        updatedItem: ScheduleItem,
-        onResult: (Boolean) -> Unit
+        updatedItem: ScheduleItem
     ) {
         viewModelScope.launch {
             runCatching {
                 tripsApi.updateScheduleItem(travelId, day, index, updatedItem)
             }.onSuccess { response ->
                 if (response.isSuccessful) {
-                    refreshTravel(travelId, onResult)
-                } else {
-                    logError("updateScheduleItem", Exception("code=${response.code()}"))
-                    onResult(false)
+                    refreshTravel(travelId) { success ->
+                        if (success) {
+                            viewModelScope.launch {
+                                _event.emit(TripUiEvent.ScheduleUpdated(updatedItem.day))
+                                _event.emit(TripUiEvent.CloseDialogAndBottomSheet)
+                            }
+                        }
+                    }
                 }
             }.onFailure {
                 logError("updateScheduleItem", it)
-                onResult(false)
             }
         }
     }
+
+
 
     /**
      * 新增行程項目並 refresh

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,61 +28,68 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
-import com.example.myapplication.navigation.routes.Routes
+import com.example.myapplication.data.model.Travel
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
+import com.example.myapplication.ui.screens.b_myplans.c_itinerary.crud.AddGooglePlaceDialog
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.PlaceItem
 import com.example.myapplication.viewmodel.AttractionsViewModel
 import com.example.myapplication.viewmodel.SearchViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 
 @Composable
 fun SearchMapsWrapper(
     navController: NavController,
     travelId: String,
     searchViewModel: SearchViewModel = hiltViewModel(),
-    attractionsViewModel: AttractionsViewModel = hiltViewModel()
+    attractionsViewModel: AttractionsViewModel = hiltViewModel(),
+    tripDetailViewModel: TripDetailViewModel = hiltViewModel()
 ) {
     val uiState = searchViewModel.uiState.collectAsState().value
+    val travelState = tripDetailViewModel.uiState.collectAsState().value
+    val travel = travelState.data
+
+    LaunchedEffect(travelId) {
+        if (travel == null || travel._id != travelId) {
+            tripDetailViewModel.fetchTravelById(travelId)
+        }
+    }
+
     val searchResults = uiState.data.orEmpty()
-
     val recentSearchIds = rememberSaveable { mutableStateOf(listOf<String>()) }
-
     val recentSearches = remember(searchResults, recentSearchIds.value) {
         searchResults.filter { it.id in recentSearchIds.value }
     }
-
     val selectedAttraction = attractionsViewModel.selectedAttractionDetail.collectAsState().value
 
-    SearchMapsScreen(
-        navController = navController,
-        searchResults = searchResults,
-        recentSearches = recentSearches,
-        onSearchQueryChanged = { query -> searchViewModel.debouncedSearch(query) },
-        onSelect = { selected ->
-            if (selected.id !in recentSearchIds.value) {
-                recentSearchIds.value = recentSearchIds.value + selected.id
-            }
-            // ✅ 補充完整詳細資料
-            attractionsViewModel.loadAttractionDetail(selected.id)
-        },
-        selectedAttraction = selectedAttraction,
-        onDismissDialog = { attractionsViewModel.clearSelectedAttraction() },
-        onAddToItinerary = { attraction ->
-            navController.currentBackStackEntry
-                ?.savedStateHandle
-                ?.set("selected_attraction", attraction)
-
-            navController.navigate(Routes.MyPlans.addScheduleRoute(travelId)) {
-                popUpTo(Routes.MyPlans.SEARCH) { inclusive = true }
-            }
-        }
-    )
+    if (travel != null) {
+        SearchMapsScreen(
+            navController = navController,
+            currentTrip = travel, // ✅ 傳入行程
+            searchResults = searchResults,
+            recentSearches = recentSearches,
+            onSearchQueryChanged = { query -> searchViewModel.debouncedSearch(query) },
+            onSelect = { selected ->
+                if (selected.id !in recentSearchIds.value) {
+                    recentSearchIds.value = recentSearchIds.value + selected.id
+                }
+                attractionsViewModel.loadAttractionDetail(selected.id)
+            },
+            selectedAttraction = selectedAttraction,
+            onDismissDialog = { attractionsViewModel.clearSelectedAttraction() },
+            onAddToItinerary = {} // 不再需要用此參數開 dialog，所以可留空或刪除
+        )
+    } else {
+        CircularProgressIndicator()
+    }
 }
+
 
 
 @Composable
 fun SearchMapsScreen(
     navController: NavController,
+    currentTrip: Travel, // ✅ 加這個參數
     searchResults: List<Attraction>,
     recentSearches: List<Attraction>,
     onSearchQueryChanged: (String) -> Unit,
@@ -91,6 +99,8 @@ fun SearchMapsScreen(
     onAddToItinerary: (Attraction) -> Unit
 ) {
     var searchText by remember { mutableStateOf("") }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var selectedAttractionForAdd by remember { mutableStateOf<Attraction?>(null) }
 
     LaunchedEffect(searchText) {
         if (searchText.isNotBlank()) onSearchQueryChanged(searchText)
@@ -144,8 +154,22 @@ fun SearchMapsScreen(
             mode = PlaceActionMode.ADD_TO_ITINERARY,
             onDismiss = onDismissDialog,
             onAddToItinerary = {
-                onAddToItinerary(selectedAttraction)
+                selectedAttractionForAdd = selectedAttraction
+                showAddDialog = true
                 onDismissDialog()
+            }
+        )
+    }
+    if (showAddDialog && selectedAttractionForAdd != null) {
+        val viewModel: TripDetailViewModel = hiltViewModel()
+        AddGooglePlaceDialog(
+            currentTrip = currentTrip,
+            attraction = selectedAttractionForAdd!!,
+            navController = navController,
+            viewModel = viewModel,
+            onDismiss = {
+                showAddDialog = false
+                selectedAttractionForAdd = null
             }
         )
     }

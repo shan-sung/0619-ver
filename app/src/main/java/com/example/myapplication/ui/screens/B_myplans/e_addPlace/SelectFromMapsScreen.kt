@@ -3,6 +3,7 @@ package com.example.myapplication.ui.screens.b_myplans.e_addPlace
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -15,11 +16,13 @@ import androidx.navigation.NavController
 import com.example.myapplication.data.model.Attraction
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.PlaceDetailDialog
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.PlaceActionMode
+import com.example.myapplication.ui.screens.b_myplans.c_itinerary.crud.AddGooglePlaceDialog
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.AttractionList
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.SearchBar
 import com.example.myapplication.ui.screens.b_myplans.e_addPlace.element.TabRowSection
 import com.example.myapplication.viewmodel.ForYouViewModel
 import com.example.myapplication.viewmodel.SavedViewModel
+import com.example.myapplication.viewmodel.TripDetailViewModel
 
 @Composable
 fun SelectFromMapScreen(
@@ -27,8 +30,7 @@ fun SelectFromMapScreen(
     travelId: String,
     savedViewModel: SavedViewModel = hiltViewModel(),
     forYouViewModel: ForYouViewModel = hiltViewModel(),
-    onSelect: (Attraction) -> Unit,
-    onAddToItinerary: (Attraction) -> Unit
+    viewModel: TripDetailViewModel = hiltViewModel()
 ) {
     val tabs = listOf("For you", "Saved")
     var selectedTab by remember { mutableIntStateOf(0) }
@@ -41,7 +43,19 @@ fun SelectFromMapScreen(
         if (selectedTab == 0) forYouViewModel.selectedAttraction.collectAsState().value
         else savedViewModel.selectedAttractionDetail.collectAsState().value
 
-    var showDialog by remember { mutableStateOf(false) }
+    var showPlaceDialog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    var selectedAttractionForAdd by remember { mutableStateOf<Attraction?>(null) }
+
+    val travelState = viewModel.uiState.collectAsState().value
+    val currentTrip = travelState.data
+
+    // 載入 Travel 資料
+    LaunchedEffect(travelId) {
+        if (currentTrip == null || currentTrip._id != travelId) {
+            viewModel.fetchTravelById(travelId)
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBar(navController = navController, travelId = travelId)
@@ -60,7 +74,7 @@ fun SelectFromMapScreen(
                 } else {
                     savedViewModel.loadAttractionDetail(it.id)
                 }
-                showDialog = true
+                showPlaceDialog = true
             },
             onRemove = {
                 if (selectedTab == 1) savedViewModel.removeFromSaved(it)
@@ -68,14 +82,30 @@ fun SelectFromMapScreen(
         )
     }
 
-    if (showDialog && attractionDetail != null) {
+    // 地點詳細 Dialog
+    if (showPlaceDialog && attractionDetail != null) {
         PlaceDetailDialog(
             attraction = attractionDetail,
             mode = PlaceActionMode.ADD_TO_ITINERARY,
-            onDismiss = { showDialog = false },
+            onDismiss = { showPlaceDialog = false },
             onAddToItinerary = {
-                onAddToItinerary(attractionDetail)
-                showDialog = false
+                selectedAttractionForAdd = attractionDetail
+                showAddDialog = true
+                showPlaceDialog = false
+            }
+        )
+    }
+
+    // 加入行程 Dialog
+    if (showAddDialog && selectedAttractionForAdd != null && currentTrip != null) {
+        AddGooglePlaceDialog(
+            currentTrip = currentTrip,
+            attraction = selectedAttractionForAdd!!,
+            navController = navController,
+            viewModel = viewModel,
+            onDismiss = {
+                showAddDialog = false
+                selectedAttractionForAdd = null
             }
         )
     }

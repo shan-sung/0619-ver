@@ -46,8 +46,7 @@ fun EditScheduleDialog(
     val place = scheduleItem.place
     if (place.name.isBlank()) {
         Log.e("EditScheduleDialog", "Place name is missing")
-        onDismiss()
-        return
+        return // ✅ 不做任何 UI 操作，由 ViewModel 控制
     }
 
 
@@ -63,7 +62,7 @@ fun EditScheduleDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("編輯景點：${place.name}") },
+        title = { Text(place.name) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(
@@ -114,12 +113,7 @@ fun EditScheduleDialog(
                         travelId = currentTrip._id ?: return@TextButton,
                         day = scheduleItem.day,
                         index = itemIndex,
-                        updatedItem = updatedItem,
-                        onResult = { success ->
-                            if (success) {
-                                onDismiss() // ✅ 不再 navigate，改為關閉 Dialog
-                            }
-                        }
+                        updatedItem = updatedItem
                     )
                 },
                 enabled = isValid

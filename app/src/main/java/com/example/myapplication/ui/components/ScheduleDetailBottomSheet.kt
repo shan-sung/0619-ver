@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +50,7 @@ import com.example.myapplication.data.model.ScheduleItem
 import com.example.myapplication.ui.components.dialogs.placedetaildialog.comp.OpeningHoursSection
 import com.example.myapplication.ui.screens.b_myplans.c_itinerary.crud.EditScheduleDialog
 import com.example.myapplication.viewmodel.TripDetailViewModel
+import kotlinx.coroutines.flow.collectLatest
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -56,6 +59,7 @@ fun ScheduleDetailBottomSheet(
     navController: NavController,
     travelId: String,
     index: Int,
+    pagerState: PagerState, // ✅ 明確定義進來
     onClose: () -> Unit
 ) {
     val viewModel: TripDetailViewModel = hiltViewModel()
@@ -63,6 +67,22 @@ fun ScheduleDetailBottomSheet(
 
     val uiState by viewModel.uiState.collectAsState()
     val travel = uiState.data
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collectLatest { event ->
+            when (event) {
+                is TripDetailViewModel.TripUiEvent.ScheduleUpdated -> {
+                    println("📍收到跳轉事件，前往 DayIndex=${event.dayIndex}")
+                    pagerState.scrollToPage(event.dayIndex - 1)
+                }
+                is TripDetailViewModel.TripUiEvent.CloseDialogAndBottomSheet -> {
+                    println("📍關閉 Dialog 與 BottomSheet")
+                    showEditDialog = false
+                    onClose()
+                }
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -300,6 +320,5 @@ fun BottomActionButtons(item: ScheduleItem) {
             Text("Start")
         }
     }
-
     Spacer(modifier = Modifier.height(8.dp))
 }
