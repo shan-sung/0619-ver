@@ -139,13 +139,13 @@ fun TripPager(
         DayContent(
             dayIndex = page + 1,
             itineraryDay = day,
+            pagerState = pagerState,
             dateOverride = formattedDate,
             travelId = travelId,             // ✅ 傳入
             navController = navController    // ✅ 傳入
         )
     }
 }
-
 
 
 fun getTodayIndex(startDate: LocalDate, endDate: LocalDate): Int? {
